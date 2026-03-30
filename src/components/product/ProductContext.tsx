@@ -1,0 +1,84 @@
+"use client";
+
+import React, { createContext, use, useOptimistic } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+
+type ProductState = {
+  [key: string]: string;
+} & {
+  image?: string;
+};
+
+type ProductContextType = {
+  state: ProductState;
+  updateOption: (name: string, value: string) => ProductState;
+  updateImage: (index: string) => ProductState;
+};
+
+const ProductContext = createContext<ProductContextType | undefined>(undefined);
+
+interface ProductProviderProps {
+  children: React.ReactNode;
+}
+
+export const ProductProvider: React.FC<ProductProviderProps> = ({
+  children,
+}) => {
+  const searchParams = useSearchParams();
+
+  const getInitialState = () => {
+    const params: ProductState = {};
+    for (const [key, value] of searchParams.entries()) {
+      params[key] = value;
+    }
+    return params;
+  };
+
+  const [state, setOptimisticState] = useOptimistic(
+    getInitialState(),
+    (prevState: ProductState, update: ProductState) => ({
+      ...prevState,
+      ...update,
+    })
+  );
+
+  const updateOption = (name: string, value: string) => {
+    const newState = { [name]: value };
+    setOptimisticState(newState);
+    return { ...state, ...newState };
+  };
+
+  const updateImage = (index: string) => {
+    const newState = { image: index };
+    setOptimisticState(newState);
+    return { ...state, ...newState };
+  };
+
+  const value = {
+    state,
+    updateOption,
+    updateImage,
+  };
+
+  return <ProductContext value={value}>{children}</ProductContext>;
+};
+
+export function useProduct() {
+  const context = use(ProductContext);
+  if (context === undefined) {
+    throw new Error("useProduct must be used within a ProductProvider");
+  }
+  return context;
+}
+
+export function useUpdateURL() {
+  const router = useRouter();
+
+  return (state: ProductState) => {
+    const newParams = new URLSearchParams(window.location.search);
+    Object.entries(state).forEach(([key, value]) => {
+      newParams.set(key, value);
+    });
+    router.push(`?${newParams.toString()}`, { scroll: false });
+  };
+}
