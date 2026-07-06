@@ -1,4 +1,3 @@
-import axios from "axios";
 import { cacheLife, cacheTag, revalidateTag } from "next/cache";
 import { cookies, headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
@@ -70,7 +69,7 @@ type ExtractVariables<T> = T extends { variables: object }
   : never;
 
 export async function shopifyFetch<T>({
-  headers,
+  headers: extraHeaders,
   query,
   variables,
 }: {
@@ -79,64 +78,41 @@ export async function shopifyFetch<T>({
   variables?: ExtractVariables<T>;
 }): Promise<{ status: number; body: T } | never> {
   try {
-    const response = await axios.post(
-      getEndpoint(),
-      {
+    const response = await fetch(getEndpoint(), {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Shopify-Storefront-Access-Token": getKey(),
+        ...extraHeaders,
+      },
+      body: JSON.stringify({
         ...(query && { query }),
         ...(variables && { variables }),
-      },
-      {
-        headers: {
-          "Content-Type": "application/json",
-          "X-Shopify-Storefront-Access-Token": getKey(),
-          ...(headers || {}),
-        },
-      }
-    );
+      }),
+    });
 
-    const body = response.data;
+    const body = (await response.json()) as T & {
+      errors?: { message: string; cause?: unknown }[];
+    };
 
     if (body.errors) {
       throw body.errors[0];
     }
 
-    return {
-      status: response.status,
-      body,
-    };
+    return { status: response.status, body };
   } catch (e: unknown) {
     console.log("Error Requesting Shopify:", e);
-    if (axios.isAxiosError(e)) {
-      const shopifyError = e.response?.data?.errors?.[0];
-      if (shopifyError) {
-        throw {
-          cause: shopifyError.cause?.toString() || "unknown",
-          status: e.response?.status || 500,
-          message: shopifyError.message,
-          query,
-        };
-      }
-      throw {
-        cause: e.message,
-        status: e.response?.status || 500,
-        message: e.response?.data?.message || e.message,
-        query,
-      };
-    }
 
     if (isShopifyError(e)) {
       throw {
-        cause: e.cause?.toString() || "unknown",
-        status: e.status || 500,
+        cause: e.cause?.toString() ?? "unknown",
+        status: e.status ?? 500,
         message: e.message,
         query,
       };
     }
 
-    throw {
-      error: e,
-      query,
-    };
+    throw { error: e, query };
   }
 }
 

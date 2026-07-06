@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useEffect, useRef, useState } from "react";
+import { Fragment, useEffect } from "react";
 import {
   Dialog,
   DialogPanel,
@@ -16,12 +16,7 @@ import { OpenCart } from "../OpenCart";
 import { CartModalContent } from "./CartModalContent";
 
 export const CartModal = () => {
-  const { cart } = useCart();
-  const [isOpen, setIsOpen] = useState(false);
-  const prevQuantityRef = useRef(cart?.totalQuantity);
-
-  const openCart = () => setIsOpen(true);
-  const closeCart = () => setIsOpen(false);
+  const { cart, isCartOpen, openCart, closeCart } = useCart();
 
   useEffect(() => {
     if (!cart) {
@@ -29,28 +24,20 @@ export const CartModal = () => {
     }
   }, [cart]);
 
-  const qty = cart?.totalQuantity;
-  if (qty && qty > 0 && qty !== prevQuantityRef.current) {
-    prevQuantityRef.current = qty;
-    if (!isOpen) {
-      setIsOpen(true);
-    }
-  }
-
   return (
     <>
       <button aria-label="Open cart" onClick={openCart}>
         <OpenCart quantity={cart?.totalQuantity} />
       </button>
 
-      <Transition show={isOpen}>
+      <Transition show={isCartOpen}>
         <Dialog onClose={closeCart} className="relative z-50">
           <TransitionChild
             as={Fragment}
-            enter="transition-all ease-in-out duration-300"
+            enter="transition-all ease-out duration-150"
             enterFrom="opacity-0 backdrop-blur-none"
             enterTo="opacity-100 backdrop-blur-[.5px]"
-            leave="transition-all ease-in-out duration-200"
+            leave="transition-all ease-in duration-150"
             leaveFrom="opacity-100 backdrop-blur-[.5px]"
             leaveTo="opacity-0 backdrop-blur-none"
           >
@@ -58,10 +45,10 @@ export const CartModal = () => {
           </TransitionChild>
           <TransitionChild
             as={Fragment}
-            enter="transition-all ease-in-out duration-300"
+            enter="transition-all ease-out duration-200"
             enterFrom="translate-x-full"
             enterTo="translate-x-0"
-            leave="transition-all ease-in-out duration-200"
+            leave="transition-all ease-in duration-150"
             leaveFrom="translate-x-0"
             leaveTo="translate-x-full"
           >

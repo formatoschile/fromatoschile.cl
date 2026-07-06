@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useActionState } from "react";
+import React, { useTransition } from "react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 
 import type { CartItem } from "@/lib/shopify/types";
@@ -17,27 +17,26 @@ export const DeleteItemButton: React.FC<DeleteItemButtonProps> = ({
   item,
   optimisticUpdate,
 }) => {
-  const [message, formAction] = useActionState(removeItem, null);
+  const [isPending, startTransition] = useTransition();
   const merchandiseId = item.merchandise.id;
-  const removeItemAction = formAction.bind(null, merchandiseId);
+
+  const handleClick = () => {
+    optimisticUpdate(merchandiseId, "delete");
+
+    startTransition(async () => {
+      await removeItem(null, merchandiseId);
+    });
+  };
 
   return (
-    <form
-      action={async () => {
-        optimisticUpdate(merchandiseId, "delete");
-        removeItemAction();
-      }}
+    <button
+      type="button"
+      disabled={isPending}
+      aria-label="Remove cart item"
+      onClick={handleClick}
+      className="flex h-[24px] w-[24px] items-center justify-center rounded-full bg-neutral-500 disabled:cursor-wait disabled:opacity-60"
     >
-      <button
-        type="submit"
-        aria-label="Remove cart item"
-        className="flex h-[24px] w-[24px] items-center justify-center rounded-full bg-neutral-500"
-      >
-        <XMarkIcon className="mx-[1px] h-4 w-4 text-white dark:text-black" />
-      </button>
-      <p aria-live="polite" className="sr-only" role="status">
-        {message}
-      </p>
-    </form>
+      <XMarkIcon className="mx-px h-4 w-4 text-white dark:text-black" />
+    </button>
   );
 };

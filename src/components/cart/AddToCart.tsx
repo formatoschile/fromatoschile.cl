@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useActionState } from "react";
+import React, { useTransition } from "react";
 import { PlusIcon } from "@heroicons/react/24/outline";
 import clsx from "clsx";
 
@@ -18,46 +18,53 @@ export const AddToCart: React.FC<AddToCartProps> = ({ product }) => {
   const { variants, availableForSale } = product;
   const { addCartItem } = useCart();
   const { state } = useProduct();
-  const [message, formAction] = useActionState(addItem, null);
+  const [isPending, startTransition] = useTransition();
 
   const variant = variants.find((variant: ProductVariant) =>
     variant.selectedOptions.every(
-      (option) => option.value === state[option.name.toLowerCase()]
-    )
+      (option) => option.value === state[option.name.toLowerCase()],
+    ),
   );
   const defaultVariantId = variants.length === 1 ? variants[0]?.id : undefined;
   const selectedVariantId = variant?.id || defaultVariantId;
-  const addItemAction = formAction.bind(null, selectedVariantId);
   const finalVariant = variants.find(
-    (variant) => variant.id === selectedVariantId
-  )!;
+    (variant) => variant.id === selectedVariantId,
+  );
+
+  const handleAddToCart = () => {
+    if (!finalVariant) {
+      return;
+    }
+
+    addCartItem(finalVariant, product);
+
+    startTransition(async () => {
+      await addItem(null, selectedVariantId);
+    });
+  };
 
   return (
-    <form
-      action={async () => {
-        addCartItem(finalVariant, product);
-        addItemAction();
-      }}
-    >
-      <SubmitButton
-        availableForSale={availableForSale}
-        selectedVariantId={selectedVariantId}
-      />
-      <p aria-live="polite" className="sr-only" role="status">
-        {message}
-      </p>
-    </form>
+    <SubmitButton
+      availableForSale={availableForSale}
+      isPending={isPending}
+      selectedVariantId={selectedVariantId}
+      onClick={handleAddToCart}
+    />
   );
 };
 
 interface SubmitButtonProps {
   availableForSale: boolean;
+  isPending: boolean;
   selectedVariantId: string | undefined;
+  onClick: () => void;
 }
 
 const SubmitButton: React.FC<SubmitButtonProps> = ({
   availableForSale,
+  isPending,
   selectedVariantId,
+  onClick,
 }) => {
   const buttonClasses =
     "relative flex w-full items-center justify-center rounded-full bg-blue-600 p-4 tracking-wide text-white";
@@ -88,9 +95,13 @@ const SubmitButton: React.FC<SubmitButtonProps> = ({
 
   return (
     <button
+      type="button"
       aria-label="Aggiungi al carrello"
+      disabled={isPending}
+      onClick={onClick}
       className={clsx(buttonClasses, {
-        "hover:opacity-90": true,
+        "hover:opacity-90": !isPending,
+        "cursor-wait opacity-60": isPending,
       })}
     >
       <div className="absolute left-0 ml-4">
