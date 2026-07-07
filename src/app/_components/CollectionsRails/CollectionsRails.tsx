@@ -22,8 +22,7 @@ export const CollectionsRails = async () => {
             collection: collection.handle,
           });
           image = products[0]?.featuredImage;
-        } catch (error) {
-          console.error(error as Error);
+        } catch {
           // Silently fail if products can't be fetched
         }
       }

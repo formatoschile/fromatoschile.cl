@@ -30,7 +30,7 @@ const SubmitButton: React.FC<SubmitButtonProps> = ({
         {
           "ml-auto": type === "minus",
           "cursor-wait opacity-60": isPending,
-        },
+        }
       )}
       onClick={onClick}
     >
@@ -69,5 +69,7 @@ export const EditItemQuantityButton: React.FC<EditItemQuantityButtonProps> = ({
     });
   };
 
-  return <SubmitButton type={type} isPending={isPending} onClick={handleClick} />;
+  return (
+    <SubmitButton type={type} isPending={isPending} onClick={handleClick} />
+  );
 };

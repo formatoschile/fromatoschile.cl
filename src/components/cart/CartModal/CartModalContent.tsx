@@ -32,7 +32,7 @@ export const CartModalContent: React.FC<CartModalContentProps> = ({
   }
 
   const sortedLines = cart.lines.sort((a, b) =>
-    a.merchandise.product.title.localeCompare(b.merchandise.product.title),
+    a.merchandise.product.title.localeCompare(b.merchandise.product.title)
   );
 
   return (

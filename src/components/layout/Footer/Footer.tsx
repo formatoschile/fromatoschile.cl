@@ -83,7 +83,7 @@ export const Footer = () => {
             <Link href="/" className="block">
               <Image
                 src="/logo/logo_white_2xl.png"
-                alt="Insulti Luminosi"
+                alt="Formatos Chile"
                 width={100}
                 height={100}
                 className="h-auto w-48 lg:w-48"

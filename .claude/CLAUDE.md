@@ -1,4 +1,4 @@
-# Project: Insulti Luminosi e-commerce
+# Project: Formatos Chile e-commerce
 
 This is a Next.js 16 e-commerce application with App Router, Shopify Headless, Taiwlwind.
 
