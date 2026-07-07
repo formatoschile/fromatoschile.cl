@@ -1,5 +1,5 @@
 import { ReactNode, Suspense } from "react";
-import { Jost } from "next/font/google";
+import { Barlow_Semi_Condensed, DM_Sans, Jost } from "next/font/google";
 import { Toaster } from "sonner";
 
 import { CartProvider } from "@/components/cart/CartContext";
@@ -14,6 +14,18 @@ const jost = Jost({
   subsets: ["latin"],
   variable: "--font-jost",
   weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
+});
+
+// Web fallback for "Avenir Next Condensed" (a macOS-only system font).
+const barlowCondensed = Barlow_Semi_Condensed({
+  subsets: ["latin"],
+  variable: "--font-barlow-condensed",
+  weight: ["300", "400", "500", "600", "700"],
+});
+
+const dmSans = DM_Sans({
+  subsets: ["latin"],
+  variable: "--font-dm-sans",
 });
 
 const { SITE_NAME } = process.env;
@@ -39,7 +51,10 @@ export default async function RootLayout({
   const cart = getCart();
 
   return (
-    <html lang="it" className={`${jost.variable} dark`}>
+    <html
+      lang="it"
+      className={`${jost.variable} ${barlowCondensed.variable} ${dmSans.variable} dark`}
+    >
       <body className="font-main">
         <CartProvider cartPromise={cart}>
           <Suspense>

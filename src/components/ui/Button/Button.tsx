@@ -23,7 +23,7 @@ export const Button: React.FC<ButtonProps> = ({
       className={classNames(
         "cursor-pointer inline-block rounded-full px-6 py-2 text-white transition-all hover:scale-105 hover:brightness-110",
         {
-          "bg-primary": variant === "primary",
+          "bg-brand-primary": variant === "primary",
           "bg-accent": variant === "accent",
         },
         className

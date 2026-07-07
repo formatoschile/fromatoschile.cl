@@ -13,7 +13,7 @@ export const CollectionCard: React.FC<CollectionCardProps> = ({
   image,
 }) => (
   <Link
-    href={collection.path as "/search"}
+    href={collection.path as "/todos-los-documentos"}
     className="z-10 group shrink-0 transition-transform duration-300"
   >
     <div className="relative w-[230px] overflow-hidden shadow-xl md:w-[280px]">

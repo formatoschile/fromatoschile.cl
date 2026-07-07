@@ -92,7 +92,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
 
           {/* Bottom row: button and rating */}
           <div className="flex items-center justify-between pt-2">
-            <span className="bg-primary hover:bg-primary/80 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors duration-200">
+            <span className="bg-brand-primary hover:bg-brand-primary/80 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors duration-200">
               Scopri di più
             </span>
 

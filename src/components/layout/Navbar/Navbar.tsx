@@ -1,76 +1,56 @@
 "use client";
 
 import { Suspense } from "react";
-import { MagnifyingGlassIcon, UserIcon } from "@heroicons/react/24/outline";
 import Image from "next/image";
 import Link from "next/link";
 
 import { CartModal } from "@/components/cart/CartModal/CartModal";
 import { OpenCart } from "@/components/cart/OpenCart";
-// import { getMenu } from "@/lib/shopify";
-import { Menu } from "@/lib/shopify/types";
 
-import logoWhite from "../../../../public/logo/logo_white.png";
-
-import { MobileMenu } from "./MobileMenu";
-
-// Default menu items matching the design
-const defaultMenuItems: Menu[] = [{ title: "Collections", path: "/search" }];
+import logoGreen from "../../../../public/logo/logo_green_small.png";
 
 export const Navbar = () => {
-  const menu = defaultMenuItems;
-
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-center py-4">
-      <div className="flex items-center justify-between w-full px-16">
-        {/* Mobile Menu - Left Side */}
-        <div className="absolute left-4 block md:hidden">
-          <Suspense fallback={null}>
-            <MobileMenu menu={menu} />
-          </Suspense>
-        </div>
-
-        {/* Logo - Left Side */}
+    <nav className="fixed left-0 right-0 top-0 z-50 bg-primary/80 backdrop-blur-sm">
+      <div className="grid grid-cols-2 items-center px-6 py-5 md:grid-cols-3 md:px-12">
+        {/* Logo — left */}
         <Link
           href="/"
-          className="cursor-pointer transition-transform duration-300 ease-in-out"
+          className="justify-self-start transition-transform duration-300 ease-in-out hover:opacity-80"
         >
           <Image
-            src={logoWhite}
-            alt="Logo"
-            className="object-contain"
-            width={80}
-            height={80}
+            src={logoGreen}
+            alt="Formatos Chile"
+            priority
+            className="h-7 w-auto object-contain"
           />
         </Link>
 
-        {/* Right Side Icons */}
-        <div className="flex items-center gap-3 transition-transform duration-300 ease-in-out">
-          {/* Search Icon */}
-          <Link
-            href="/search"
-            className="flex h-10 w-10 items-center justify-center text-neutral-400 hover:text-white transition-colors"
-          >
-            <MagnifyingGlassIcon className="h-5 w-5" />
-          </Link>
+        {/* Primary link — center */}
+        <Link
+          href="/todos-los-documentos"
+          className="hidden justify-self-center text-xs uppercase tracking-[0.25em] text-brand-ink transition-colors hover:text-brand-ink/70 md:block"
+        >
+          Todos los documentos
+        </Link>
 
-          {/* User Icon */}
+        {/* Account + cart — right */}
+        <div className="flex items-center justify-end gap-6 justify-self-end">
           <Link
             href="/account"
-            className="flex h-10 w-10 items-center justify-center text-neutral-400 hover:text-white transition-colors"
+            className="hidden text-sm text-brand-ink transition-colors hover:text-brand-ink/70 sm:block"
           >
-            <UserIcon className="h-5 w-5" />
+            Mi Cuenta
           </Link>
 
-          {/* Cart */}
           <Suspense
             fallback={
               <button aria-label="Open cart">
-                <OpenCart quantity={0} />
+                <OpenCart quantity={0} className="text-brand-ink" />
               </button>
             }
           >
-            <CartModal />
+            <CartModal iconClassName="text-brand-ink" />
           </Suspense>
         </div>
       </div>

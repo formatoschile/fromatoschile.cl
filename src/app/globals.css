@@ -5,7 +5,12 @@
 
 @theme {
   --font-main: var(--font-jost);
-  --color-primary: #504bff;
+  --font-condensed:
+    "Avenir Next Condensed", var(--font-barlow-condensed), "Arial Narrow",
+    ui-sans-serif, sans-serif;
+  --color-brand-ink: #0c3b30;
+  /* Brand mint — primary surface/accent color */
+  --color-primary: #d7f3cc;
   --color-secondary: #9693ff;
   --color-tertiary: #d7ccf6;
   --color-accent: #ff66c4;

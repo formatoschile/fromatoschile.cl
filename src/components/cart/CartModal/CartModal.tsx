@@ -15,7 +15,11 @@ import { OpenCart } from "../OpenCart";
 
 import { CartModalContent } from "./CartModalContent";
 
-export const CartModal = () => {
+interface CartModalProps {
+  iconClassName?: string;
+}
+
+export const CartModal: React.FC<CartModalProps> = ({ iconClassName }) => {
   const { cart, isCartOpen, openCart, closeCart } = useCart();
 
   useEffect(() => {
@@ -27,7 +31,7 @@ export const CartModal = () => {
   return (
     <>
       <button aria-label="Open cart" onClick={openCart}>
-        <OpenCart quantity={cart?.totalQuantity} />
+        <OpenCart quantity={cart?.totalQuantity} className={iconClassName} />
       </button>
 
       <Transition show={isCartOpen}>
@@ -52,7 +56,7 @@ export const CartModal = () => {
             leaveFrom="translate-x-0"
             leaveTo="translate-x-full"
           >
-            <DialogPanel className="fixed bottom-0 right-0 top-0 flex h-full w-full flex-col border-l border-brand-secondary bg-primary/90 p-6 text-white backdrop-blur-xl md:w-[390px]">
+            <DialogPanel className="fixed bottom-0 right-0 top-0 flex h-full w-full flex-col border-l border-brand-secondary bg-brand-primary/90 p-6 text-white backdrop-blur-xl md:w-[390px]">
               <div className="flex items-center justify-between">
                 <p className="text-lg font-semibold">Il tuo carrello</p>
                 <button

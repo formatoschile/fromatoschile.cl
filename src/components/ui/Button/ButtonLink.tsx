@@ -20,7 +20,7 @@ export const ButtonLink: React.FC<ButtonLinkProps> = ({
       {...props}
       href={href}
       className={classNames(
-        "inline-block rounded-full bg-primary px-6 py-2 text-white transition-all hover:scale-105 hover:brightness-110",
+        "inline-block rounded-full bg-brand-primary px-6 py-2 text-white transition-all hover:scale-105 hover:brightness-110",
         className
       )}
     >

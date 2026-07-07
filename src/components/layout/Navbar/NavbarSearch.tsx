@@ -9,7 +9,7 @@ export const NavbarSearch = () => {
 
   return (
     <Form
-      action="/search"
+      action="/todos-los-documentos"
       className="w-max-[550px] relative w-full lg:w-80 xl:w-full"
     >
       <input
