@@ -2,10 +2,10 @@
 
 import React, { useTransition } from "react";
 import { PlusIcon } from "@heroicons/react/24/outline";
-import clsx from "clsx";
 
 import { useProduct } from "@/components/product/ProductContext";
 import { Product, ProductVariant } from "@/lib/shopify/types";
+import { classNames } from "@/lib/utils/classNames";
 
 import { addItem } from "./actions";
 import { useCart } from "./CartContext";
@@ -36,9 +36,8 @@ export const AddToCart: React.FC<AddToCartProps> = ({ product }) => {
       return;
     }
 
-    addCartItem(finalVariant, product);
-
     startTransition(async () => {
+      addCartItem(finalVariant, product);
       await addItem(null, selectedVariantId);
     });
   };
@@ -72,8 +71,8 @@ const SubmitButton: React.FC<SubmitButtonProps> = ({
 
   if (!availableForSale) {
     return (
-      <button disabled className={clsx(buttonClasses, disabledClasses)}>
-        Out Of Stock
+      <button disabled className={classNames(buttonClasses, disabledClasses)}>
+        No disponible
       </button>
     );
   }
@@ -81,14 +80,14 @@ const SubmitButton: React.FC<SubmitButtonProps> = ({
   if (!selectedVariantId) {
     return (
       <button
-        aria-label="Please select an option"
+        aria-label="Selecciona una opción"
         disabled
-        className={clsx(buttonClasses, disabledClasses)}
+        className={classNames(buttonClasses, disabledClasses)}
       >
         <div className="absolute left-0 ml-4">
           <PlusIcon className="h-5" />
         </div>
-        Aggiungi al carrello
+        Agregar al carrito
       </button>
     );
   }
@@ -96,10 +95,10 @@ const SubmitButton: React.FC<SubmitButtonProps> = ({
   return (
     <button
       type="button"
-      aria-label="Aggiungi al carrello"
+      aria-label="Agregar al carrito"
       disabled={isPending}
       onClick={onClick}
-      className={clsx(buttonClasses, {
+      className={classNames(buttonClasses, {
         "hover:opacity-90": !isPending,
         "cursor-wait opacity-60": isPending,
       })}
@@ -107,7 +106,7 @@ const SubmitButton: React.FC<SubmitButtonProps> = ({
       <div className="absolute left-0 ml-4">
         <PlusIcon className="h-5" />
       </div>
-      Aggiungi al carrello
+      Agregar al carrito
     </button>
   );
 };

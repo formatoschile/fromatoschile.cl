@@ -1,8 +1,8 @@
-import React from "react";
 import Link from "next/link";
+import React from "react";
 
-import { Grid } from "@/components/Grid/Grid";
-import { GridTileImage } from "@/components/Grid/GridTile";
+import { Grid } from "@/components/ui/Grid/Grid";
+import { GridTileImage } from "@/components/ui/Grid/GridTile";
 import { Product } from "@/lib/shopify/types";
 
 interface ProductGridItemsProps {
@@ -15,7 +15,7 @@ export const ProductGridItems: React.FC<ProductGridItemsProps> = ({
   return (
     <>
       {products.map((product) => (
-        <Grid.Item key={product.handle} className="animate-fadeIn">
+        <Grid.Item key={product.handle}>
           <Link
             className="relative inline-block h-full w-full"
             href={`/product/${product.handle}`}

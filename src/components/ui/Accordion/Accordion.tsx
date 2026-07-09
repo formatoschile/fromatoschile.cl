@@ -7,41 +7,23 @@ import {
 } from "@headlessui/react";
 import { motion } from "motion/react";
 
-import { itemVariants } from "@/lib/animations";
-import { classNames } from "@/lib/classNames";
+import { itemVariants } from "@/lib/utils/animations";
 
 import { MinusIcon } from "../../icons/Minus";
 import { PlusIcon } from "../../icons/Plus";
 
 interface Entry {
   title: string;
-  description: string | React.ReactNode;
+  description: React.ReactNode;
 }
 
 interface AccordionProps {
   entries: Entry[];
-  fixedSize?: boolean;
-  showNumbers?: boolean;
-  fullSizeText?: boolean;
-  onHoverStart?: (index: number) => void;
-  onHoverEnd?: (index: number) => void;
 }
 
-export const Accordion: React.FC<AccordionProps> = ({
-  entries,
-  fixedSize = true,
-  showNumbers = true,
-  fullSizeText = false,
-  onHoverStart,
-  onHoverEnd,
-}) => {
+export const Accordion: React.FC<AccordionProps> = ({ entries }) => {
   return (
-    <div
-      className={classNames("mx-auto", {
-        "lg:w-6xl 2xl:w-7xl px-6": fixedSize,
-        "w-full": !fixedSize,
-      })}
-    >
+    <div className="mx-auto w-full">
       <dl className="mt-16">
         {entries.map((entry, i) => (
           <Disclosure
@@ -49,19 +31,13 @@ export const Accordion: React.FC<AccordionProps> = ({
             as={motion.div}
             variants={itemVariants}
             className="border-t last:border-b border-gray-900 first:pt-0 last:pb-0"
-            onHoverStart={() => onHoverStart?.(i)}
-            onHoverEnd={() => onHoverEnd?.(i)}
           >
             {({ open }) => (
               <>
                 <motion.dt variants={itemVariants}>
                   <DisclosureButton className="group flex w-full items-start justify-between text-left text-gray-900 cursor-pointer pl-1 py-6">
-                    <span
-                      className={classNames(
-                        "transition-all delay-300 duration-75 md:text-lg"
-                      )}
-                    >
-                      {showNumbers ? `${i + 1}.` : ""} {entry.title}
+                    <span className="transition-all delay-300 duration-75 md:text-lg">
+                      {i + 1}. {entry.title}
                     </span>
                     <span className="flex h-7 justify-center items-center mr-4">
                       <PlusIcon
@@ -84,28 +60,10 @@ export const Accordion: React.FC<AccordionProps> = ({
                     open: { height: "auto", opacity: 1 },
                     collapsed: { height: 0, opacity: 0 },
                   }}
-                  className={classNames(
-                    "overflow-hidden md:pr-12 border-t border-gray-900",
-                    {
-                      "md:pr-0": fullSizeText,
-                    }
-                  )}
+                  className="overflow-hidden md:pr-12 border-t border-gray-900"
                 >
-                  <div
-                    className={classNames("py-0", {
-                      "lg:w-4/5": !fullSizeText,
-                      "w-full": fullSizeText,
-                    })}
-                  >
-                    <div
-                      className={classNames(
-                        "pb-12 pt-12 text-base/7 text-black/50 leading-6",
-                        {
-                          "md:pl-7 ": !fullSizeText,
-                          "pl-0": fullSizeText,
-                        }
-                      )}
-                    >
+                  <div className="lg:w-4/5">
+                    <div className="pb-12 pt-12 text-base/7 text-black/50 leading-6 md:pl-7">
                       {entry.description}
                     </div>
                   </div>

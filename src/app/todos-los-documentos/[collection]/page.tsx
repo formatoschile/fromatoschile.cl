@@ -1,10 +1,10 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 
-import { Grid } from "@/components/Grid/Grid";
 import { ProductGridItems } from "@/components/layout/ProductGridItems";
-import { defaultSort, sorting } from "@/lib/constants";
+import { Grid } from "@/components/ui/Grid/Grid";
 import { getCollection, getCollectionProducts } from "@/lib/shopify";
+import { defaultSort, sorting } from "@/lib/utils/constants";
 
 export async function generateMetadata(props: {
   params: Promise<{ collection: string }>;
@@ -41,7 +41,7 @@ export default async function CategoryPage(props: {
   return (
     <section>
       {products.length === 0 ? (
-        <p className="py-3 text-lg">{`No products found in this collection`}</p>
+        <p className="py-3 text-lg">No hay documentos en esta colección.</p>
       ) : (
         <Grid className="grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           <ProductGridItems products={products} />

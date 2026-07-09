@@ -2,10 +2,11 @@
 
 import React, { useTransition } from "react";
 import { MinusIcon, PlusIcon } from "@heroicons/react/24/outline";
-import clsx from "clsx";
 
 import { updateItemQuantity } from "@/components/cart/actions";
+import type { UpdateType } from "@/components/cart/CartContext";
 import type { CartItem } from "@/lib/shopify/types";
+import { classNames } from "@/lib/utils/classNames";
 
 interface SubmitButtonProps {
   type: "plus" | "minus";
@@ -22,11 +23,9 @@ const SubmitButton: React.FC<SubmitButtonProps> = ({
     <button
       type="button"
       disabled={isPending}
-      aria-label={
-        type === "plus" ? "Increase item quantity" : "Reduce item quantity"
-      }
-      className={clsx(
-        "cursor-pointer ease flex h-full min-w-[36px] max-w-[36px] flex-none items-center justify-center rounded-full p-2 transition-all duration-200 hover:border-neutral-800 hover:opacity-80",
+      aria-label={type === "plus" ? "Aumentar cantidad" : "Reducir cantidad"}
+      className={classNames(
+        "cursor-pointer ease flex h-full w-9 flex-none items-center justify-center rounded-full p-2 transition-all duration-200 hover:border-neutral-800 hover:opacity-80",
         {
           "ml-auto": type === "minus",
           "cursor-wait opacity-60": isPending,
@@ -35,9 +34,9 @@ const SubmitButton: React.FC<SubmitButtonProps> = ({
       onClick={onClick}
     >
       {type === "plus" ? (
-        <PlusIcon className="h-4 w-4 dark:text-neutral-500" />
+        <PlusIcon className="h-4 w-4" />
       ) : (
-        <MinusIcon className="h-4 w-4 dark:text-neutral-500" />
+        <MinusIcon className="h-4 w-4" />
       )}
     </button>
   );
@@ -46,8 +45,7 @@ const SubmitButton: React.FC<SubmitButtonProps> = ({
 interface EditItemQuantityButtonProps {
   item: CartItem;
   type: "plus" | "minus";
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  optimisticUpdate: any;
+  optimisticUpdate: (merchandiseId: string, updateType: UpdateType) => void;
 }
 
 export const EditItemQuantityButton: React.FC<EditItemQuantityButtonProps> = ({
@@ -57,14 +55,14 @@ export const EditItemQuantityButton: React.FC<EditItemQuantityButtonProps> = ({
 }) => {
   const [isPending, startTransition] = useTransition();
   const payload = {
+    lineId: item.id,
     merchandiseId: item.merchandise.id,
     quantity: type === "plus" ? item.quantity + 1 : item.quantity - 1,
   };
 
   const handleClick = () => {
-    optimisticUpdate(payload.merchandiseId, type);
-
     startTransition(async () => {
+      optimisticUpdate(payload.merchandiseId, type);
       await updateItemQuantity(null, payload);
     });
   };

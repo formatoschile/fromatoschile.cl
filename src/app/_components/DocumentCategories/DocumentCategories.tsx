@@ -1,69 +1,34 @@
-import type { Route } from "next";
 import Link from "next/link";
 
-import { classNames } from "@/lib/classNames";
+import { CategoryPill } from "@/components/ui/CategoryPill/CategoryPill";
+import { getProducts } from "@/lib/shopify";
+
+// Marketing copy per category (Shopify product type). Categories without an
+// entry still render — counts always come from the live catalog.
+const CATEGORY_DESCRIPTIONS: Record<string, string> = {
+  Laboral: "Contratos de trabajo, confidencialidad, finiquitos",
+  Inmobiliario: "Arrendamiento, compraventa, opciones de compra",
+  Sociedades: "Constitución, pactos sociales, acuerdos",
+  Comercial: "Compraventa, distribución, servicios",
+  Civil: "Préstamos, donaciones, poderes",
+  Legal: "Reclamaciones, acuerdos extrajudiciales",
+  Mercantil: "Joint ventures, acuerdos de inversión",
+};
 
 interface Category {
   label: string;
-  tagClassName: string;
   description: string;
   count: number;
-  href: Route;
 }
 
-const categories: Category[] = [
-  {
-    label: "Commercial",
-    tagClassName: "bg-purple-200 text-purple-800",
-    description: "Contratos de trabajo, confidencialidad, finiquitos",
-    count: 15,
-    href: "/todos-los-documentos",
-  },
-  {
-    label: "Civil",
-    tagClassName: "bg-teal-200 text-teal-800",
-    description: "Arrendamiento, compraventa, opciones de compra",
-    count: 12,
-    href: "/todos-los-documentos",
-  },
-  {
-    label: "Laboral",
-    tagClassName: "bg-rose-200 text-rose-800",
-    description: "Constitución, pactos sociales, acuerdos",
-    count: 18,
-    href: "/todos-los-documentos",
-  },
-  {
-    label: "Comercial",
-    tagClassName: "bg-amber-200 text-amber-800",
-    description: "Compraventa, distribución, servicios",
-    count: 20,
-    href: "/todos-los-documentos",
-  },
-  {
-    label: "Civil",
-    tagClassName: "bg-yellow-200 text-yellow-800",
-    description: "Préstamos, donaciones, poderes",
-    count: 15,
-    href: "/todos-los-documentos",
-  },
-  {
-    label: "Legal",
-    tagClassName: "bg-green-300 text-green-900",
-    description: "Reclamaciones, acuerdos extrajudiciales",
-    count: 15,
-    href: "/todos-los-documentos",
-  },
-  {
-    label: "Mercantil",
-    tagClassName: "bg-violet-200 text-violet-800",
-    description: "Joint ventures, acuerdos de inversión",
-    count: 10,
-    href: "/todos-los-documentos",
-  },
-];
+export const DocumentCategories = async () => {
+  const products = await getProducts({});
+  const categories = getCategories(products.map((p) => p.productType));
 
-export const DocumentCategories = () => {
+  if (categories.length === 0) {
+    return null;
+  }
+
   return (
     <section className="px-4 py-16 sm:px-12">
       <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-end">
@@ -79,8 +44,8 @@ export const DocumentCategories = () => {
       </div>
 
       <div className="mt-10 flex gap-5 overflow-x-auto pb-4">
-        {categories.map((category, index) => (
-          <CategoryCard key={`${category.label}-${index}`} category={category} />
+        {categories.map((category) => (
+          <CategoryCard key={category.label} category={category} />
         ))}
       </div>
     </section>
@@ -92,25 +57,21 @@ interface CategoryCardProps {
 }
 
 const CategoryCard: React.FC<CategoryCardProps> = ({ category }) => {
-  const { label, tagClassName, description, count, href } = category;
+  const { label, description, count } = category;
 
   return (
     <div className="flex min-h-40 w-64 shrink-0 flex-col justify-between rounded-xl bg-white p-6 shadow-sm">
       <div>
-        <span
-          className={classNames(
-            "inline-block rounded px-2 py-1 text-[10px] font-semibold uppercase tracking-widest",
-            tagClassName
-          )}
-        >
-          {label}
-        </span>
+        <CategoryPill category={label} />
 
         <p className="mt-4 text-sm text-neutral-600">{description}</p>
       </div>
 
       <Link
-        href={href}
+        href={{
+          pathname: "/todos-los-documentos",
+          query: { categoria: label },
+        }}
         className="mt-6 text-sm font-medium text-neutral-800 underline underline-offset-4 hover:text-neutral-950"
       >
         ver {count} documentos
@@ -118,3 +79,18 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category }) => {
     </div>
   );
 };
+
+function getCategories(productTypes: string[]): Category[] {
+  const counts = new Map<string, number>();
+
+  for (const productType of productTypes) {
+    const label = productType || "General";
+    counts.set(label, (counts.get(label) ?? 0) + 1);
+  }
+
+  return Array.from(counts, ([label, count]) => ({
+    label,
+    count,
+    description: CATEGORY_DESCRIPTIONS[label] ?? "",
+  }));
+}

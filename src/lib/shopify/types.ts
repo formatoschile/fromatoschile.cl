@@ -16,7 +16,7 @@ export type CartProduct = {
   id: string;
   handle: string;
   title: string;
-  featuredImage: Image;
+  featuredImage: Image | null;
 };
 
 export type CartItem = {
@@ -48,11 +48,6 @@ export type Image = {
   height: number;
 };
 
-export type Menu = {
-  title: string;
-  path: string;
-};
-
 export type Money = {
   amount: string;
   currencyCode: string;
@@ -72,6 +67,11 @@ export type Page = {
 export type Product = Omit<ShopifyProduct, "variants" | "images"> & {
   variants: ProductVariant[];
   images: Image[];
+};
+
+/** Slim listing model backed by the `productCard` fragment. */
+export type ProductCard = Omit<ShopifyProductCard, "variants"> & {
+  variants: ProductVariant[];
 };
 
 export type ProductOption = {
@@ -133,9 +133,33 @@ export type ShopifyProduct = {
   featuredImage: Image;
   images: Connection<Image>;
   seo: SEO;
+  productType: string;
+  previewPdf: ProductPreviewPdf;
   tags: string[];
   updatedAt: string;
 };
+
+export type ShopifyProductCard = {
+  id: string;
+  handle: string;
+  title: string;
+  productType: string;
+  tags: string[];
+  updatedAt: string;
+  priceRange: {
+    minVariantPrice: Money;
+  };
+  featuredImage: Image | null;
+  variants: Connection<ProductVariant>;
+  previewPdf: ProductPreviewPdf;
+};
+
+export type ProductPreviewPdf = {
+  reference: {
+    url: string;
+    mimeType: string;
+  } | null;
+} | null;
 
 export type ShopifyCartOperation = {
   data: {
@@ -148,6 +172,9 @@ export type ShopifyCartOperation = {
 
 export type ShopifyCreateCartOperation = {
   data: { cartCreate: { cart: ShopifyCart } };
+  variables: {
+    lineItems?: { merchandiseId: string; quantity: number }[];
+  };
 };
 
 export type CartLineAttribute = {
@@ -227,20 +254,6 @@ export type ShopifyCollectionsOperation = {
   };
 };
 
-export type ShopifyMenuOperation = {
-  data: {
-    menu?: {
-      items: {
-        title: string;
-        url: string;
-      }[];
-    };
-  };
-  variables: {
-    handle: string;
-  };
-};
-
 export type ShopifyPageOperation = {
   data: { pageByHandle: Page };
   variables: { handle: string };
@@ -277,7 +290,7 @@ export type ShopifyProductRecommendationsOperation = {
 
 export type ShopifyProductsOperation = {
   data: {
-    products: Connection<ShopifyProduct>;
+    products: Connection<ShopifyProductCard>;
   };
   variables: {
     query?: string;

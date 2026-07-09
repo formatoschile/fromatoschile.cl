@@ -1,6 +1,58 @@
 import imageFragment from "./image";
 import seoFragment from "./seo";
 
+/**
+ * Slim fragment for product listings (catalog cards, sitemap). The full
+ * `product` fragment below pulls variants/images/descriptionHtml and should
+ * only back the product detail page.
+ */
+export const productCardFragment = /* GraphQL */ `
+  fragment productCard on Product {
+    id
+    handle
+    title
+    productType
+    tags
+    updatedAt
+    priceRange {
+      minVariantPrice {
+        amount
+        currencyCode
+      }
+    }
+    featuredImage {
+      ...image
+    }
+    # Full first-variant details so listings can add to cart optimistically.
+    variants(first: 1) {
+      edges {
+        node {
+          id
+          title
+          availableForSale
+          selectedOptions {
+            name
+            value
+          }
+          price {
+            amount
+            currencyCode
+          }
+        }
+      }
+    }
+    previewPdf: metafield(namespace: "custom", key: "previewPdf") {
+      reference {
+        ... on GenericFile {
+          url
+          mimeType
+        }
+      }
+    }
+  }
+  ${imageFragment}
+`;
+
 const productFragment = /* GraphQL */ `
   fragment product on Product {
     id
@@ -53,6 +105,15 @@ const productFragment = /* GraphQL */ `
     }
     seo {
       ...seo
+    }
+    productType
+    previewPdf: metafield(namespace: "custom", key: "previewPdf") {
+      reference {
+        ... on GenericFile {
+          url
+          mimeType
+        }
+      }
     }
     tags
     updatedAt

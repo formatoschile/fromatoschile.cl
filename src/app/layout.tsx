@@ -1,12 +1,12 @@
 import { ReactNode, Suspense } from "react";
 import { Barlow_Semi_Condensed, DM_Sans, Jost } from "next/font/google";
-import { Toaster } from "sonner";
 
 import { CartProvider } from "@/components/cart/CartContext";
 import { Footer } from "@/components/layout/Footer/Footer";
 import { Navbar } from "@/components/layout/Navbar/Navbar";
 import { getCart } from "@/lib/shopify";
 import { baseUrl } from "@/lib/utils";
+import { env } from "@/lib/utils/env";
 
 import "./globals.css";
 
@@ -28,13 +28,11 @@ const dmSans = DM_Sans({
   variable: "--font-dm-sans",
 });
 
-const { SITE_NAME } = process.env;
-
 export const metadata = {
   metadataBase: new URL(baseUrl),
   title: {
-    default: SITE_NAME!,
-    template: `%s | ${SITE_NAME}`,
+    default: env.SITE_NAME,
+    template: `%s | ${env.SITE_NAME}`,
   },
   robots: {
     follow: true,
@@ -52,8 +50,8 @@ export default async function RootLayout({
 
   return (
     <html
-      lang="it"
-      className={`${jost.variable} ${barlowCondensed.variable} ${dmSans.variable} dark`}
+      lang="es"
+      className={`${jost.variable} ${barlowCondensed.variable} ${dmSans.variable}`}
     >
       <body className="font-main">
         <CartProvider cartPromise={cart}>
@@ -63,7 +61,6 @@ export default async function RootLayout({
 
           <main>
             <Suspense>{children}</Suspense>
-            <Toaster closeButton />
           </main>
 
           <Footer />

@@ -1,12 +1,12 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import { Price } from "@/components/Price";
-import { DEFAULT_OPTION } from "@/lib/constants";
+import { Price } from "@/components/ui/Price";
 import { CartItem as CartItemType } from "@/lib/shopify/types";
 import { createUrl } from "@/lib/utils";
+import { DEFAULT_OPTION } from "@/lib/utils/constants";
 
-import { useCart } from "../CartContext";
+import type { UpdateType } from "../cartReducer";
 
 import { DeleteItemButton } from "./DeleteItemButton";
 import { EditItemQuantityButton } from "./EditItemQuantityButton";
@@ -18,10 +18,14 @@ type MerchandiseSearchParams = {
 interface CartItemProps {
   item: CartItemType;
   closeCart: () => void;
+  updateCartItem: (merchandiseId: string, updateType: UpdateType) => void;
 }
 
-export const CartItem: React.FC<CartItemProps> = ({ item, closeCart }) => {
-  const { updateCartItem } = useCart();
+export const CartItem: React.FC<CartItemProps> = ({
+  item,
+  closeCart,
+  updateCartItem,
+}) => {
   const merchandiseSearchParams = {} as MerchandiseSearchParams;
 
   item.merchandise.selectedOptions.forEach(({ name, value }) => {
@@ -36,23 +40,32 @@ export const CartItem: React.FC<CartItemProps> = ({ item, closeCart }) => {
   );
 
   return (
-    <li className="flex w-full flex-col border-b border-accent">
+    <li className="flex w-full flex-col border-b border-brand-ink/10">
       <div className="relative flex w-full flex-row justify-between px-1 py-4">
         <div className="absolute z-40 -ml-1 -mt-2">
           <DeleteItemButton item={item} optimisticUpdate={updateCartItem} />
         </div>
         <div className="flex flex-row">
-          <div className="relative h-16 w-16 overflow-hidden rounded-md border  bg-neutral-300 border-accent hover:bg-neutral-800">
-            <Image
-              className="h-full w-full object-cover"
-              width={64}
-              height={64}
-              alt={
-                item.merchandise.product.featuredImage.altText ||
-                item.merchandise.product.title
-              }
-              src={item.merchandise.product.featuredImage.url}
-            />
+          <div className="relative h-16 w-16 overflow-hidden rounded-md border border-brand-ink/10 bg-white">
+            {item.merchandise.product.featuredImage ? (
+              <Image
+                className="h-full w-full object-cover"
+                width={64}
+                height={64}
+                alt={
+                  item.merchandise.product.featuredImage.altText ||
+                  item.merchandise.product.title
+                }
+                src={item.merchandise.product.featuredImage.url}
+              />
+            ) : (
+              <div
+                aria-hidden="true"
+                className="flex h-full w-full items-center justify-center text-lg text-neutral-500"
+              >
+                📄
+              </div>
+            )}
           </div>
           <Link
             href={merchandiseUrl}
@@ -64,7 +77,7 @@ export const CartItem: React.FC<CartItemProps> = ({ item, closeCart }) => {
                 {item.merchandise.product.title}
               </span>
               {item.merchandise.title !== DEFAULT_OPTION ? (
-                <p className="text-sm text-neutral-400">
+                <p className="text-sm text-brand-ink/60">
                   {item.merchandise.title}
                 </p>
               ) : null}
@@ -78,7 +91,7 @@ export const CartItem: React.FC<CartItemProps> = ({ item, closeCart }) => {
             amount={item.cost.totalAmount.amount}
             currencyCode={item.cost.totalAmount.currencyCode}
           />
-          <div className="ml-auto flex h-9 flex-row items-center rounded-full border  border-accent">
+          <div className="ml-auto flex h-9 flex-row items-center rounded-full border border-brand-ink/20">
             <EditItemQuantityButton
               item={item}
               type="minus"
@@ -116,7 +129,7 @@ const CartItemAttributes: React.FC<CartItemAttributesProps> = ({
   return (
     <div className="mt-1 space-y-0.5">
       {displayAttributes.map((attr) => (
-        <p key={attr.key} className="text-xs text-neutral-400">
+        <p key={attr.key} className="text-xs text-brand-ink/60">
           <span className="font-medium">{attr.key}:</span> {attr.value}
         </p>
       ))}

@@ -30,7 +30,7 @@ export const HowItWorks = () => {
     <section className="bg-primary px-6 py-20 lg:px-16">
       <div className="mx-auto max-w-7xl">
         <h2 className="font-condensed text-3xl text-neutral-800 sm:text-4xl">
-          Como funziona
+          Cómo funciona
         </h2>
 
         <div className="mt-12 grid gap-6 md:grid-cols-3">

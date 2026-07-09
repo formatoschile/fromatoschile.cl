@@ -32,12 +32,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }))
   );
 
-  try {
-    const fetchedRoutes = (
-      await Promise.all([collectionsPromise, productsPromise, pagesPromise])
-    ).flat();
-    return [...routesMap, ...fetchedRoutes];
-  } catch (error) {
-    throw JSON.stringify(error, null, 2);
-  }
+  const fetchedRoutes = (
+    await Promise.all([collectionsPromise, productsPromise, pagesPromise])
+  ).flat();
+
+  return [...routesMap, ...fetchedRoutes];
 }

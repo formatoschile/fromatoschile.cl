@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useEffect } from "react";
+import { Fragment } from "react";
 import {
   Dialog,
   DialogPanel,
@@ -9,7 +9,6 @@ import {
 } from "@headlessui/react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 
-import { createCartAndSetCookie } from "../actions";
 import { useCart } from "../CartContext";
 import { OpenCart } from "../OpenCart";
 
@@ -20,17 +19,11 @@ interface CartModalProps {
 }
 
 export const CartModal: React.FC<CartModalProps> = ({ iconClassName }) => {
-  const { cart, isCartOpen, openCart, closeCart } = useCart();
-
-  useEffect(() => {
-    if (!cart) {
-      createCartAndSetCookie();
-    }
-  }, [cart]);
+  const { cart, isCartOpen, openCart, closeCart, updateCartItem } = useCart();
 
   return (
     <>
-      <button aria-label="Open cart" onClick={openCart}>
+      <button aria-label="Abrir carrito" onClick={openCart}>
         <OpenCart quantity={cart?.totalQuantity} className={iconClassName} />
       </button>
 
@@ -56,19 +49,23 @@ export const CartModal: React.FC<CartModalProps> = ({ iconClassName }) => {
             leaveFrom="translate-x-0"
             leaveTo="translate-x-full"
           >
-            <DialogPanel className="fixed bottom-0 right-0 top-0 flex h-full w-full flex-col border-l border-brand-secondary bg-brand-primary/90 p-6 text-white backdrop-blur-xl md:w-[390px]">
+            <DialogPanel className="fixed bottom-0 right-0 top-0 flex h-full w-full flex-col border-l border-brand-ink/10 bg-primary/90 p-6 text-brand-ink backdrop-blur-xl md:w-[390px]">
               <div className="flex items-center justify-between">
-                <p className="text-lg font-semibold">Il tuo carrello</p>
+                <p className="text-lg font-semibold">Tu carrito</p>
                 <button
                   className="cursor-pointer"
-                  aria-label="Close cart"
+                  aria-label="Cerrar carrito"
                   onClick={closeCart}
                 >
                   <CloseCartButton />
                 </button>
               </div>
 
-              <CartModalContent closeCart={closeCart} cart={cart} />
+              <CartModalContent
+                closeCart={closeCart}
+                cart={cart}
+                updateCartItem={updateCartItem}
+              />
             </DialogPanel>
           </TransitionChild>
         </Dialog>
@@ -79,7 +76,7 @@ export const CartModal: React.FC<CartModalProps> = ({ iconClassName }) => {
 
 const CloseCartButton = () => {
   return (
-    <div className="relative flex h-11 w-11 items-center justify-center rounded-md border transition-colors border-accent text-white">
+    <div className="relative flex h-11 w-11 items-center justify-center rounded-md border border-brand-ink/20 text-brand-ink transition-colors">
       <XMarkIcon className="h-6 transition-all ease-in-out hover:scale-110" />
     </div>
   );

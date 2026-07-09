@@ -11,10 +11,13 @@ const supportLinks = [
 
 export const Footer = () => {
   return (
-    <footer className="bg-[#323438] px-6 pt-14 pb-8 font-[family-name:var(--font-dm-sans)] text-white lg:px-16">
+    <footer className="bg-graphite px-6 pt-14 pb-8 font-[family-name:var(--font-dm-sans)] text-white lg:px-16">
       <div className="mx-auto flex max-w-7xl flex-col justify-between gap-12 md:flex-row md:gap-8">
         {/* Logo */}
-        <Link href="/" className="block shrink-0 transition-opacity hover:opacity-80">
+        <Link
+          href="/"
+          className="block shrink-0 transition-opacity hover:opacity-80"
+        >
           <Image
             src="/logo/formatos_chile_light.png"
             alt="Formatos Chile"

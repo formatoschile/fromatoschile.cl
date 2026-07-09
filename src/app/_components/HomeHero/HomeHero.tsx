@@ -3,7 +3,7 @@ import Link from "next/link";
 
 export const HomeHero = () => {
   return (
-    <section className="mx-auto flex w-full max-w-[1666px] shrink-0 flex-col items-center justify-center px-4 pt-24 pb-8 lg:h-[515px] lg:px-[97.5px] lg:pt-[80px] lg:pb-0">
+    <section className="mx-auto flex w-full max-w-[1666px] shrink-0 flex-col items-center justify-center px-4 pt-24 pb-8 lg:h-[515px] lg:px-[97.5px] lg:pt-20 lg:pb-0">
       <div className="relative aspect-[16/9] w-full overflow-hidden rounded-2xl bg-neutral-300 sm:aspect-[21/9] lg:aspect-auto lg:h-full">
         <Image
           src="/images/home-hero.png"
@@ -15,10 +15,10 @@ export const HomeHero = () => {
         />
 
         {/* Darkening overlay for text legibility */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent to-[37.5%]" />
+        <div className="absolute inset-0 bg-linear-to-t from-black/50 to-transparent to-[37.5%]" />
 
         {/* Headline — top-left */}
-        <h1 className="absolute left-6 top-8 max-w-[10ch] font-condensed text-4xl font-medium leading-[1.1] text-[#363636] sm:left-12 sm:top-12 sm:text-[60px] sm:leading-[66px]">
+        <h1 className="absolute left-6 top-8 max-w-[10ch] font-condensed text-4xl font-medium leading-[1.1] text-charcoal sm:left-12 sm:top-12 sm:text-[60px] sm:leading-[66px]">
           Contratos legales listos para usar
         </h1>
 
