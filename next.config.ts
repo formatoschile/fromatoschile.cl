@@ -7,20 +7,6 @@ const nextConfig: NextConfig = {
   },
   typedRoutes: true,
   reactCompiler: true,
-  async redirects() {
-    return [
-      {
-        source: '/search',
-        destination: '/todos-los-documentos',
-        permanent: true,
-      },
-      {
-        source: '/search/:collection',
-        destination: '/todos-los-documentos/:collection',
-        permanent: true,
-      },
-    ];
-  },
   images: {
     formats: ['image/avif', 'image/webp'],
     remotePatterns: [
