@@ -27,7 +27,7 @@ const steps: Step[] = [
 
 export const HowItWorks = () => {
   return (
-    <section className="bg-primary px-6 py-20 lg:px-16">
+    <section className="section-inset bg-primary py-20">
       <div className="mx-auto max-w-7xl">
         <h2 className="font-condensed text-3xl text-neutral-800 sm:text-4xl">
           Cómo funciona

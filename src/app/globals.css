@@ -28,6 +28,46 @@
   --animate-blink: blink 1.4s both infinite;
 }
 
+/*
+ * Shared horizontal inset for homepage sections and the full-bleed rails.
+ * Amend the scale here to shift every aligned section/title/card at once:
+ *   - `section-inset` utility applies it as symmetric padding.
+ *   - Rails keep their scroll area full-bleed and reference `--inset-x`
+ *     directly for the first/last card margins (e.g. `first:ml-(--inset-x)`).
+ */
+:root {
+  --inset-x: 1rem;
+}
+@media (width >= 40rem) {
+  :root {
+    --inset-x: 3rem;
+  }
+}
+@media (width >= 64rem) {
+  :root {
+    --inset-x: 6rem;
+  }
+}
+@media (width >= 80rem) {
+  :root {
+    --inset-x: 10rem;
+  }
+}
+
+@utility section-inset {
+  padding-inline: var(--inset-x);
+}
+
+/* Hides the scrollbar while keeping the element scrollable. */
+@utility hide-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
 @layer base {
   *,
   ::after,

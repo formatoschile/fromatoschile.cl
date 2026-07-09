@@ -33,7 +33,7 @@ export const TemplateCarousel: React.FC<TemplateCarouselProps> = ({
 
   return (
     <>
-      <div className="flex items-center justify-between">
+      <div className="section-inset flex items-center justify-between">
         {heading}
 
         <div className="flex items-center gap-3">
@@ -54,7 +54,10 @@ export const TemplateCarousel: React.FC<TemplateCarouselProps> = ({
         </div>
       </div>
 
-      <div ref={scrollRef} className="mt-8 flex gap-5 overflow-x-auto pb-4">
+      <div
+        ref={scrollRef}
+        className="hide-scrollbar mt-8 flex gap-5 overflow-x-auto pb-4"
+      >
         {children}
       </div>
     </>

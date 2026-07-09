@@ -1,8 +1,8 @@
 "use client";
 
+import React from "react";
 import { ArrowLeftIcon, ArrowRightIcon } from "@heroicons/react/24/outline";
 import Image from "next/image";
-import React from "react";
 
 import { useProduct, useUpdateURL } from "@/components/product/ProductContext";
 import { GridTileImage } from "@/components/ui/Grid/GridTile";

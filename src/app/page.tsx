@@ -1,8 +1,10 @@
 import { Suspense } from "react";
 
 import { DocumentCategories } from "./_components/DocumentCategories/DocumentCategories";
+import { DocumentCategoriesSkeleton } from "./_components/DocumentCategories/DocumentCategoriesSkeleton";
 import { Faq } from "./_components/Faq/Faq";
 import { FeaturedTemplates } from "./_components/FeaturedTemplates/FeaturedTemplates";
+import { FeaturedTemplatesSkeleton } from "./_components/FeaturedTemplates/FeaturedTemplatesSkeleton";
 import { HomeHero } from "./_components/HomeHero/HomeHero";
 import { HowItWorks } from "./_components/HowItWorks/HowItWorks";
 import { LegalGuidance } from "./_components/LegalGuidance/LegalGuidance";
@@ -21,15 +23,20 @@ export default function HomePage() {
     <div className="min-h-dvh bg-primary text-neutral-800">
       <HomeHero />
       {/* Data-backed sections stream in without blocking the hero. */}
-      <Suspense fallback={null}>
+      <Suspense fallback={<DocumentCategoriesSkeleton />}>
         <DocumentCategories />
       </Suspense>
-      <Suspense fallback={null}>
+
+      <Suspense fallback={<FeaturedTemplatesSkeleton />}>
         <FeaturedTemplates />
       </Suspense>
+
       <SecuritySection />
+
       <HowItWorks />
+
       <Faq />
+
       <LegalGuidance />
     </div>
   );

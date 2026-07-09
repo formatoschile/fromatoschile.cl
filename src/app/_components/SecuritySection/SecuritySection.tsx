@@ -10,7 +10,7 @@ const certifications = [
 
 export const SecuritySection = () => {
   return (
-    <section className="bg-graphite px-6 py-20 text-white lg:px-16">
+    <section className="section-inset bg-graphite py-20 text-white">
       <div className="mx-auto grid max-w-7xl items-center gap-12 md:grid-cols-2 lg:gap-20">
         {/* Left: copy */}
         <div>

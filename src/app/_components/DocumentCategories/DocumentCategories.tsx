@@ -30,8 +30,8 @@ export const DocumentCategories = async () => {
   }
 
   return (
-    <section className="px-4 py-16 sm:px-12">
-      <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-end">
+    <section className="py-16">
+      <div className="section-inset flex flex-col items-start justify-between gap-4 md:flex-row md:items-end">
         <h2 className="font-condensed text-3xl text-neutral-800 sm:text-4xl">
           <span className="font-bold">Categorías</span>{" "}
           <span className="font-light">de Documentos</span>
@@ -43,7 +43,7 @@ export const DocumentCategories = async () => {
         </p>
       </div>
 
-      <div className="mt-10 flex gap-5 overflow-x-auto pb-4">
+      <div className="hide-scrollbar mt-10 flex gap-5 overflow-x-auto pb-4">
         {categories.map((category) => (
           <CategoryCard key={category.label} category={category} />
         ))}
@@ -60,7 +60,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category }) => {
   const { label, description, count } = category;
 
   return (
-    <div className="flex min-h-40 w-64 shrink-0 flex-col justify-between rounded-xl bg-white p-6 shadow-sm">
+    <div className="flex min-h-40 w-64 shrink-0 flex-col justify-between rounded-xl bg-white p-6 shadow-sm first:ml-(--inset-x) last:mr-(--inset-x)">
       <div>
         <CategoryPill category={label} />
 

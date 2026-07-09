@@ -12,7 +12,7 @@ import logoGreen from "../../../../public/logo/logo_green_small.png";
 export const Navbar = () => {
   return (
     <nav className="fixed left-0 right-0 top-0 z-50 bg-primary/80 backdrop-blur-sm">
-      <div className="grid grid-cols-2 items-center px-6 py-5 md:grid-cols-3 md:px-12">
+      <div className="grid grid-cols-2 items-center px-6 py-5 md:grid-cols-3 md:px-24">
         {/* Logo — left */}
         <Link
           href="/"

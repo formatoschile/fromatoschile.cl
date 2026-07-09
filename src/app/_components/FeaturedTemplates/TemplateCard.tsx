@@ -17,7 +17,7 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({ product }) => {
   const features = product.tags.slice(0, MAX_FEATURES);
 
   return (
-    <div className="flex min-h-72 w-72 shrink-0 flex-col rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
+    <div className="flex min-h-72 w-72 shrink-0 flex-col rounded-xl border border-neutral-200 bg-white p-6 shadow-sm first:ml-(--inset-x) last:mr-(--inset-x)">
       <Link href={`/product/${product.handle}`}>
         <h3 className="text-lg font-medium leading-snug text-neutral-800 hover:underline">
           {product.title}

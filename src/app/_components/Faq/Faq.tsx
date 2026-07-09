@@ -30,7 +30,7 @@ const faqs = [
 
 export const Faq = () => {
   return (
-    <section className="bg-white px-6 py-20 lg:px-16">
+    <section className="section-inset bg-white py-20">
       <div className="mx-auto max-w-7xl">
         <h2 className="font-condensed text-3xl text-neutral-800 sm:text-4xl">
           FAQ

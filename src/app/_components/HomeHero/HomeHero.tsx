@@ -3,8 +3,8 @@ import Link from "next/link";
 
 export const HomeHero = () => {
   return (
-    <section className="mx-auto flex w-full max-w-[1666px] shrink-0 flex-col items-center justify-center px-4 pt-24 pb-8 lg:h-[515px] lg:px-[97.5px] lg:pt-20 lg:pb-0">
-      <div className="relative aspect-[16/9] w-full overflow-hidden rounded-2xl bg-neutral-300 sm:aspect-[21/9] lg:aspect-auto lg:h-full">
+    <section className="mx-auto flex w-full max-w-[1666px] shrink-0 flex-col items-center justify-center px-4 pt-24 pb-8 lg:h-[515px] lg:px-12 lg:pt-20 lg:pb-0">
+      <div className="relative aspect-[16/9] w-full overflow-hidden rounded-lg bg-neutral-300 sm:aspect-[21/9] lg:aspect-auto lg:h-full">
         <Image
           src="/images/home-hero.png"
           alt="Profesionales revisando documentos legales"
