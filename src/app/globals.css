@@ -26,6 +26,11 @@
   --color-brand-tertiary: #fdf755;
   --color-brand-quaternary: #98fdc7;
 
+  /* Document category pill colors */
+  --color-category-laboral: #ffa8a8;
+  --color-category-civil: #36e4ca;
+  --color-category-comercial: #a8c1ff;
+
   --animate-blink: blink 1.4s both infinite;
 }
 

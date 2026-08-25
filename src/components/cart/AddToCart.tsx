@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useTransition } from "react";
-import { PlusIcon } from "@heroicons/react/24/outline";
 
 import { useProduct } from "@/components/product/ProductContext";
 import { Product, ProductVariant } from "@/lib/shopify/types";
@@ -66,8 +65,9 @@ const SubmitButton: React.FC<SubmitButtonProps> = ({
   onClick,
 }) => {
   const buttonClasses =
-    "relative flex w-full items-center justify-center rounded-full bg-blue-600 p-4 tracking-wide text-white";
-  const disabledClasses = "cursor-not-allowed opacity-60 hover:opacity-60";
+    "w-full border border-ink bg-white py-4 text-sm font-medium tracking-widest text-ink uppercase transition-colors";
+  const disabledClasses =
+    "cursor-not-allowed opacity-60 hover:bg-white hover:text-ink";
 
   if (!availableForSale) {
     return (
@@ -84,9 +84,6 @@ const SubmitButton: React.FC<SubmitButtonProps> = ({
         disabled
         className={classNames(buttonClasses, disabledClasses)}
       >
-        <div className="absolute left-0 ml-4">
-          <PlusIcon className="h-5" />
-        </div>
         Agregar al carrito
       </button>
     );
@@ -99,13 +96,10 @@ const SubmitButton: React.FC<SubmitButtonProps> = ({
       disabled={isPending}
       onClick={onClick}
       className={classNames(buttonClasses, {
-        "hover:opacity-90": !isPending,
+        "hover:bg-ink hover:text-white": !isPending,
         "cursor-wait opacity-60": isPending,
       })}
     >
-      <div className="absolute left-0 ml-4">
-        <PlusIcon className="h-5" />
-      </div>
       Agregar al carrito
     </button>
   );

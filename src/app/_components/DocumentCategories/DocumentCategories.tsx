@@ -3,16 +3,17 @@ import Link from "next/link";
 import { CategoryPill } from "@/components/ui/CategoryPill/CategoryPill";
 import { getProducts } from "@/lib/shopify";
 
-// Marketing copy per category (Shopify product type). Categories without an
-// entry still render — counts always come from the live catalog.
+// Marketing copy per category (Shopify product type, lowercased — product
+// types aren't reliably cased). Categories without an entry still render —
+// counts always come from the live catalog.
 const CATEGORY_DESCRIPTIONS: Record<string, string> = {
-  Laboral: "Contratos de trabajo, confidencialidad, finiquitos",
-  Inmobiliario: "Arrendamiento, compraventa, opciones de compra",
-  Sociedades: "Constitución, pactos sociales, acuerdos",
-  Comercial: "Compraventa, distribución, servicios",
-  Civil: "Préstamos, donaciones, poderes",
-  Legal: "Reclamaciones, acuerdos extrajudiciales",
-  Mercantil: "Joint ventures, acuerdos de inversión",
+  laboral: "Contratos de trabajo, confidencialidad, finiquitos",
+  inmobiliario: "Arrendamiento, compraventa, opciones de compra",
+  sociedades: "Constitución, pactos sociales, acuerdos",
+  comercial: "Compraventa, distribución, servicios",
+  civil: "Préstamos, donaciones, poderes",
+  legal: "Reclamaciones, acuerdos extrajudiciales",
+  mercantil: "Joint ventures, acuerdos de inversión",
 };
 
 interface Category {
@@ -71,7 +72,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category }) => {
           pathname: "/todos-los-documentos",
           query: { categoria: label },
         }}
-        className="text-ink mt-6 text-sm font-normal underline underline-offset-4 hover:text-black"
+        className="text-ink mt-6 self-end text-sm font-normal underline underline-offset-4 hover:text-black"
       >
         ver {count} documentos
       </Link>
@@ -90,6 +91,6 @@ function getCategories(productTypes: string[]): Category[] {
   return Array.from(counts, ([label, count]) => ({
     label,
     count,
-    description: CATEGORY_DESCRIPTIONS[label] ?? "",
+    description: CATEGORY_DESCRIPTIONS[label.toLowerCase()] ?? "",
   }));
 }

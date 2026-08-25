@@ -5,17 +5,24 @@ interface CategoryStyle {
   bar: string;
 }
 
-// Pill/bar colors per category, keyed by the Shopify product type.
+// Pill/bar colors per category, keyed by the Shopify product type
+// (lowercased — Shopify product types aren't reliably cased).
 // Single source of truth — do not redeclare per-component color maps.
 const CATEGORY_STYLES: Record<string, CategoryStyle> = {
-  Laboral: { pill: "bg-rose-200 text-rose-800", bar: "bg-rose-300" },
-  Inmobiliario: { pill: "bg-sky-200 text-sky-800", bar: "bg-sky-300" },
-  Sociedades: { pill: "bg-indigo-200 text-indigo-800", bar: "bg-indigo-300" },
-  Comercial: { pill: "bg-purple-200 text-purple-800", bar: "bg-purple-300" },
-  Commercial: { pill: "bg-purple-200 text-purple-800", bar: "bg-purple-300" },
-  Civil: { pill: "bg-teal-200 text-teal-800", bar: "bg-teal-300" },
-  Legal: { pill: "bg-amber-200 text-amber-800", bar: "bg-amber-300" },
-  Mercantil: { pill: "bg-violet-200 text-violet-800", bar: "bg-violet-300" },
+  laboral: { pill: "bg-category-laboral text-ink", bar: "bg-category-laboral" },
+  inmobiliario: { pill: "bg-sky-200 text-sky-800", bar: "bg-sky-300" },
+  sociedades: { pill: "bg-indigo-200 text-indigo-800", bar: "bg-indigo-300" },
+  comercial: {
+    pill: "bg-category-comercial text-ink",
+    bar: "bg-category-comercial",
+  },
+  commercial: {
+    pill: "bg-category-comercial text-ink",
+    bar: "bg-category-comercial",
+  },
+  civil: { pill: "bg-category-civil text-ink", bar: "bg-category-civil" },
+  legal: { pill: "bg-amber-200 text-amber-800", bar: "bg-amber-300" },
+  mercantil: { pill: "bg-violet-200 text-violet-800", bar: "bg-violet-300" },
 };
 
 const DEFAULT_STYLE: CategoryStyle = {
@@ -24,7 +31,7 @@ const DEFAULT_STYLE: CategoryStyle = {
 };
 
 export const getCategoryStyle = (category: string): CategoryStyle =>
-  CATEGORY_STYLES[category] ?? DEFAULT_STYLE;
+  CATEGORY_STYLES[category.toLowerCase()] ?? DEFAULT_STYLE;
 
 interface CategoryPillProps {
   category: string;

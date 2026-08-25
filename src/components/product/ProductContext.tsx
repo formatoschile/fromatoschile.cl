@@ -5,14 +5,11 @@ import { useRouter, useSearchParams } from "next/navigation";
 
 type ProductState = {
   [key: string]: string;
-} & {
-  image?: string;
 };
 
 type ProductContextType = {
   state: ProductState;
   updateOption: (name: string, value: string) => ProductState;
-  updateImage: (index: string) => ProductState;
 };
 
 const ProductContext = createContext<ProductContextType | undefined>(undefined);
@@ -48,16 +45,9 @@ export const ProductProvider: React.FC<ProductProviderProps> = ({
     return { ...state, ...newState };
   };
 
-  const updateImage = (index: string) => {
-    const newState = { image: index };
-    setOptimisticState(newState);
-    return { ...state, ...newState };
-  };
-
   const value = {
     state,
     updateOption,
-    updateImage,
   };
 
   return <ProductContext value={value}>{children}</ProductContext>;

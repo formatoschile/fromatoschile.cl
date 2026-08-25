@@ -2,14 +2,13 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
-import { Gallery } from "@/components/product/Gallery";
+import { PdfViewer } from "@/components/product/PdfViewer/PdfViewer";
 import { ProductProvider } from "@/components/product/ProductContext";
 import { ProductDescription } from "@/components/product/ProductDescription";
 import { getProduct } from "@/lib/shopify";
-import { Image } from "@/lib/shopify/types";
 import { HIDDEN_PRODUCT_TAG } from "@/lib/utils/constants";
 
-import { ProductPreview } from "./_components/ProductPreview";
+import { Breadcrumb } from "./_components/Breadcrumb";
 import { RelatedProducts } from "./_components/RelatedProducts";
 
 export async function generateMetadata(props: {
@@ -62,7 +61,7 @@ export default async function ProductPage(props: {
     "@type": "Product",
     name: product.title,
     description: product.description,
-    image: product.featuredImage.url,
+    image: product.featuredImage?.url,
     offers: {
       "@type": "AggregateOffer",
       availability: product.availableForSale
@@ -83,25 +82,20 @@ export default async function ProductPage(props: {
           __html: JSON.stringify(productJsonLd),
         }}
       />
-      <div className="mx-auto max-w-(--breakpoint-2xl) px-4 pt-28">
-        <div className="flex flex-col rounded-lg border border-neutral-200 bg-white p-8 md:p-12 lg:flex-row lg:gap-8">
-          <div className="h-full w-full basis-full lg:basis-4/6">
-            <Suspense
-              fallback={
-                <div className="relative aspect-square h-full max-h-[550px] w-full overflow-hidden" />
-              }
-            >
-              <Gallery
-                images={product.images.slice(0, 5).map((image: Image) => ({
-                  src: image.url,
-                  altText: image.altText,
-                }))}
-              />
-            </Suspense>
-            <ProductPreview previewPdf={product.previewPdf} />
+      <div className="section-inset pt-28 pb-24">
+        <Breadcrumb
+          category={product.productType || "General"}
+          title={product.title}
+        />
+
+        <div className="flex flex-col gap-8 lg:flex-row">
+          <div className="w-full lg:basis-4/6">
+            {product.previewPdf?.reference?.url ? (
+              <PdfViewer url={product.previewPdf.reference.url} />
+            ) : null}
           </div>
 
-          <div className="basis-full lg:basis-2/6">
+          <div className="w-full lg:basis-2/6">
             <Suspense fallback={null}>
               <ProductDescription product={product} />
             </Suspense>
@@ -109,7 +103,10 @@ export default async function ProductPage(props: {
         </div>
         {/* Suspense keeps recommendations from blocking the page stream. */}
         <Suspense fallback={null}>
-          <RelatedProducts id={product.id} />
+          <RelatedProducts
+            handle={product.handle}
+            category={product.productType || "General"}
+          />
         </Suspense>
       </div>
     </ProductProvider>
