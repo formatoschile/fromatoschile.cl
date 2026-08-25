@@ -32,6 +32,7 @@
   --color-category-comercial: #a8c1ff;
 
   --animate-blink: blink 1.4s both infinite;
+  --animate-tilt: tilt 1s ease-in-out infinite;
 }
 
 /*
@@ -114,5 +115,16 @@ button {
   }
   100% {
     opacity: 0.2;
+  }
+}
+
+/* Tilt animation for BuyButton's ScaleIcon */
+@keyframes tilt {
+  0%,
+  100% {
+    rotate: -10deg;
+  }
+  50% {
+    rotate: 10deg;
   }
 }

@@ -32,7 +32,7 @@ export const FeaturedTemplates = async () => {
 
       <Link
         href="/todos-los-documentos"
-        className="text-ink mt-6 ml-(--inset-x) inline-flex items-center gap-2 text-lg font-normal underline underline-offset-4 hover:text-black"
+        className="text-ink border-ink pb-x mt-6 ml-(--inset-x) inline-flex items-center gap-2 border-b text-lg font-normal transition-opacity hover:opacity-70"
       >
         Ver Todos los Documentos <span aria-hidden="true">→</span>
       </Link>

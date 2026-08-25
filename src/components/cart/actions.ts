@@ -1,7 +1,6 @@
 "use server";
 
 import type { Route } from "next";
-import { revalidateTag } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
@@ -12,13 +11,13 @@ import {
   removeFromCart,
   updateCart,
 } from "@/lib/shopify";
-import { TAGS } from "@/lib/utils/constants";
+import type { Cart } from "@/lib/shopify/types";
 
 export async function addItem(
   _prevState: unknown,
   selectedVariantId: string | undefined,
   attributes?: { key: string; value: string }[]
-) {
+): Promise<Cart | string> {
   if (!selectedVariantId) {
     return "Error adding item to cart";
   }
@@ -31,13 +30,9 @@ export async function addItem(
       await createCartAndSetCookie();
     }
 
-    await addToCart([
+    return await addToCart([
       { merchandiseId: selectedVariantId, quantity: 1, attributes },
     ]);
-    // No data-cache entry carries this tag (getCart is per-user and uncached);
-    // the call's purpose is the client router-cache refresh it triggers, which
-    // re-runs the layout's getCart and syncs the optimistic cart UI.
-    revalidateTag(TAGS.cart, "seconds");
   } catch (e) {
     console.error(e);
     return "Error adding item to cart";
@@ -47,7 +42,7 @@ export async function addItem(
 export async function removeItem(
   _prevState: unknown,
   payload: { lineId?: string; merchandiseId: string }
-) {
+): Promise<Cart | string> {
   try {
     const lineId = payload.lineId ?? (await findLineId(payload.merchandiseId));
 
@@ -55,8 +50,7 @@ export async function removeItem(
       return "Item not found in cart";
     }
 
-    await removeFromCart([lineId]);
-    revalidateTag(TAGS.cart, "seconds");
+    return await removeFromCart([lineId]);
   } catch (e) {
     console.error(e);
     return "Error removing item from cart";
@@ -70,7 +64,7 @@ export async function updateItemQuantity(
     merchandiseId: string;
     quantity: number;
   }
-) {
+): Promise<Cart | string | undefined> {
   const { merchandiseId, quantity } = payload;
 
   try {
@@ -78,16 +72,17 @@ export async function updateItemQuantity(
 
     if (lineId) {
       if (quantity === 0) {
-        await removeFromCart([lineId]);
-      } else {
-        await updateCart([{ id: lineId, merchandiseId, quantity }]);
+        return await removeFromCart([lineId]);
       }
-    } else if (quantity > 0) {
-      // If the item doesn't exist in the cart and quantity > 0, add it
-      await addToCart([{ merchandiseId, quantity }]);
+      return await updateCart([{ id: lineId, merchandiseId, quantity }]);
     }
 
-    revalidateTag(TAGS.cart, "seconds");
+    // If the item doesn't exist in the cart and quantity > 0, add it
+    if (quantity > 0) {
+      return await addToCart([{ merchandiseId, quantity }]);
+    }
+
+    return undefined;
   } catch (e) {
     console.error(e);
     return "Error updating item quantity";

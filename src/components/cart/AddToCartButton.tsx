@@ -29,7 +29,7 @@ export const AddToCartButton: React.FC<AddToCartButtonProps> = ({
   children = "Agregar al carrito",
   onAdd,
 }) => {
-  const { addCartItem } = useCart();
+  const { addCartItem, syncCart } = useCart();
   const [isPending, startTransition] = useTransition();
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -38,7 +38,10 @@ export const AddToCartButton: React.FC<AddToCartButtonProps> = ({
 
     startTransition(async () => {
       addCartItem(variant, product);
-      await addItem(null, variant.id);
+      const result = await addItem(null, variant.id);
+      if (typeof result !== "string") {
+        syncCart(result);
+      }
     });
   };
 

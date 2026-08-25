@@ -7,6 +7,7 @@ import type { CartItem } from "@/lib/shopify/types";
 
 import { removeItem } from "../actions";
 import type { UpdateType } from "../CartContext";
+import { useCart } from "../CartContext";
 
 interface DeleteItemButtonProps {
   item: CartItem;
@@ -17,13 +18,17 @@ export const DeleteItemButton: React.FC<DeleteItemButtonProps> = ({
   item,
   optimisticUpdate,
 }) => {
+  const { syncCart } = useCart();
   const [isPending, startTransition] = useTransition();
   const merchandiseId = item.merchandise.id;
 
   const handleClick = () => {
     startTransition(async () => {
       optimisticUpdate(merchandiseId, "delete");
-      await removeItem(null, { lineId: item.id, merchandiseId });
+      const result = await removeItem(null, { lineId: item.id, merchandiseId });
+      if (typeof result !== "string") {
+        syncCart(result);
+      }
     });
   };
 

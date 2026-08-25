@@ -23,7 +23,11 @@ export const CartModal: React.FC<CartModalProps> = ({ iconClassName }) => {
 
   return (
     <>
-      <button aria-label="Abrir carrito" onClick={openCart}>
+      <button
+        aria-label="Abrir carrito"
+        onClick={openCart}
+        className="cursor-pointer"
+      >
         <OpenCart quantity={cart?.totalQuantity} className={iconClassName} />
       </button>
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useTransition } from "react";
-import { ArrowPathIcon } from "@heroicons/react/24/outline";
+import { ScaleIcon } from "@heroicons/react/24/outline";
 
 import { buyNow } from "@/components/cart/actions";
 import { classNames } from "@/lib/utils/classNames";
@@ -46,7 +46,7 @@ export const BuyButton: React.FC<BuyButtonProps> = ({
       <span className={classNames({ invisible: isPending })}>{children}</span>
       {isPending && (
         <span className="absolute inset-0 flex items-center justify-center">
-          <ArrowPathIcon className="h-5 w-5 animate-spin" />
+          <ScaleIcon className="animate-tilt h-5 w-5" />
         </span>
       )}
     </button>

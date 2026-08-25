@@ -21,6 +21,10 @@ type CartContextType = {
   isCartOpen: boolean;
   openCart: () => void;
   closeCart: () => void;
+  // `null` means "no mutation has settled yet, fall back to the streamed
+  // promise"; `undefined` is a legitimate synced state (no/empty cart).
+  syncedCart: Cart | undefined | null;
+  syncCart: (cart: Cart | undefined) => void;
 };
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -40,6 +44,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({
   cartPromise,
 }) => {
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [syncedCart, setSyncedCart] = useState<Cart | undefined | null>(null);
 
   const openCart = useCallback(() => {
     setIsCartOpen(true);
@@ -49,9 +54,20 @@ export const CartProvider: React.FC<CartProviderProps> = ({
     setIsCartOpen(false);
   }, []);
 
+  const syncCart = useCallback((cart: Cart | undefined) => {
+    setSyncedCart(cart);
+  }, []);
+
   const value = useMemo(
-    () => ({ cartPromise, isCartOpen, openCart, closeCart }),
-    [cartPromise, closeCart, isCartOpen, openCart]
+    () => ({
+      cartPromise,
+      isCartOpen,
+      openCart,
+      closeCart,
+      syncedCart,
+      syncCart,
+    }),
+    [cartPromise, closeCart, isCartOpen, openCart, syncedCart, syncCart]
   );
 
   return <CartContext value={value}>{children}</CartContext>;
@@ -63,8 +79,15 @@ export function useCart() {
     throw new Error("useCart must be used within a CartProvider");
   }
 
+  // Falls back to the server-streamed promise until some mutation's syncCart
+  // call (shared via context, so every useCart() consumer agrees) settles.
   const initialCart = use(context.cartPromise);
-  const [cart, updateOptimisticCart] = useOptimistic(initialCart, cartReducer);
+  const confirmedCart =
+    context.syncedCart === null ? initialCart : context.syncedCart;
+  const [cart, updateOptimisticCart] = useOptimistic(
+    confirmedCart,
+    cartReducer
+  );
 
   // Optimistic updates must run inside the same transition as the server
   // action that persists them (React useOptimistic contract).
@@ -87,5 +110,6 @@ export function useCart() {
     closeCart: context.closeCart,
     updateCartItem,
     addCartItem,
+    syncCart: context.syncCart,
   };
 }

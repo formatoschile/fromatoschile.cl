@@ -5,6 +5,7 @@ import { MinusIcon, PlusIcon } from "@heroicons/react/24/outline";
 
 import { updateItemQuantity } from "@/components/cart/actions";
 import type { UpdateType } from "@/components/cart/CartContext";
+import { useCart } from "@/components/cart/CartContext";
 import type { CartItem } from "@/lib/shopify/types";
 import { classNames } from "@/lib/utils/classNames";
 
@@ -53,6 +54,7 @@ export const EditItemQuantityButton: React.FC<EditItemQuantityButtonProps> = ({
   type,
   optimisticUpdate,
 }) => {
+  const { syncCart } = useCart();
   const [isPending, startTransition] = useTransition();
   const payload = {
     lineId: item.id,
@@ -63,7 +65,10 @@ export const EditItemQuantityButton: React.FC<EditItemQuantityButtonProps> = ({
   const handleClick = () => {
     startTransition(async () => {
       optimisticUpdate(payload.merchandiseId, type);
-      await updateItemQuantity(null, payload);
+      const result = await updateItemQuantity(null, payload);
+      if (result && typeof result !== "string") {
+        syncCart(result);
+      }
     });
   };
 

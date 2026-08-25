@@ -15,7 +15,7 @@ interface AddToCartProps {
 
 export const AddToCart: React.FC<AddToCartProps> = ({ product }) => {
   const { variants, availableForSale } = product;
-  const { addCartItem } = useCart();
+  const { addCartItem, syncCart } = useCart();
   const { state } = useProduct();
   const [isPending, startTransition] = useTransition();
 
@@ -37,7 +37,10 @@ export const AddToCart: React.FC<AddToCartProps> = ({ product }) => {
 
     startTransition(async () => {
       addCartItem(finalVariant, product);
-      await addItem(null, selectedVariantId);
+      const result = await addItem(null, selectedVariantId);
+      if (typeof result !== "string") {
+        syncCart(result);
+      }
     });
   };
 
@@ -96,7 +99,7 @@ const SubmitButton: React.FC<SubmitButtonProps> = ({
       disabled={isPending}
       onClick={onClick}
       className={classNames(buttonClasses, {
-        "hover:bg-ink hover:text-white": !isPending,
+        "cursor-pointer hover:bg-ink hover:text-white": !isPending,
         "cursor-wait opacity-60": isPending,
       })}
     >
