@@ -70,7 +70,7 @@ export const PreviewPage = () => {
     <div className="relative mx-auto aspect-[1/1.414] w-full max-w-md overflow-hidden rounded-sm bg-white px-10 py-8 shadow-md">
       {/* Watermark */}
       <span className="pointer-events-none absolute inset-0 flex items-center justify-center">
-        <span className="-rotate-45 select-none text-4xl font-bold uppercase tracking-widest text-neutral-900/5">
+        <span className="-rotate-45 text-4xl font-bold tracking-widest text-neutral-900/5 uppercase select-none">
           Vista previa
         </span>
       </span>
@@ -80,7 +80,7 @@ export const PreviewPage = () => {
         <span className="font-serif text-lg leading-none">
           <span className="inline-block -scale-x-100">R</span>K
         </span>
-        <span className="text-[7px] uppercase leading-tight">
+        <span className="text-[7px] leading-tight uppercase">
           Retamales
           <br />
           Kowalski

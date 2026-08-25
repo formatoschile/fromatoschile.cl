@@ -29,7 +29,7 @@ export const Footer = () => {
 
         {/* Support links */}
         <nav aria-label="Ayuda y soporte">
-          <h2 className="text-xs uppercase tracking-wider text-[#F5F5F580]">
+          <h2 className="text-xs tracking-wider text-[#F5F5F580] uppercase">
             Ayuda y soporte
           </h2>
 
@@ -38,7 +38,7 @@ export const Footer = () => {
               <li key={link.href}>
                 <Link
                   href={link.href}
-                  className="text-xs uppercase tracking-wider text-white transition-opacity hover:opacity-70"
+                  className="text-xs tracking-wider text-white uppercase transition-opacity hover:opacity-70"
                 >
                   {link.label}
                 </Link>
@@ -50,7 +50,7 @@ export const Footer = () => {
 
       {/* Legal text */}
       <div className="mx-auto mt-14 max-w-7xl">
-        <p className="text-xs text-primary">
+        <p className="text-primary text-xs">
           © 2026 Formatos Chile. Todos los derechos reservados.
         </p>
       </div>

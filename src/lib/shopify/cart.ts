@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 
+import { shopifyFetch } from "./client";
 import {
   addToCartMutation,
   createCartMutation,
@@ -7,7 +8,6 @@ import {
   removeFromCartMutation,
 } from "./mutations/cart";
 import { getCartQuery } from "./queries/cart";
-import { shopifyFetch } from "./client";
 import { reshapeCart } from "./reshape";
 import type {
   Cart,

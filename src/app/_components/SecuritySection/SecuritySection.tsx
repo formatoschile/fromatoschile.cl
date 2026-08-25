@@ -36,7 +36,7 @@ export const SecuritySection = () => {
         </div>
 
         {/* Right: certifications card */}
-        <div className="rounded-2xl bg-primary p-8 text-neutral-800 sm:p-10">
+        <div className="bg-primary rounded-2xl p-8 text-neutral-800 sm:p-10">
           <h3 className="font-condensed text-2xl text-neutral-800 sm:text-3xl">
             Certificaciones y Garantias
           </h3>

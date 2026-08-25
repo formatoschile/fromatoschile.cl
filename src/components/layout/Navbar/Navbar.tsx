@@ -11,7 +11,7 @@ import logoGreen from "../../../../public/logo/logo_green_small.png";
 
 export const Navbar = () => {
   return (
-    <nav className="fixed left-0 right-0 top-0 z-50 bg-primary/80 backdrop-blur-sm">
+    <nav className="bg-primary/80 fixed top-0 right-0 left-0 z-50 backdrop-blur-sm">
       <div className="grid grid-cols-2 items-center px-6 py-5 md:grid-cols-3 md:px-24">
         {/* Logo — left */}
         <Link
@@ -29,7 +29,7 @@ export const Navbar = () => {
         {/* Primary link — center */}
         <Link
           href="/todos-los-documentos"
-          className="hidden justify-self-center text-xs uppercase tracking-[0.25em] text-brand-ink transition-colors hover:text-brand-ink/70 md:block"
+          className="text-brand-ink hover:text-brand-ink/70 hidden justify-self-center text-xs tracking-[0.25em] uppercase transition-colors md:block"
         >
           Todos los documentos
         </Link>
@@ -38,7 +38,7 @@ export const Navbar = () => {
         <div className="flex items-center justify-end gap-6 justify-self-end">
           <Link
             href="/account"
-            className="hidden text-sm text-brand-ink transition-colors hover:text-brand-ink/70 sm:block"
+            className="text-brand-ink hover:text-brand-ink/70 hidden text-sm transition-colors sm:block"
           >
             Mi Cuenta
           </Link>

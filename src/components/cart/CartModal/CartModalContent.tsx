@@ -50,8 +50,8 @@ export const CartModalContent: React.FC<CartModalContentProps> = ({
           />
         ))}
       </ul>
-      <div className="py-4 text-sm text-brand-ink">
-        <div className="mb-3 flex items-center justify-between border-b border-brand-ink/10 pb-1">
+      <div className="text-brand-ink py-4 text-sm">
+        <div className="border-brand-ink/10 mb-3 flex items-center justify-between border-b pb-1">
           <p>Impuestos</p>
           <Price
             className="text-right text-base"
@@ -59,11 +59,11 @@ export const CartModalContent: React.FC<CartModalContentProps> = ({
             currencyCode={cart.cost.totalTaxAmount.currencyCode}
           />
         </div>
-        <div className="mb-3 flex items-center justify-between border-b border-brand-ink/10 pb-1 pt-1">
+        <div className="border-brand-ink/10 mb-3 flex items-center justify-between border-b pt-1 pb-1">
           <p>Envío</p>
           <p className="text-right">Se calcula al finalizar la compra</p>
         </div>
-        <div className="mb-3 flex items-center justify-between border-b border-brand-ink/10 pb-1 pt-1">
+        <div className="border-brand-ink/10 mb-3 flex items-center justify-between border-b pt-1 pb-1">
           <p>Total</p>
           <Price
             className="text-right text-base"

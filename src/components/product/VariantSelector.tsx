@@ -48,7 +48,7 @@ export const VariantSelector: React.FC<VariantSelectorProps> = ({
       {options.map((option) => (
         <form key={option.id}>
           <dl className="mb-8">
-            <dt className="mb-4 text-sm uppercase tracking-wide">
+            <dt className="mb-4 text-sm tracking-wide uppercase">
               {option.name}
             </dt>
             <dd className="flex flex-wrap gap-3">
@@ -60,17 +60,18 @@ export const VariantSelector: React.FC<VariantSelectorProps> = ({
 
                 // Filter out invalid options and check if the option combination is available for sale.
                 const filtered = Object.entries(optionParams).filter(
-                  ([key, value]) =>
+                  ([key, entryValue]) =>
                     options.find(
-                      (option) =>
-                        option.name.toLowerCase() === key &&
-                        option.values.includes(value)
+                      (opt) =>
+                        opt.name.toLowerCase() === key &&
+                        opt.values.includes(entryValue)
                     )
                 );
                 const isAvailableForSale = combinations.find((combination) =>
                   filtered.every(
-                    ([key, value]) =>
-                      combination[key] === value && combination.availableForSale
+                    ([key, entryValue]) =>
+                      combination[key] === entryValue &&
+                      combination.availableForSale
                   )
                 );
 

@@ -30,23 +30,23 @@ export const Accordion: React.FC<AccordionProps> = ({ entries }) => {
             key={entry.title}
             as={motion.div}
             variants={itemVariants}
-            className="border-t last:border-b border-gray-900 first:pt-0 last:pb-0"
+            className="border-t border-gray-900 first:pt-0 last:border-b last:pb-0"
           >
             {({ open }) => (
               <>
                 <motion.dt variants={itemVariants}>
-                  <DisclosureButton className="group flex w-full items-start justify-between text-left text-gray-900 cursor-pointer pl-1 py-6">
+                  <DisclosureButton className="group flex w-full cursor-pointer items-start justify-between py-6 pl-1 text-left text-gray-900">
                     <span className="transition-all delay-300 duration-75 md:text-lg">
                       {i + 1}. {entry.title}
                     </span>
-                    <span className="flex h-7 justify-center items-center mr-4">
+                    <span className="mr-4 flex h-7 items-center justify-center">
                       <PlusIcon
                         aria-hidden="true"
                         className="size-4 group-data-open:hidden"
                       />
                       <MinusIcon
                         aria-hidden="true"
-                        className="w-4 h-2 group-not-data-open:hidden"
+                        className="h-2 w-4 group-not-data-open:hidden"
                       />
                     </span>
                   </DisclosureButton>
@@ -60,10 +60,10 @@ export const Accordion: React.FC<AccordionProps> = ({ entries }) => {
                     open: { height: "auto", opacity: 1 },
                     collapsed: { height: 0, opacity: 0 },
                   }}
-                  className="overflow-hidden md:pr-12 border-t border-gray-900"
+                  className="overflow-hidden border-t border-gray-900 md:pr-12"
                 >
                   <div className="lg:w-4/5">
-                    <div className="pb-12 pt-12 text-base/7 text-black/50 leading-6 md:pl-7">
+                    <div className="pt-12 pb-12 text-base/7 leading-6 text-black/50 md:pl-7">
                       {entry.description}
                     </div>
                   </div>

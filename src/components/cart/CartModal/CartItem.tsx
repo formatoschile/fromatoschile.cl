@@ -40,13 +40,13 @@ export const CartItem: React.FC<CartItemProps> = ({
   );
 
   return (
-    <li className="flex w-full flex-col border-b border-brand-ink/10">
+    <li className="border-brand-ink/10 flex w-full flex-col border-b">
       <div className="relative flex w-full flex-row justify-between px-1 py-4">
-        <div className="absolute z-40 -ml-1 -mt-2">
+        <div className="absolute z-40 -mt-2 -ml-1">
           <DeleteItemButton item={item} optimisticUpdate={updateCartItem} />
         </div>
         <div className="flex flex-row">
-          <div className="relative h-16 w-16 overflow-hidden rounded-md border border-brand-ink/10 bg-white">
+          <div className="border-brand-ink/10 relative h-16 w-16 overflow-hidden rounded-md border bg-white">
             {item.merchandise.product.featuredImage ? (
               <Image
                 className="h-full w-full object-cover"
@@ -77,7 +77,7 @@ export const CartItem: React.FC<CartItemProps> = ({
                 {item.merchandise.product.title}
               </span>
               {item.merchandise.title !== DEFAULT_OPTION ? (
-                <p className="text-sm text-brand-ink/60">
+                <p className="text-brand-ink/60 text-sm">
                   {item.merchandise.title}
                 </p>
               ) : null}
@@ -91,7 +91,7 @@ export const CartItem: React.FC<CartItemProps> = ({
             amount={item.cost.totalAmount.amount}
             currencyCode={item.cost.totalAmount.currencyCode}
           />
-          <div className="ml-auto flex h-9 flex-row items-center rounded-full border border-brand-ink/20">
+          <div className="border-brand-ink/20 ml-auto flex h-9 flex-row items-center rounded-full border">
             <EditItemQuantityButton
               item={item}
               type="minus"
@@ -129,7 +129,7 @@ const CartItemAttributes: React.FC<CartItemAttributesProps> = ({
   return (
     <div className="mt-1 space-y-0.5">
       {displayAttributes.map((attr) => (
-        <p key={attr.key} className="text-xs text-brand-ink/60">
+        <p key={attr.key} className="text-brand-ink/60 text-xs">
           <span className="font-medium">{attr.key}:</span> {attr.value}
         </p>
       ))}

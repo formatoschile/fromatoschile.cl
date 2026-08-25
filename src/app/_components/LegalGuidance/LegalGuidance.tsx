@@ -4,7 +4,7 @@ export const LegalGuidance = () => {
   return (
     <section className="bg-white px-6 py-16 lg:px-16">
       <div className="mx-auto max-w-7xl">
-        <div className="relative overflow-hidden rounded-3xl bg-primary px-8 py-16 sm:px-14 lg:px-20 lg:py-24">
+        <div className="bg-primary relative overflow-hidden rounded-3xl px-8 py-16 sm:px-14 lg:px-20 lg:py-24">
           {/* Decorative RK monogram */}
           <Image
             src="/logo/rk_logo.png"
@@ -12,11 +12,11 @@ export const LegalGuidance = () => {
             aria-hidden="true"
             width={260}
             height={131}
-            className="pointer-events-none absolute bottom-6 right-6 w-48 select-none opacity-70 sm:w-72"
+            className="pointer-events-none absolute right-6 bottom-6 w-48 opacity-70 select-none sm:w-72"
           />
 
           <div className="relative max-w-2xl">
-            <h2 className="text-3xl font-normal leading-tight text-neutral-800 sm:text-4xl">
+            <h2 className="text-3xl leading-tight font-normal text-neutral-800 sm:text-4xl">
               ¿Necesitas{" "}
               <strong className="font-bold">
                 orientación legal personalizada
@@ -43,8 +43,10 @@ export const LegalGuidance = () => {
             </p>
 
             <a
-              href="#"
-              className="mt-8 inline-block rounded-md bg-white px-6 py-3 text-xs uppercase tracking-wider text-neutral-800 shadow-sm transition-colors hover:bg-neutral-100"
+              href="https://www.rkabogados.cl"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-8 inline-block rounded-md bg-white px-6 py-3 text-xs tracking-wider text-neutral-800 uppercase shadow-sm transition-colors hover:bg-neutral-100"
             >
               Habla con RK Abogados
             </a>

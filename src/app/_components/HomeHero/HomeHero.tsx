@@ -18,7 +18,7 @@ export const HomeHero = () => {
         <div className="absolute inset-0 bg-linear-to-t from-black/50 to-transparent to-[37.5%]" />
 
         {/* Headline — top-left */}
-        <h1 className="absolute left-6 top-8 max-w-[10ch] font-condensed text-4xl font-medium leading-[1.1] text-charcoal sm:left-12 sm:top-12 sm:text-[60px] sm:leading-[66px]">
+        <h1 className="font-condensed text-charcoal absolute top-8 left-6 max-w-[10ch] text-4xl leading-[1.1] font-medium sm:top-12 sm:left-12 sm:text-[60px] sm:leading-[66px]">
           Contratos legales listos para usar
         </h1>
 
@@ -31,7 +31,7 @@ export const HomeHero = () => {
         {/* CTA — bottom-right */}
         <Link
           href="/todos-los-documentos"
-          className="absolute bottom-8 right-6 rounded-lg bg-white px-8 py-4 text-sm font-medium tracking-wide text-neutral-800 shadow-sm transition-all hover:scale-105 hover:brightness-95 sm:bottom-10 sm:right-12"
+          className="absolute right-6 bottom-8 rounded-lg bg-white px-8 py-4 text-sm font-medium tracking-wide text-neutral-800 shadow-sm transition-all hover:scale-105 hover:brightness-95 sm:right-12 sm:bottom-10"
         >
           VER CONTRATOS
         </Link>

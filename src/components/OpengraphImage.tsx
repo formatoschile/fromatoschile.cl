@@ -12,8 +12,18 @@ export const OpengraphImage = async (
   const title = props?.title ?? env.SITE_NAME;
 
   return new ImageResponse(
-    <div className="flex h-full w-full flex-col items-center justify-center bg-black">
-      <p className="text-6xl font-bold text-white">{title}</p>
+    <div
+      style={{
+        display: "flex",
+        height: "100%",
+        width: "100%",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: "black",
+      }}
+    >
+      <p style={{ fontSize: 60, fontWeight: 700, color: "white" }}>{title}</p>
     </div>,
     {
       width: 1200,

@@ -2,12 +2,12 @@ import { cacheLife, cacheTag } from "next/cache";
 
 import { TAGS } from "@/lib/utils/constants";
 
+import { shopifyFetch } from "./client";
 import {
   getCollectionProductsQuery,
   getCollectionQuery,
   getCollectionsQuery,
 } from "./queries/collection";
-import { shopifyFetch } from "./client";
 import {
   removeEdgesAndNodes,
   reshapeCollection,

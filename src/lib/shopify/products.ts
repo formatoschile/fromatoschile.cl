@@ -2,13 +2,13 @@ import { cacheLife, cacheTag } from "next/cache";
 
 import { HIDDEN_PRODUCT_TAG, TAGS } from "@/lib/utils/constants";
 
+import { shopifyFetch } from "./client";
 import {
   getProductByIdQuery,
   getProductQuery,
   getProductRecommendationsQuery,
   getProductsQuery,
 } from "./queries/product";
-import { shopifyFetch } from "./client";
 import {
   removeEdgesAndNodes,
   reshapeProduct,

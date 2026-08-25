@@ -78,7 +78,7 @@ export default async function ProductPage(props: {
     <ProductProvider>
       <script
         type="application/ld+json"
-        // eslint-disable-next-line @eslint-react/dom-no-dangerously-set-innerhtml -- JSON-LD from app data
+        /* oxlint-disable-next-line react/no-danger -- JSON-LD from app data */
         dangerouslySetInnerHTML={{
           __html: JSON.stringify(productJsonLd),
         }}

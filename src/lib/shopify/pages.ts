@@ -2,8 +2,8 @@ import { cacheLife, cacheTag } from "next/cache";
 
 import { TAGS } from "@/lib/utils/constants";
 
-import { getPageQuery, getPagesQuery } from "./queries/page";
 import { shopifyFetch } from "./client";
+import { getPageQuery, getPagesQuery } from "./queries/page";
 import { removeEdgesAndNodes } from "./reshape";
 import type {
   Page,

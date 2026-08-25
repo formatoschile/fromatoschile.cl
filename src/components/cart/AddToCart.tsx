@@ -20,15 +20,15 @@ export const AddToCart: React.FC<AddToCartProps> = ({ product }) => {
   const { state } = useProduct();
   const [isPending, startTransition] = useTransition();
 
-  const variant = variants.find((variant: ProductVariant) =>
-    variant.selectedOptions.every(
+  const matchedVariant = variants.find((candidate: ProductVariant) =>
+    candidate.selectedOptions.every(
       (option) => option.value === state[option.name.toLowerCase()]
     )
   );
   const defaultVariantId = variants.length === 1 ? variants[0]?.id : undefined;
-  const selectedVariantId = variant?.id || defaultVariantId;
+  const selectedVariantId = matchedVariant?.id || defaultVariantId;
   const finalVariant = variants.find(
-    (variant) => variant.id === selectedVariantId
+    (candidate) => candidate.id === selectedVariantId
   );
 
   const handleAddToCart = () => {

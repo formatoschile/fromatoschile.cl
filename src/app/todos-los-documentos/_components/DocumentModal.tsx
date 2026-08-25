@@ -64,7 +64,7 @@ export const DocumentModal: React.FC<DocumentModalProps> = ({
       <div className="fixed inset-0 flex items-center justify-center p-4">
         <DialogPanel className="grid h-[88vh] w-full max-w-5xl grid-cols-1 overflow-hidden rounded-2xl bg-white shadow-2xl md:grid-cols-3">
           {/* Left: preview */}
-          <div className="relative hidden min-h-0 bg-primary md:col-span-2 md:block">
+          <div className="bg-primary relative hidden min-h-0 md:col-span-2 md:block">
             {hasPreview ? (
               <object
                 data={`${doc.previewUrl}#toolbar=0`}
@@ -82,7 +82,7 @@ export const DocumentModal: React.FC<DocumentModalProps> = ({
             ) : (
               <>
                 {/* Page controls */}
-                <div className="absolute right-6 top-6 z-10 flex flex-col items-center gap-2">
+                <div className="absolute top-6 right-6 z-10 flex flex-col items-center gap-2">
                   <span className="text-sm text-neutral-700">
                     {page}/{TOTAL_PAGES}
                   </span>
@@ -120,7 +120,7 @@ export const DocumentModal: React.FC<DocumentModalProps> = ({
             <h2 className="text-2xl leading-snug text-neutral-800">
               {doc.title}
             </h2>
-            <p className="mt-2 text-xs uppercase tracking-widest text-neutral-500">
+            <p className="mt-2 text-xs tracking-widest text-neutral-500 uppercase">
               {doc.category}
             </p>
 
@@ -142,7 +142,7 @@ export const DocumentModal: React.FC<DocumentModalProps> = ({
 
               <BuyButton
                 variantId={doc.variantId}
-                className="mt-6 w-full rounded-md bg-neutral-900 py-4 text-sm font-medium uppercase tracking-wider text-white hover:bg-neutral-700"
+                className="mt-6 w-full rounded-md bg-neutral-900 py-4 text-sm font-medium tracking-wider text-white uppercase hover:bg-neutral-700"
               />
 
               {doc.cartData ? (
@@ -151,7 +151,7 @@ export const DocumentModal: React.FC<DocumentModalProps> = ({
                     variant={doc.cartData.variant}
                     product={doc.cartData.product}
                     onAdd={onClose}
-                    className="mt-3 w-full rounded-md border border-neutral-300 py-4 text-sm font-medium uppercase tracking-wider text-neutral-800 hover:bg-neutral-100"
+                    className="mt-3 w-full rounded-md border border-neutral-300 py-4 text-sm font-medium tracking-wider text-neutral-800 uppercase hover:bg-neutral-100"
                   />
                 </Suspense>
               ) : null}
@@ -169,7 +169,7 @@ const AddToCartFallback = () => {
     <button
       type="button"
       disabled
-      className="mt-3 w-full cursor-wait rounded-md border border-neutral-300 py-4 text-sm font-medium uppercase tracking-wider text-neutral-800 opacity-60"
+      className="mt-3 w-full cursor-wait rounded-md border border-neutral-300 py-4 text-sm font-medium tracking-wider text-neutral-800 uppercase opacity-60"
     >
       Agregar al carrito
     </button>
