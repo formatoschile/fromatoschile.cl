@@ -4,15 +4,16 @@
 @plugin "@tailwindcss/typography";
 
 @theme {
-  --font-main: var(--font-jost);
-  --font-condensed:
-    "Avenir Next Condensed", var(--font-barlow-condensed), "Arial Narrow",
-    ui-sans-serif, sans-serif;
+  --font-main: var(--font-afacad);
   --color-brand-ink: #0c3b30;
   /* Dark neutral surface (footer, security section) */
   --color-graphite: #323438;
-  /* Dark neutral headline color (hero) */
+  /* Primary text / UI black */
+  --color-ink: #222f3f;
+  /* Dark button / UI fill */
   --color-charcoal: #363636;
+  /* Light neutral surface (featured templates, muted sections) */
+  --color-mist: #f9f9f9;
   /* Brand mint — primary surface/accent color */
   --color-primary: #d7f3cc;
   --color-secondary: #9693ff;
@@ -82,7 +83,7 @@
   }
 
   body {
-    @apply bg-white text-neutral-900 antialiased;
+    @apply text-ink bg-white antialiased;
   }
 }
 

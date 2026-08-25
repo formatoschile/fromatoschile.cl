@@ -17,10 +17,10 @@ export const FeaturedTemplates = async () => {
   }
 
   return (
-    <section className="bg-white py-16">
+    <section className="bg-mist py-16">
       <TemplateCarousel
         heading={
-          <h2 className="font-condensed text-3xl text-neutral-800 sm:text-4xl">
+          <h2 className="text-ink text-4xl font-normal sm:text-5xl">
             Plantillas destacadas
           </h2>
         }
@@ -32,7 +32,7 @@ export const FeaturedTemplates = async () => {
 
       <Link
         href="/todos-los-documentos"
-        className="mt-6 ml-(--inset-x) inline-flex items-center gap-2 text-sm font-medium text-neutral-800 underline underline-offset-4 hover:text-neutral-950"
+        className="text-ink mt-6 ml-(--inset-x) inline-flex items-center gap-2 text-lg font-normal underline underline-offset-4 hover:text-black"
       >
         Ver Todos los Documentos <span aria-hidden="true">→</span>
       </Link>

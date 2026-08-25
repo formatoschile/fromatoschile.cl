@@ -20,7 +20,7 @@ export default async function DocumentsPage(props: {
 
   return (
     <div className="mx-auto max-w-7xl px-6 py-12 lg:px-10">
-      <h1 className="text-4xl text-neutral-800 sm:text-5xl">
+      <h1 className="text-ink text-4xl sm:text-5xl">
         Encuentra tu Documento Legal
       </h1>
 

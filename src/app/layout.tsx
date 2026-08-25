@@ -1,5 +1,5 @@
 import { ReactNode, Suspense } from "react";
-import { Barlow_Semi_Condensed, DM_Sans, Jost } from "next/font/google";
+import { Afacad } from "next/font/google";
 
 import { CartProvider } from "@/components/cart/CartContext";
 import { Footer } from "@/components/layout/Footer/Footer";
@@ -10,22 +10,10 @@ import { env } from "@/lib/utils/env";
 
 import "./globals.css";
 
-const jost = Jost({
+const afacad = Afacad({
   subsets: ["latin"],
-  variable: "--font-jost",
-  weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
-});
-
-// Web fallback for "Avenir Next Condensed" (a macOS-only system font).
-const barlowCondensed = Barlow_Semi_Condensed({
-  subsets: ["latin"],
-  variable: "--font-barlow-condensed",
-  weight: ["300", "400", "500", "600", "700"],
-});
-
-const dmSans = DM_Sans({
-  subsets: ["latin"],
-  variable: "--font-dm-sans",
+  variable: "--font-afacad",
+  weight: ["400", "500", "600", "700"],
 });
 
 export const metadata = {
@@ -49,10 +37,7 @@ export default async function RootLayout({
   const cart = getCart();
 
   return (
-    <html
-      lang="es"
-      className={`${jost.variable} ${barlowCondensed.variable} ${dmSans.variable}`}
-    >
+    <html lang="es" className={afacad.variable}>
       <body className="font-main">
         <CartProvider cartPromise={cart}>
           <Suspense>

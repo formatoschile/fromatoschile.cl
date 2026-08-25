@@ -68,9 +68,9 @@ export const DocumentsCatalog: React.FC<DocumentsCatalogProps> = ({
             onClick={() => toggleCategory(category.label)}
             aria-pressed={selectedCategory === category.label}
             className={classNames(
-              "text-xs uppercase tracking-widest transition-colors hover:text-neutral-800",
+              "text-xs uppercase tracking-widest transition-colors hover:text-ink",
               {
-                "font-semibold text-neutral-900 underline underline-offset-4":
+                "font-semibold text-ink underline underline-offset-4":
                   selectedCategory === category.label,
                 "text-neutral-500": selectedCategory !== category.label,
               }

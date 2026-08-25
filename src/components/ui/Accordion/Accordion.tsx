@@ -36,8 +36,13 @@ export const Accordion: React.FC<AccordionProps> = ({ entries }) => {
               <>
                 <motion.dt variants={itemVariants}>
                   <DisclosureButton className="group flex w-full cursor-pointer items-start justify-between py-6 pl-1 text-left text-gray-900">
-                    <span className="transition-all delay-300 duration-75 md:text-lg">
-                      {i + 1}. {entry.title}
+                    <span className="flex items-baseline gap-8 transition-all delay-300 duration-75">
+                      <span className="text-ink text-4xl leading-[23px] font-bold">
+                        {String(i + 1).padStart(2, "0")}
+                      </span>
+                      <span className="text-ink text-xl leading-[23px] font-normal">
+                        {entry.title}
+                      </span>
                     </span>
                     <span className="mr-4 flex h-7 items-center justify-center">
                       <PlusIcon

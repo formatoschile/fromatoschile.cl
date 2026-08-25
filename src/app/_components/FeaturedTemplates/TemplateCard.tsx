@@ -17,9 +17,9 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({ product }) => {
   const features = product.tags.slice(0, MAX_FEATURES);
 
   return (
-    <div className="flex min-h-72 w-72 shrink-0 flex-col rounded-xl border border-neutral-200 bg-white p-6 shadow-sm first:ml-(--inset-x) last:mr-(--inset-x)">
+    <div className="flex min-h-72 w-72 shrink-0 flex-col rounded-xl bg-white p-6 shadow-sm first:ml-(--inset-x) last:mr-(--inset-x)">
       <Link href={`/product/${product.handle}`}>
-        <h3 className="text-lg leading-snug font-medium text-neutral-800 hover:underline">
+        <h3 className="text-ink text-xl leading-tight font-normal hover:underline">
           {product.title}
         </h3>
       </Link>
@@ -30,19 +30,19 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({ product }) => {
       />
 
       {features.length > 0 ? (
-        <ul className="mt-4 list-disc space-y-1.5 pl-4 text-xs text-neutral-500">
+        <ul className="mt-4 list-disc space-y-1.5 pl-4 text-sm text-neutral-500">
           {features.map((feature) => (
             <li key={feature}>{feature}</li>
           ))}
         </ul>
       ) : null}
 
-      <div className="mt-auto flex items-center justify-between pt-6">
-        <span className="text-lg font-medium text-neutral-800">{price}</span>
+      <div className="border-ink/10 mt-auto flex items-center justify-between border-t pt-6">
+        <span className="text-ink text-3xl font-normal">{price}</span>
 
         <BuyButton
           variantId={variantId}
-          className="rounded-md bg-neutral-900 px-5 py-2 text-sm font-medium text-white hover:bg-neutral-700"
+          className="bg-charcoal hover:bg-charcoal/80 rounded-md px-5 py-2 text-lg font-normal text-white"
         />
       </div>
     </div>

@@ -35,11 +35,11 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
 
         <PreviewThumbnail />
 
-        <h3 className="mt-4 min-h-[3rem] text-base leading-snug text-neutral-800">
+        <h3 className="text-ink mt-4 min-h-[3rem] text-base leading-snug">
           {title}
         </h3>
 
-        <p className="mt-2 text-xl text-neutral-800">{doc.price}</p>
+        <p className="text-ink mt-2 text-xl">{doc.price}</p>
       </div>
     </button>
   );

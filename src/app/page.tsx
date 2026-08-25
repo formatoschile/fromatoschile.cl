@@ -20,7 +20,7 @@ export const metadata = {
 
 export default function HomePage() {
   return (
-    <div className="bg-primary min-h-dvh text-neutral-800">
+    <div className="bg-primary text-ink min-h-dvh">
       <HomeHero />
       {/* Data-backed sections stream in without blocking the hero. */}
       <Suspense fallback={<DocumentCategoriesSkeleton />}>

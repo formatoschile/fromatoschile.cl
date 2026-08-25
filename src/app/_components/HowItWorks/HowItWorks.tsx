@@ -29,7 +29,7 @@ export const HowItWorks = () => {
   return (
     <section className="section-inset bg-primary py-20">
       <div className="mx-auto max-w-7xl">
-        <h2 className="font-condensed text-3xl text-neutral-800 sm:text-4xl">
+        <h2 className="text-ink text-4xl font-normal sm:text-5xl">
           Cómo funciona
         </h2>
 
@@ -52,9 +52,16 @@ const StepCard: React.FC<StepCardProps> = ({ step }) => {
 
   return (
     <div className="rounded-xl bg-white p-8 shadow-sm">
-      <p className="text-sm font-bold text-neutral-800">{number}</p>
-      <h3 className="mt-4 text-xl text-neutral-800">{title}</h3>
-      <p className="mt-4 text-sm leading-relaxed text-neutral-500">
+      <p
+        aria-hidden="true"
+        className="text-primary h-px text-6xl leading-[23px] font-bold select-none md:text-[190px]"
+      >
+        {number}
+      </p>
+      <h3 className="text-ink mt-4 text-3xl leading-[23px] font-normal">
+        {title}
+      </h3>
+      <p className="mt-4 text-base leading-relaxed text-neutral-500">
         {description}
       </p>
     </div>

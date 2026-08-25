@@ -32,12 +32,11 @@ export const DocumentCategories = async () => {
   return (
     <section className="py-16">
       <div className="section-inset flex flex-col items-start justify-between gap-4 md:flex-row md:items-end">
-        <h2 className="font-condensed text-3xl text-neutral-800 sm:text-4xl">
-          <span className="font-bold">Categorías</span>{" "}
-          <span className="font-light">de Documentos</span>
+        <h2 className="text-ink text-4xl font-normal sm:text-5xl">
+          Categorías de Documentos
         </h2>
 
-        <p className="max-w-md text-sm text-neutral-500">
+        <p className="max-w-md text-lg text-neutral-500">
           Encuentra el contrato o documento legal que necesitas, organizado por
           área de práctica
         </p>
@@ -72,7 +71,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category }) => {
           pathname: "/todos-los-documentos",
           query: { categoria: label },
         }}
-        className="mt-6 text-sm font-medium text-neutral-800 underline underline-offset-4 hover:text-neutral-950"
+        className="text-ink mt-6 text-sm font-normal underline underline-offset-4 hover:text-black"
       >
         ver {count} documentos
       </Link>

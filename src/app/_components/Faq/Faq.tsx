@@ -32,9 +32,7 @@ export const Faq = () => {
   return (
     <section className="section-inset bg-white py-20">
       <div className="mx-auto max-w-7xl">
-        <h2 className="font-condensed text-3xl text-neutral-800 sm:text-4xl">
-          FAQ
-        </h2>
+        <h2 className="text-ink text-4xl font-normal sm:text-5xl">FAQ</h2>
 
         <Accordion entries={faqs} />
       </div>

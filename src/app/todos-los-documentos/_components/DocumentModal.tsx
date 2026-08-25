@@ -117,9 +117,7 @@ export const DocumentModal: React.FC<DocumentModalProps> = ({
 
           {/* Right: details */}
           <div className="flex min-h-0 flex-col overflow-y-auto p-8 md:col-span-1">
-            <h2 className="text-2xl leading-snug text-neutral-800">
-              {doc.title}
-            </h2>
+            <h2 className="text-ink text-2xl leading-snug">{doc.title}</h2>
             <p className="mt-2 text-xs tracking-widest text-neutral-500 uppercase">
               {doc.category}
             </p>
@@ -137,12 +135,12 @@ export const DocumentModal: React.FC<DocumentModalProps> = ({
               </div>
 
               <div className="mt-6 flex items-center justify-end">
-                <span className="text-2xl text-neutral-800">{doc.price}</span>
+                <span className="text-ink text-4xl">{doc.price}</span>
               </div>
 
               <BuyButton
                 variantId={doc.variantId}
-                className="mt-6 w-full rounded-md bg-neutral-900 py-4 text-sm font-medium tracking-wider text-white uppercase hover:bg-neutral-700"
+                className="bg-charcoal hover:bg-charcoal/80 mt-6 w-full rounded-md py-4 text-sm font-medium tracking-wider text-white uppercase"
               />
 
               {doc.cartData ? (
@@ -151,7 +149,7 @@ export const DocumentModal: React.FC<DocumentModalProps> = ({
                     variant={doc.cartData.variant}
                     product={doc.cartData.product}
                     onAdd={onClose}
-                    className="mt-3 w-full rounded-md border border-neutral-300 py-4 text-sm font-medium tracking-wider text-neutral-800 uppercase hover:bg-neutral-100"
+                    className="text-ink mt-3 w-full rounded-md border border-neutral-300 py-4 text-sm font-medium tracking-wider uppercase hover:bg-neutral-100"
                   />
                 </Suspense>
               ) : null}
@@ -169,7 +167,7 @@ const AddToCartFallback = () => {
     <button
       type="button"
       disabled
-      className="mt-3 w-full cursor-wait rounded-md border border-neutral-300 py-4 text-sm font-medium tracking-wider text-neutral-800 uppercase opacity-60"
+      className="text-ink mt-3 w-full cursor-wait rounded-md border border-neutral-300 py-4 text-sm font-medium tracking-wider uppercase opacity-60"
     >
       Agregar al carrito
     </button>
