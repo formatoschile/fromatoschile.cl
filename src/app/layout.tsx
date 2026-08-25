@@ -1,6 +1,7 @@
 import { ReactNode, Suspense } from "react";
 import { Afacad } from "next/font/google";
 
+import { Analytics } from "@/components/Analytics/Analytics";
 import { CartProvider } from "@/components/cart/CartContext";
 import { Footer } from "@/components/layout/Footer/Footer";
 import { Navbar } from "@/components/layout/Navbar/Navbar";
@@ -49,6 +50,8 @@ export default async function RootLayout({
           </main>
 
           <Footer />
+
+          <Analytics />
         </CartProvider>
       </body>
     </html>

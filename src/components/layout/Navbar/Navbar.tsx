@@ -34,15 +34,8 @@ export const Navbar = () => {
           Todos los documentos
         </Link>
 
-        {/* Account + cart — right */}
+        {/* Cart — right */}
         <div className="flex items-center justify-end gap-6 justify-self-end">
-          <Link
-            href="/account"
-            className="text-brand-ink hover:text-brand-ink/70 hidden text-sm transition-colors sm:block"
-          >
-            Mi Cuenta
-          </Link>
-
           <Suspense
             fallback={
               <button aria-label="Open cart">

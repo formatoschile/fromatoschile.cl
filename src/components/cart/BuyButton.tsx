@@ -1,6 +1,7 @@
 "use client";
 
 import { useTransition } from "react";
+import { ArrowPathIcon } from "@heroicons/react/24/outline";
 
 import { buyNow } from "@/components/cart/actions";
 import { classNames } from "@/lib/utils/classNames";
@@ -35,13 +36,19 @@ export const BuyButton: React.FC<BuyButtonProps> = ({
       type="button"
       onClick={handleClick}
       disabled={isPending || !variantId}
-      aria-label="Comprar ahora"
+      aria-label={isPending ? "Redirigiendo a pago" : "Comprar ahora"}
+      aria-busy={isPending}
       className={classNames(
-        "cursor-pointer transition-colors disabled:cursor-wait disabled:opacity-60",
+        "relative cursor-pointer transition-colors disabled:cursor-wait disabled:opacity-60",
         className
       )}
     >
-      {isPending ? "Redirigiendo…" : children}
+      <span className={classNames({ invisible: isPending })}>{children}</span>
+      {isPending && (
+        <span className="absolute inset-0 flex items-center justify-center">
+          <ArrowPathIcon className="h-5 w-5 animate-spin" />
+        </span>
+      )}
     </button>
   );
 };
