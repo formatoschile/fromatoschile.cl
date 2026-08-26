@@ -1,14 +1,15 @@
 "use client";
 
-import React, { useTransition } from "react";
+import React from "react";
 
 import { useProduct } from "@/components/product/ProductContext";
-import { Product } from "@/lib/shopify/types";
+import type { Product } from "@/lib/shopify/types";
 import { classNames } from "@/lib/utils/classNames";
 import { getSelectedVariant } from "@/lib/utils/product";
 
 import { addItem } from "./actions";
 import { useCart } from "./CartContext";
+import { useCartMutation } from "./useCartMutation";
 
 interface AddToCartProps {
   product: Product;
@@ -16,9 +17,9 @@ interface AddToCartProps {
 
 export const AddToCart: React.FC<AddToCartProps> = ({ product }) => {
   const { variants } = product;
-  const { addCartItem, syncCart } = useCart();
+  const { addCartItem } = useCart();
   const { state } = useProduct();
-  const [isPending, startTransition] = useTransition();
+  const { isPending, runMutation } = useCartMutation();
 
   const finalVariant = getSelectedVariant(variants, state);
   const selectedVariantId = finalVariant?.id;
@@ -29,13 +30,10 @@ export const AddToCart: React.FC<AddToCartProps> = ({ product }) => {
       return;
     }
 
-    startTransition(async () => {
-      addCartItem(finalVariant, product);
-      const result = await addItem(null, selectedVariantId);
-      if (typeof result !== "string") {
-        syncCart(result);
-      }
-    });
+    runMutation(
+      () => addCartItem(finalVariant, product),
+      () => addItem(null, selectedVariantId)
+    );
   };
 
   return (

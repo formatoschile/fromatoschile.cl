@@ -9,8 +9,10 @@ const MAX_TEMPLATES = 6;
 
 /** Best-selling products as the homepage "featured templates" rail. */
 export const FeaturedTemplates = async () => {
-  const products = await getProducts({ sortKey: "BEST_SELLING" });
-  const featured = products.slice(0, MAX_TEMPLATES);
+  const featured = await getProducts({
+    sortKey: "BEST_SELLING",
+    first: MAX_TEMPLATES,
+  });
 
   if (featured.length === 0) {
     return null;
@@ -32,7 +34,7 @@ export const FeaturedTemplates = async () => {
 
       <Link
         href="/todos-los-documentos"
-        className="text-ink border-ink pb-x mt-6 ml-(--inset-x) inline-flex items-center gap-2 border-b text-lg font-normal transition-opacity hover:opacity-70"
+        className="text-ink border-ink mt-6 ml-(--inset-x) inline-flex items-center gap-2 border-b pb-1 text-lg font-normal transition-opacity hover:opacity-70"
       >
         Ver Todos los Documentos <span aria-hidden="true">→</span>
       </Link>

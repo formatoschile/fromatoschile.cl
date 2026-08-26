@@ -15,6 +15,9 @@ import {
 import { CartUserError, isCartNotFoundError } from "@/lib/shopify/errors";
 import type { Cart } from "@/lib/shopify/types";
 
+const MAX_ITEM_QUANTITY = 99;
+const CART_COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 30; // 30 days
+
 export async function addItem(
   _prevState: unknown,
   selectedVariantId: string | undefined,
@@ -36,12 +39,10 @@ export async function addItem(
       { merchandiseId: selectedVariantId, quantity: 1, attributes },
     ]);
   } catch (e) {
-    Sentry.captureException(e, { tags: { action: "addItem" } });
-    // Vercel's Node.js runtime can freeze the function right after the
-    // response is sent — block here so the event actually reaches Sentry.
-    await Sentry.flush(2000);
-    await clearStaleCartCookie(e);
-    return errorMessage(e, "Error adding item to cart");
+    return handleCartActionError(e, {
+      action: "addItem",
+      fallback: "Error adding item to cart",
+    });
   }
 }
 
@@ -58,10 +59,10 @@ export async function removeItem(
 
     return await removeFromCart([lineId]);
   } catch (e) {
-    Sentry.captureException(e, { tags: { action: "removeItem" } });
-    await Sentry.flush(2000);
-    await clearStaleCartCookie(e);
-    return errorMessage(e, "Error removing item from cart");
+    return handleCartActionError(e, {
+      action: "removeItem",
+      fallback: "Error removing item from cart",
+    });
   }
 }
 
@@ -74,6 +75,14 @@ export async function updateItemQuantity(
   }
 ): Promise<Cart | string | undefined> {
   const { merchandiseId, quantity } = payload;
+
+  if (
+    !Number.isInteger(quantity) ||
+    quantity < 0 ||
+    quantity > MAX_ITEM_QUANTITY
+  ) {
+    return `La cantidad debe ser un número entero entre 0 y ${MAX_ITEM_QUANTITY}`;
+  }
 
   try {
     const lineId = payload.lineId ?? (await findLineId(merchandiseId));
@@ -92,10 +101,10 @@ export async function updateItemQuantity(
 
     return undefined;
   } catch (e) {
-    Sentry.captureException(e, { tags: { action: "updateItemQuantity" } });
-    await Sentry.flush(2000);
-    await clearStaleCartCookie(e);
-    return errorMessage(e, "Error updating item quantity");
+    return handleCartActionError(e, {
+      action: "updateItemQuantity",
+      fallback: "Error updating item quantity",
+    });
   }
 }
 
@@ -124,9 +133,10 @@ export async function buyNow(
     });
     checkoutUrl = cart.checkoutUrl;
   } catch (e) {
-    Sentry.captureException(e, { tags: { action: "buyNow" } });
-    await Sentry.flush(2000);
-    return errorMessage(e, "Error starting checkout");
+    return handleCartActionError(e, {
+      action: "buyNow",
+      fallback: "Error starting checkout",
+    });
   }
 
   // Must run outside try/catch — redirect() throws internally.
@@ -135,14 +145,24 @@ export async function buyNow(
 }
 
 export async function redirectToCheckout() {
-  const cart = await getCart();
+  let checkoutUrl: string;
 
-  if (!cart) {
-    throw new Error("Cart not found");
+  try {
+    const cart = await getCart();
+
+    if (!cart) {
+      throw new Error("Cart not found");
+    }
+    checkoutUrl = cart.checkoutUrl;
+  } catch (e) {
+    Sentry.captureException(e, { tags: { action: "redirectToCheckout" } });
+    await Sentry.flush(2000);
+    throw e;
   }
 
+  // Must run outside try/catch — redirect() throws internally.
   // Checkout is an external Shopify URL, outside the typed-routes union.
-  redirect(cart.checkoutUrl as Route);
+  redirect(checkoutUrl as Route);
 }
 
 async function createCartAndSetCookie() {
@@ -157,6 +177,7 @@ async function createCartAndSetCookie() {
     secure: true,
     sameSite: "lax",
     path: "/",
+    maxAge: CART_COOKIE_MAX_AGE_SECONDS,
   });
 }
 
@@ -169,8 +190,16 @@ async function clearStaleCartCookie(error: unknown) {
   }
 }
 
-// Shopify `userErrors` carry a message worth showing the customer (e.g. "this
-// variant is out of stock") — everything else collapses to a generic string.
-function errorMessage(error: unknown, fallback: string): string {
+// Shared tail for every cart-mutating action's catch block: report to
+// Sentry, self-heal a stale cart cookie, and surface a user-safe message.
+async function handleCartActionError(
+  error: unknown,
+  { action, fallback }: { action: string; fallback: string }
+): Promise<string> {
+  Sentry.captureException(error, { tags: { action } });
+  // Vercel's Node.js runtime can freeze the function right after the
+  // response is sent — block here so the event actually reaches Sentry.
+  await Sentry.flush(2000);
+  await clearStaleCartCookie(error);
   return error instanceof CartUserError ? error.message : fallback;
 }

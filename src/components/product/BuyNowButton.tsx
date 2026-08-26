@@ -4,7 +4,7 @@ import React from "react";
 
 import { BuyButton } from "@/components/cart/BuyButton";
 import { useProduct } from "@/components/product/ProductContext";
-import { Product } from "@/lib/shopify/types";
+import type { Product } from "@/lib/shopify/types";
 import { getSelectedVariant } from "@/lib/utils/product";
 
 interface BuyNowButtonProps {

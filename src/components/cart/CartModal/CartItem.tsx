@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { Price } from "@/components/ui/Price";
-import { CartItem as CartItemType } from "@/lib/shopify/types";
+import type { CartItem as CartItemType } from "@/lib/shopify/types";
 import { createUrl } from "@/lib/utils";
 import { DEFAULT_OPTION } from "@/lib/utils/constants";
 
@@ -26,7 +26,7 @@ export const CartItem: React.FC<CartItemProps> = ({
   closeCart,
   updateCartItem,
 }) => {
-  const merchandiseSearchParams = {} as MerchandiseSearchParams;
+  const merchandiseSearchParams: MerchandiseSearchParams = {};
 
   item.merchandise.selectedOptions.forEach(({ name, value }) => {
     if (value !== DEFAULT_OPTION) {

@@ -1,7 +1,8 @@
+import * as Sentry from "@sentry/nextjs";
 import { cookies } from "next/headers";
 
 import { shopifyFetch } from "./client";
-import { CartUserError } from "./errors";
+import { CartNotFoundError, CartUserError } from "./errors";
 import {
   addToCartMutation,
   createCartMutation,
@@ -13,6 +14,7 @@ import { reshapeCart } from "./reshape";
 import type {
   Cart,
   ShopifyAddToCartOperation,
+  ShopifyCart,
   ShopifyCartOperation,
   ShopifyCreateCartOperation,
   ShopifyRemoveFromCartOperation,
@@ -30,13 +32,7 @@ export async function createCart({
     variables: { lineItems: lines },
   });
 
-  const { cart, userErrors } = res.body.data.cartCreate;
-  assertNoUserErrors(userErrors);
-  if (!cart) {
-    throw new Error("Cart not found");
-  }
-
-  return reshapeCart(cart);
+  return unwrapCartPayload(res.body.data.cartCreate);
 }
 
 export async function addToCart(
@@ -56,13 +52,7 @@ export async function addToCart(
     },
   });
 
-  const { cart, userErrors } = res.body.data.cartLinesAdd;
-  assertNoUserErrors(userErrors);
-  if (!cart) {
-    throw new Error("Cart not found");
-  }
-
-  return reshapeCart(cart);
+  return unwrapCartPayload(res.body.data.cartLinesAdd);
 }
 
 export async function removeFromCart(lineIds: string[]): Promise<Cart> {
@@ -76,13 +66,7 @@ export async function removeFromCart(lineIds: string[]): Promise<Cart> {
     },
   });
 
-  const { cart, userErrors } = res.body.data.cartLinesRemove;
-  assertNoUserErrors(userErrors);
-  if (!cart) {
-    throw new Error("Cart not found");
-  }
-
-  return reshapeCart(cart);
+  return unwrapCartPayload(res.body.data.cartLinesRemove);
 }
 
 export async function updateCart(
@@ -98,19 +82,24 @@ export async function updateCart(
     },
   });
 
-  const { cart, userErrors } = res.body.data.cartLinesUpdate;
-  assertNoUserErrors(userErrors);
-  if (!cart) {
-    throw new Error("Cart not found");
-  }
-
-  return reshapeCart(cart);
+  return unwrapCartPayload(res.body.data.cartLinesUpdate);
 }
 
-function assertNoUserErrors(userErrors: ShopifyUserError[]): void {
+function unwrapCartPayload({
+  cart,
+  userErrors,
+}: {
+  cart: ShopifyCart | null | undefined;
+  userErrors: ShopifyUserError[];
+}): Cart {
   if (userErrors.length > 0) {
     throw new CartUserError(userErrors);
   }
+  if (!cart) {
+    throw new CartNotFoundError();
+  }
+
+  return reshapeCart(cart);
 }
 
 export async function getCart(): Promise<Cart | undefined> {
@@ -136,6 +125,10 @@ export async function getCart(): Promise<Cart | undefined> {
     return reshapeCart(res.body.data.cart);
   } catch (error) {
     console.error("Failed to load cart:", error);
+    Sentry.captureException(error, {
+      level: "warning",
+      tags: { action: "getCart" },
+    });
     return undefined;
   }
 }

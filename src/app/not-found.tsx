@@ -10,7 +10,7 @@ export default function NotFound() {
       </p>
       <Link
         href="/"
-        className="mx-auto mt-4 flex w-full items-center justify-center rounded-full bg-blue-600 p-4 tracking-wide text-white hover:opacity-90"
+        className="bg-brand-ink mx-auto mt-4 flex w-full items-center justify-center rounded-full p-4 tracking-wide text-white hover:opacity-90"
       >
         Volver al inicio
       </Link>

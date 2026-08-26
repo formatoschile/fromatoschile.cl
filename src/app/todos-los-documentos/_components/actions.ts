@@ -1,7 +1,7 @@
 "use server";
 
 import { getProductsPage } from "@/lib/shopify";
-import type { ProductsPage } from "@/lib/shopify/products";
+import type { ProductsPage } from "@/lib/shopify";
 import { buildProductSearchQuery } from "@/lib/shopify/search";
 
 import { CATALOG_PAGE_SIZE } from "./constants";

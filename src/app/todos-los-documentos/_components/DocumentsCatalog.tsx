@@ -1,8 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState, useTransition } from "react";
-import type { Route } from "next";
-import { usePathname, useRouter } from "next/navigation";
+import { useCallback } from "react";
 
 import type { Collection, ProductCard } from "@/lib/shopify/types";
 import { classNames } from "@/lib/utils/classNames";
@@ -10,9 +8,10 @@ import { classNames } from "@/lib/utils/classNames";
 import { loadMoreDocuments } from "./actions";
 import { DocumentCard } from "./DocumentCard";
 import { FeaturedCard } from "./FeaturedCard";
+import { LoadMoreButton } from "./LoadMoreButton";
 import { SearchInput } from "./SearchInput";
-
-const SEARCH_DEBOUNCE_MS = 400;
+import { useDebouncedSearch } from "./useDebouncedSearch";
+import { useLoadMore } from "./useLoadMore";
 
 interface DocumentsCatalogProps {
   categories: Collection[];
@@ -31,62 +30,32 @@ export const DocumentsCatalog: React.FC<DocumentsCatalogProps> = ({
   initialHasNextPage,
   initialEndCursor,
 }) => {
-  const router = useRouter();
-  const pathname = usePathname();
-  const [isPending, startTransition] = useTransition();
-  const [searchText, setSearchText] = useState(query);
-  const [products, setProducts] = useState(initialProducts);
-  const [hasNextPage, setHasNextPage] = useState(initialHasNextPage);
-  const [endCursor, setEndCursor] = useState(initialEndCursor);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const { searchText, setSearchText, isPending, navigateTo } =
+    useDebouncedSearch({
+      query,
+      buildParams: useCallback(
+        (text: string) => ({ categoria: selectedCategory, q: text || null }),
+        [selectedCategory]
+      ),
+    });
 
-  const navigateTo = useCallback(
-    (params: { categoria: string | null; q: string | null }) => {
-      const search = new URLSearchParams();
-      if (params.categoria) search.set("categoria", params.categoria);
-      if (params.q) search.set("q", params.q);
-
-      const queryString = search.toString();
-      startTransition(() => {
-        router.push(
-          (queryString ? `${pathname}?${queryString}` : pathname) as Route
-        );
-      });
-    },
-    [pathname, router, startTransition]
-  );
-
-  // Debounce the search box before pushing it to the URL (and re-fetching).
-  useEffect(() => {
-    if (searchText === query) return;
-
-    const timeout = setTimeout(() => {
-      navigateTo({ categoria: selectedCategory, q: searchText || null });
-    }, SEARCH_DEBOUNCE_MS);
-
-    return () => clearTimeout(timeout);
-  }, [searchText, query, selectedCategory, navigateTo]);
+  const { products, hasNextPage, isLoadingMore, handleLoadMore } = useLoadMore({
+    initialProducts,
+    initialHasNextPage,
+    initialEndCursor,
+    loadMore: (after) =>
+      loadMoreDocuments({
+        category: selectedCategory,
+        text: query || null,
+        after,
+      }),
+  });
 
   const handleToggleCategory = (category: string) => {
     navigateTo({
       categoria: selectedCategory === category ? null : category,
       q: searchText || null,
     });
-  };
-
-  const handleLoadMore = async () => {
-    if (!endCursor) return;
-
-    setIsLoadingMore(true);
-    const nextPage = await loadMoreDocuments({
-      category: selectedCategory,
-      text: query || null,
-      after: endCursor,
-    });
-    setProducts((current) => [...current, ...nextPage.products]);
-    setHasNextPage(nextPage.hasNextPage);
-    setEndCursor(nextPage.endCursor);
-    setIsLoadingMore(false);
   };
 
   const [featured, ...rest] = products;
@@ -149,16 +118,10 @@ export const DocumentsCatalog: React.FC<DocumentsCatalogProps> = ({
           </div>
 
           {hasNextPage ? (
-            <div className="mt-10 flex justify-center">
-              <button
-                type="button"
-                onClick={handleLoadMore}
-                disabled={isLoadingMore}
-                className="border-ink text-ink hover:bg-ink cursor-pointer rounded-full border px-6 py-3 text-sm tracking-wide transition-colors hover:text-white disabled:cursor-wait disabled:opacity-60"
-              >
-                {isLoadingMore ? "Cargando…" : "Cargar más"}
-              </button>
-            </div>
+            <LoadMoreButton
+              isLoading={isLoadingMore}
+              onClick={handleLoadMore}
+            />
           ) : null}
         </>
       ) : (

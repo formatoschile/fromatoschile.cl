@@ -1,5 +1,10 @@
 import type { Connection } from "./types";
 
+// 100 edges/page (Shopify's connection cap) × this bound is far beyond any
+// realistic catalog size — guards against an infinite loop if a cursor ever
+// fails to terminate (e.g. `hasNextPage` stuck `true`).
+const MAX_PAGES = 500;
+
 /**
  * Shopify connections cap a single page at 100 edges. Loops the given fetcher
  * with the previous page's cursor until `hasNextPage` is false, so callers
@@ -11,15 +16,17 @@ export async function fetchAllPages<T>(
   const edges: Connection<T>["edges"] = [];
   let after: string | undefined;
 
-  for (;;) {
-    const page = await fetchPage(after);
-    edges.push(...page.edges);
+  for (let page = 0; page < MAX_PAGES; page++) {
+    const result = await fetchPage(after);
+    edges.push(...result.edges);
 
-    if (!page.pageInfo?.hasNextPage) {
-      break;
+    if (!result.pageInfo?.hasNextPage) {
+      return edges;
     }
-    after = page.pageInfo.endCursor ?? undefined;
+    after = result.pageInfo.endCursor ?? undefined;
   }
 
-  return edges;
+  throw new Error(
+    `fetchAllPages exceeded ${MAX_PAGES} pages without exhausting hasNextPage`
+  );
 }

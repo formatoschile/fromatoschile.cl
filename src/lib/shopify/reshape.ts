@@ -4,7 +4,7 @@ import type {
   Cart,
   Collection,
   Connection,
-  Image,
+  Product,
   ShopifyCart,
   ShopifyCollection,
   ShopifyProduct,
@@ -40,26 +40,18 @@ export const reshapeCollection = (
   };
 };
 
-export const reshapeCollections = (collections: ShopifyCollection[]) => {
-  const reshapedCollections = [];
-
-  for (const collection of collections) {
-    if (collection) {
-      const reshapedCollection = reshapeCollection(collection);
-
-      if (reshapedCollection) {
-        reshapedCollections.push(reshapedCollection);
-      }
-    }
-  }
-
-  return reshapedCollections;
-};
+export const reshapeCollections = (
+  collections: ShopifyCollection[]
+): Collection[] =>
+  collections
+    .filter((collection) => Boolean(collection))
+    .map((collection) => reshapeCollection(collection))
+    .filter((collection) => collection !== undefined);
 
 export const reshapeProduct = (
   product: ShopifyProduct,
   shouldFilterHiddenProducts: boolean = true
-) => {
+): Product | undefined => {
   if (
     !product ||
     (shouldFilterHiddenProducts && product.tags.includes(HIDDEN_PRODUCT_TAG))
@@ -67,40 +59,11 @@ export const reshapeProduct = (
     return undefined;
   }
 
-  const { images, variants, collections, ...rest } = product;
+  const { variants, collections, ...rest } = product;
 
   return {
     ...rest,
-    images: reshapeImages(images, product.title),
     variants: removeEdgesAndNodes(variants),
     collectionHandle: removeEdgesAndNodes(collections)[0]?.handle ?? null,
   };
-};
-
-export const reshapeProducts = (products: ShopifyProduct[]) => {
-  const reshapedProducts = [];
-
-  for (const product of products) {
-    if (product) {
-      const reshapedProduct = reshapeProduct(product);
-
-      if (reshapedProduct) {
-        reshapedProducts.push(reshapedProduct);
-      }
-    }
-  }
-
-  return reshapedProducts;
-};
-
-const reshapeImages = (images: Connection<Image>, productTitle: string) => {
-  const flattened = removeEdgesAndNodes(images);
-
-  return flattened.map((image) => {
-    const filename = image.url.match(/.*\/(.*)\..*/)?.[1];
-    return {
-      ...image,
-      altText: image.altText || `${productTitle} - ${filename}`,
-    };
-  });
 };

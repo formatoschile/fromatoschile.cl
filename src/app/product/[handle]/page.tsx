@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import * as Sentry from "@sentry/nextjs";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
@@ -6,10 +7,8 @@ import { JsonLd } from "@/components/JsonLd/JsonLd";
 import { PdfViewer } from "@/components/product/PdfViewer/PdfViewer";
 import { ProductProvider } from "@/components/product/ProductContext";
 import { ProductDescription } from "@/components/product/ProductDescription";
-import { env } from "@/env";
-import { buildBreadcrumbJsonLd } from "@/lib/seo/jsonLd";
+import { buildBreadcrumbJsonLd, buildProductJsonLd } from "@/lib/seo/jsonLd";
 import { getProduct, getProducts } from "@/lib/shopify";
-import { baseUrl } from "@/lib/utils";
 import { HIDDEN_PRODUCT_TAG } from "@/lib/utils/constants";
 import { getProductCategory } from "@/lib/utils/product";
 
@@ -21,7 +20,9 @@ export async function generateStaticParams() {
     const products = await getProducts({});
     return products.map((product) => ({ handle: product.handle }));
   } catch (error) {
-    console.error("Failed to list products for static generation:", error);
+    Sentry.captureException(error, {
+      tags: { action: "generateStaticParams:products" },
+    });
     return [];
   }
 }
@@ -75,39 +76,7 @@ export default async function ProductPage(props: {
   if (!product) return notFound();
 
   const category = getProductCategory(product);
-
-  const availability = product.availableForSale
-    ? "https://schema.org/InStock"
-    : "https://schema.org/OutOfStock";
-  const isSinglePrice =
-    product.priceRange.minVariantPrice.amount ===
-    product.priceRange.maxVariantPrice.amount;
-  const offers = isSinglePrice
-    ? {
-        "@type": "Offer",
-        availability,
-        priceCurrency: product.priceRange.minVariantPrice.currencyCode,
-        price: product.priceRange.minVariantPrice.amount,
-      }
-    : {
-        "@type": "AggregateOffer",
-        availability,
-        priceCurrency: product.priceRange.minVariantPrice.currencyCode,
-        highPrice: product.priceRange.maxVariantPrice.amount,
-        lowPrice: product.priceRange.minVariantPrice.amount,
-      };
-
-  const productJsonLd = {
-    "@context": "https://schema.org",
-    "@type": "Product",
-    name: product.title,
-    description: product.description,
-    image: product.featuredImage?.url,
-    sku: product.variants[0]?.sku,
-    url: `${baseUrl}/product/${product.handle}`,
-    brand: { "@type": "Brand", name: env.SITE_NAME },
-    offers,
-  };
+  const productJsonLd = buildProductJsonLd(product);
 
   const breadcrumbJsonLd = buildBreadcrumbJsonLd(
     [

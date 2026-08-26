@@ -9,7 +9,7 @@ const steps: Step[] = [
     number: "01",
     title: "Selecciona tu contrato",
     description:
-      "Realiza tu compra de forma segura. Accede inmediatamente a tu documento en formato editable (Word/PDF).",
+      "Explora nuestra biblioteca de documentos legales y elige la plantilla que se ajusta a lo que necesitas.",
   },
   {
     number: "02",
@@ -21,7 +21,7 @@ const steps: Step[] = [
     number: "03",
     title: "Usa y personaliza",
     description:
-      "Realiza tu compra de forma segura. Accede inmediatamente a tu documento en formato editable (Word/PDF).",
+      "Edita el documento con tus datos y úsalo de inmediato, respaldado por abogados colegiados.",
   },
 ];
 

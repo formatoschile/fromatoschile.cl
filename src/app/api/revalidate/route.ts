@@ -1,6 +1,8 @@
+import * as Sentry from "@sentry/nextjs";
 import { revalidateTag } from "next/cache";
 import { headers } from "next/headers";
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 import { createHmac, timingSafeEqual } from "node:crypto";
 
 import { env } from "@/env";
@@ -20,14 +22,19 @@ const pageWebhooks = ["pages/create", "pages/delete", "pages/update"];
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
   const rawBody = await req.text();
-  const signature = (await headers()).get("x-shopify-hmac-sha256");
+  const requestHeaders = await headers();
+  const signature = requestHeaders.get("x-shopify-hmac-sha256");
 
   if (!signature || !isValidSignature(rawBody, signature)) {
     console.error("Invalid revalidation webhook signature.");
+    Sentry.captureMessage("Invalid revalidation webhook signature", {
+      level: "warning",
+      tags: { action: "revalidate" },
+    });
     return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
   }
 
-  const topic = (await headers()).get("x-shopify-topic") || "unknown";
+  const topic = requestHeaders.get("x-shopify-topic") || "unknown";
   const isCollectionUpdate = collectionWebhooks.includes(topic);
   const isProductUpdate = productWebhooks.includes(topic);
   const isPageUpdate = pageWebhooks.includes(topic);

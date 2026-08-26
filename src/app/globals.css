@@ -16,15 +16,10 @@
   --color-mist: #f9f9f9;
   /* Brand mint — primary surface/accent color */
   --color-primary: #d7f3cc;
-  --color-secondary: #9693ff;
-  --color-tertiary: #d7ccf6;
   --color-accent: #ff66c4;
 
   /* Brand colors */
   --color-brand-primary: #504bff;
-  --color-brand-secondary: #ff66c4;
-  --color-brand-tertiary: #fdf755;
-  --color-brand-quaternary: #98fdc7;
 
   /* Document category pill colors */
   --color-category-laboral: #ffa8a8;

@@ -1,13 +1,11 @@
-import { MetadataRoute } from "next";
+import * as Sentry from "@sentry/nextjs";
+import type { MetadataRoute } from "next";
 
 import { getCollections, getPages, getProducts } from "@/lib/shopify";
 import { baseUrl } from "@/lib/utils";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const routesMap = [""].map((route) => ({
-    url: `${baseUrl}${route}`,
-    lastModified: new Date().toISOString(),
-  }));
+  const homeRoute = { url: baseUrl, lastModified: new Date().toISOString() };
 
   const collectionsPromise = getCollections()
     .then((collections) =>
@@ -18,6 +16,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     )
     .catch((error) => {
       console.error("Failed to list collections for sitemap:", error);
+      Sentry.captureException(error, {
+        tags: { action: "sitemap:collections" },
+      });
       return [];
     });
 
@@ -30,6 +31,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     )
     .catch((error) => {
       console.error("Failed to list products for sitemap:", error);
+      Sentry.captureException(error, { tags: { action: "sitemap:products" } });
       return [];
     });
 
@@ -42,6 +44,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     )
     .catch((error) => {
       console.error("Failed to list pages for sitemap:", error);
+      Sentry.captureException(error, { tags: { action: "sitemap:pages" } });
       return [];
     });
 
@@ -49,5 +52,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     await Promise.all([collectionsPromise, productsPromise, pagesPromise])
   ).flat();
 
-  return [...routesMap, ...fetchedRoutes];
+  return [homeRoute, ...fetchedRoutes];
 }

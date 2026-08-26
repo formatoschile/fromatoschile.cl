@@ -4,7 +4,8 @@ import seoFragment from "./seo";
 /**
  * Slim fragment for product listings (catalog cards, sitemap). The full
  * `product` fragment below pulls variants/images/descriptionHtml and should
- * only back the product detail page.
+ * only back the product detail page. Deliberately omits `featuredImage` —
+ * listing cards render a static preview placeholder, not the real image.
  */
 export const productCardFragment = /* GraphQL */ `
   fragment productCard on Product {
@@ -20,8 +21,13 @@ export const productCardFragment = /* GraphQL */ `
         currencyCode
       }
     }
-    featuredImage {
-      ...image
+    # First collection only — used to key a product to its category page.
+    collections(first: 1) {
+      edges {
+        node {
+          handle
+        }
+      }
     }
     # Full first-variant details so listings can add to cart optimistically.
     variants(first: 1) {
@@ -50,7 +56,6 @@ export const productCardFragment = /* GraphQL */ `
       }
     }
   }
-  ${imageFragment}
 `;
 
 const productFragment = /* GraphQL */ `
@@ -96,13 +101,6 @@ const productFragment = /* GraphQL */ `
     }
     featuredImage {
       ...image
-    }
-    images(first: 20) {
-      edges {
-        node {
-          ...image
-        }
-      }
     }
     seo {
       ...seo

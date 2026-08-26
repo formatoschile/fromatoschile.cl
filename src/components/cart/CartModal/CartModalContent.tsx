@@ -5,7 +5,7 @@ import { ShoppingCartIcon } from "@heroicons/react/24/outline";
 
 import { Button } from "@/components/ui/Button/Button";
 import { Price } from "@/components/ui/Price";
-import { Cart } from "@/lib/shopify/types";
+import type { Cart } from "@/lib/shopify/types";
 
 import { redirectToCheckout } from "../actions";
 import type { UpdateType } from "../cartReducer";

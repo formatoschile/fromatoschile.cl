@@ -1,4 +1,5 @@
-import { ReactNode, Suspense } from "react";
+import type { ReactNode } from "react";
+import { Suspense } from "react";
 import { Afacad } from "next/font/google";
 
 import { RouteFocus } from "@/components/a11y/RouteFocus";

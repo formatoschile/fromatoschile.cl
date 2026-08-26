@@ -4,23 +4,15 @@ import { HIDDEN_PRODUCT_TAG, TAGS } from "@/lib/utils/constants";
 
 import { shopifyFetch } from "./client";
 import { fetchAllPages } from "./pagination";
-import {
-  getProductByIdQuery,
-  getProductQuery,
-  getProductRecommendationsQuery,
-  getProductsQuery,
-} from "./queries/product";
-import {
-  removeEdgesAndNodes,
-  reshapeProduct,
-  reshapeProducts,
-} from "./reshape";
+import { getProductQuery, getProductsQuery } from "./queries/product";
+import { removeEdgesAndNodes, reshapeProduct } from "./reshape";
 import type {
+  Connection,
+  Edge,
   Product,
   ProductCard,
-  ShopifyProductByIdOperation,
+  ShopifyProductCard,
   ShopifyProductOperation,
-  ShopifyProductRecommendationsOperation,
   ShopifyProductsOperation,
 } from "./types";
 
@@ -37,45 +29,6 @@ export async function getProduct(handle: string): Promise<Product | undefined> {
   });
 
   return reshapeProduct(res.body.data.product, false);
-}
-
-export async function getProductById(
-  productId: string
-): Promise<Product | undefined> {
-  "use cache";
-  cacheTag(TAGS.products);
-  cacheLife("days");
-
-  // Shopify expects the full GID format
-  const gid = productId.startsWith("gid://")
-    ? productId
-    : `gid://shopify/Product/${productId}`;
-
-  const res = await shopifyFetch<ShopifyProductByIdOperation>({
-    query: getProductByIdQuery,
-    variables: {
-      id: gid,
-    },
-  });
-
-  return reshapeProduct(res.body.data.product, false);
-}
-
-export async function getProductRecommendations(
-  productId: string
-): Promise<Product[]> {
-  "use cache";
-  cacheTag(TAGS.products);
-  cacheLife("days");
-
-  const res = await shopifyFetch<ShopifyProductRecommendationsOperation>({
-    query: getProductRecommendationsQuery,
-    variables: {
-      productId,
-    },
-  });
-
-  return reshapeProducts(res.body.data.productRecommendations);
 }
 
 /**
@@ -120,12 +73,7 @@ export async function getProducts({
         }).then((res) => res.body.data.products)
       );
 
-  return removeEdgesAndNodes({ edges })
-    .filter((product) => !product.tags.includes(HIDDEN_PRODUCT_TAG))
-    .map((product) => ({
-      ...product,
-      variants: removeEdgesAndNodes(product.variants),
-    }));
+  return toProductCards(edges);
 }
 
 export type ProductsPage = {
@@ -163,16 +111,23 @@ export async function getProductsPage({
 
   const { edges, pageInfo } = res.body.data.products;
 
-  const products = removeEdgesAndNodes({ edges })
-    .filter((product) => !product.tags.includes(HIDDEN_PRODUCT_TAG))
-    .map((product) => ({
-      ...product,
-      variants: removeEdgesAndNodes(product.variants),
-    }));
-
   return {
-    products,
+    products: toProductCards(edges),
     hasNextPage: pageInfo?.hasNextPage ?? false,
     endCursor: pageInfo?.endCursor ?? null,
   };
+}
+
+function toProductCards(edges: Edge<ShopifyProductCard>[]): ProductCard[] {
+  return removeEdgesAndNodes({ edges } as Connection<ShopifyProductCard>)
+    .filter((product) => !product.tags.includes(HIDDEN_PRODUCT_TAG))
+    .map((product) => {
+      const { collections, ...rest } = product;
+
+      return {
+        ...rest,
+        variants: removeEdgesAndNodes(product.variants),
+        collectionHandle: removeEdgesAndNodes(collections)[0]?.handle ?? null,
+      };
+    });
 }

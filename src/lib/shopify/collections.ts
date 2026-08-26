@@ -45,24 +45,9 @@ export async function getCollections(): Promise<Collection[]> {
     }).then((res) => res.body?.data?.collections ?? { edges: [] })
   );
   const shopifyCollections = removeEdgesAndNodes({ edges });
-  const collections = [
-    {
-      handle: "",
-      title: "All",
-      description: "All products",
-      seo: {
-        title: "All",
-        description: "All products",
-      },
-      path: "/todos-los-documentos",
-      updatedAt: new Date().toISOString(),
-    },
-    // Filter out the `hidden` collections.
-    // Collections that start with `hidden-*` need to be hidden on the search page.
-    ...reshapeCollections(shopifyCollections).filter(
-      (collection) => !collection.handle.startsWith("hidden")
-    ),
-  ];
 
-  return collections;
+  // Collections that start with `hidden-*` need to be hidden on the search page.
+  return reshapeCollections(shopifyCollections).filter(
+    (collection) => !collection.handle.startsWith("hidden")
+  );
 }

@@ -4,8 +4,6 @@ import { getCollection as _getCollection, getCollections } from "./collections";
 import { getPage as _getPage, getPages } from "./pages";
 import {
   getProduct as _getProduct,
-  getProductById,
-  getProductRecommendations,
   getProducts,
   getProductsPage,
 } from "./products";
@@ -21,14 +19,8 @@ export {
   removeFromCart,
   updateCart,
 } from "./cart";
-export {
-  getCollections,
-  getPages,
-  getProductById,
-  getProductRecommendations,
-  getProducts,
-  getProductsPage,
-};
+export type { ProductsPage } from "./products";
+export { getCollections, getPages, getProducts, getProductsPage };
 
 // `"use cache"` dedupes across requests over time, not within a single
 // render — `generateMetadata`, `opengraph-image`, and the page body each

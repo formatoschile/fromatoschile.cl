@@ -3,7 +3,6 @@ import Link from "next/link";
 import { CategoryPill } from "@/components/ui/CategoryPill/CategoryPill";
 import { getCollections, getProducts } from "@/lib/shopify";
 import type { Collection } from "@/lib/shopify/types";
-import { getProductCategory } from "@/lib/utils/product";
 
 interface Category {
   collection: Collection;
@@ -19,18 +18,18 @@ export const DocumentCategories = async () => {
 
   const counts = new Map<string, number>();
   for (const product of products) {
-    const handle = getProductCategory(product).toLowerCase();
-    counts.set(handle, (counts.get(handle) ?? 0) + 1);
+    if (!product.collectionHandle) continue;
+    counts.set(
+      product.collectionHandle,
+      (counts.get(product.collectionHandle) ?? 0) + 1
+    );
   }
 
-  const categories: Category[] = collections
-    // The synthetic "All" collection (empty handle) links to the full catalog.
-    .filter((collection) => collection.handle)
-    .map((collection) => ({
-      collection,
-      description: collection.description || collection.seo?.description || "",
-      count: counts.get(collection.handle) ?? 0,
-    }));
+  const categories: Category[] = collections.map((collection) => ({
+    collection,
+    description: collection.description || collection.seo?.description || "",
+    count: counts.get(collection.handle) ?? 0,
+  }));
 
   if (categories.length === 0) {
     return null;

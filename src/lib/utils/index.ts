@@ -1,4 +1,5 @@
-import { ReadonlyURLSearchParams } from "next/navigation";
+import type { Route } from "next";
+import type { ReadonlyURLSearchParams } from "next/navigation";
 
 const PRODUCTION_URL = "https://formatos.cl";
 
@@ -22,16 +23,17 @@ function getBaseUrl() {
 export const createUrl = (
   pathname: string,
   params: URLSearchParams | ReadonlyURLSearchParams
-) => {
+): Route => {
   const paramsString = params.toString();
   const queryString = `${paramsString.length ? "?" : ""}${paramsString}`;
 
-  // @TODO Eventually convert to RoutImpl or something
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return `${pathname}${queryString}` as any;
+  return `${pathname}${queryString}` as Route;
 };
 
-export const ensureStartsWith = (stringToCheck: string, startsWith: string) =>
+export const ensureStartsWith = (
+  stringToCheck: string,
+  startsWith: string
+): string =>
   stringToCheck.startsWith(startsWith)
     ? stringToCheck
     : `${startsWith}${stringToCheck}`;

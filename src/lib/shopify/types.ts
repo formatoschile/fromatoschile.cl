@@ -70,18 +70,18 @@ export type Page = {
   updatedAt: string;
 };
 
-export type Product = Omit<
-  ShopifyProduct,
-  "variants" | "images" | "collections"
-> & {
+export type Product = Omit<ShopifyProduct, "variants" | "collections"> & {
   variants: ProductVariant[];
-  images: Image[];
   collectionHandle: string | null;
 };
 
 /** Slim listing model backed by the `productCard` fragment. */
-export type ProductCard = Omit<ShopifyProductCard, "variants"> & {
+export type ProductCard = Omit<
+  ShopifyProductCard,
+  "variants" | "collections"
+> & {
   variants: ProductVariant[];
+  collectionHandle: string | null;
 };
 
 export type ProductOption = {
@@ -142,7 +142,6 @@ export type ShopifyProduct = {
   };
   variants: Connection<ProductVariant>;
   featuredImage: Image;
-  images: Connection<Image>;
   seo: SEO;
   productType: string;
   previewPdf: ProductPreviewPdf;
@@ -161,9 +160,9 @@ export type ShopifyProductCard = {
   priceRange: {
     minVariantPrice: Money;
   };
-  featuredImage: Image | null;
   variants: Connection<ProductVariant>;
   previewPdf: ProductPreviewPdf;
+  collections: Connection<{ handle: string }>;
 };
 
 export type ProductPreviewPdf = {
@@ -279,22 +278,6 @@ export type ShopifyProductOperation = {
   data: { product: ShopifyProduct };
   variables: {
     handle: string;
-  };
-};
-
-export type ShopifyProductByIdOperation = {
-  data: { product: ShopifyProduct };
-  variables: {
-    id: string;
-  };
-};
-
-export type ShopifyProductRecommendationsOperation = {
-  data: {
-    productRecommendations: ShopifyProduct[];
-  };
-  variables: {
-    productId: string;
   };
 };
 

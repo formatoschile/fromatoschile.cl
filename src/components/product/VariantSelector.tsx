@@ -3,7 +3,7 @@
 import React from "react";
 
 import { useProduct, useUpdateURL } from "@/components/product/ProductContext";
-import { ProductOption, ProductVariant } from "@/lib/shopify/types";
+import type { ProductOption, ProductVariant } from "@/lib/shopify/types";
 import { classNames } from "@/lib/utils/classNames";
 
 type Combination = {
@@ -23,6 +23,12 @@ export const VariantSelector: React.FC<VariantSelectorProps> = ({
 }) => {
   const { state, updateOption } = useProduct();
   const updateURL = useUpdateURL();
+
+  const handleSelectOption = (name: string, value: string) => {
+    const newState = updateOption(name, value);
+    updateURL(newState);
+  };
+
   const hasNoOptionsOrJustOneOption =
     !options.length ||
     (options.length === 1 && options[0]?.values.length === 1);
@@ -80,14 +86,13 @@ export const VariantSelector: React.FC<VariantSelectorProps> = ({
 
                 return (
                   <button
-                    formAction={() => {
-                      const newState = updateOption(optionNameLowerCase, value);
-                      updateURL(newState);
-                    }}
+                    formAction={() =>
+                      handleSelectOption(optionNameLowerCase, value)
+                    }
                     key={value}
                     aria-disabled={!isAvailableForSale}
                     disabled={!isAvailableForSale}
-                    title={`${option.name} ${value}${!isAvailableForSale ? " (Out of Stock)" : ""}`}
+                    title={`${option.name} ${value}${!isAvailableForSale ? " (Agotado)" : ""}`}
                     className={classNames(
                       "flex min-w-[48px] items-center justify-center rounded-full border bg-neutral-100 px-2 py-1 text-sm",
                       {

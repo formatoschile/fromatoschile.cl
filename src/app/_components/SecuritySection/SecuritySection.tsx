@@ -26,7 +26,7 @@ export const SecuritySection = () => {
 
           <Link
             href="/todos-los-documentos"
-            className="text-primary border-primary pb-x mt-8 inline-flex items-center gap-2 border-b text-lg font-normal transition-opacity hover:opacity-70"
+            className="text-primary border-primary mt-8 inline-flex items-center gap-2 border-b pb-1 text-lg font-normal transition-opacity hover:opacity-70"
           >
             Ver Todos los Documentos <span aria-hidden="true">→</span>
           </Link>

@@ -1,17 +1,16 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
-import type { Route } from "next";
-import { usePathname, useRouter } from "next/navigation";
+import { useCallback } from "react";
 
 import type { ProductCard } from "@/lib/shopify/types";
 import { classNames } from "@/lib/utils/classNames";
 
 import { loadMoreDocuments } from "../../_components/actions";
 import { DocumentCard } from "../../_components/DocumentCard";
+import { LoadMoreButton } from "../../_components/LoadMoreButton";
 import { SearchInput } from "../../_components/SearchInput";
-
-const SEARCH_DEBOUNCE_MS = 400;
+import { useDebouncedSearch } from "../../_components/useDebouncedSearch";
+import { useLoadMore } from "../../_components/useLoadMore";
 
 interface CategoryCatalogProps {
   categoryTitle: string;
@@ -28,48 +27,22 @@ export const CategoryCatalog: React.FC<CategoryCatalogProps> = ({
   initialHasNextPage,
   initialEndCursor,
 }) => {
-  const router = useRouter();
-  const pathname = usePathname();
-  const [isPending, startTransition] = useTransition();
-  const [searchText, setSearchText] = useState(query);
-  const [products, setProducts] = useState(initialProducts);
-  const [hasNextPage, setHasNextPage] = useState(initialHasNextPage);
-  const [endCursor, setEndCursor] = useState(initialEndCursor);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const { searchText, setSearchText, isPending } = useDebouncedSearch({
+    query,
+    buildParams: useCallback((text: string) => ({ q: text || null }), []),
+  });
 
-  // Debounce the search box before pushing it to the URL (and re-fetching).
-  useEffect(() => {
-    if (searchText === query) return;
-
-    const timeout = setTimeout(() => {
-      const search = new URLSearchParams();
-      if (searchText) search.set("q", searchText);
-
-      const queryString = search.toString();
-      startTransition(() => {
-        router.push(
-          (queryString ? `${pathname}?${queryString}` : pathname) as Route
-        );
-      });
-    }, SEARCH_DEBOUNCE_MS);
-
-    return () => clearTimeout(timeout);
-  }, [searchText, query, pathname, router, startTransition]);
-
-  const handleLoadMore = async () => {
-    if (!endCursor) return;
-
-    setIsLoadingMore(true);
-    const nextPage = await loadMoreDocuments({
-      category: categoryTitle,
-      text: query || null,
-      after: endCursor,
-    });
-    setProducts((current) => [...current, ...nextPage.products]);
-    setHasNextPage(nextPage.hasNextPage);
-    setEndCursor(nextPage.endCursor);
-    setIsLoadingMore(false);
-  };
+  const { products, hasNextPage, isLoadingMore, handleLoadMore } = useLoadMore({
+    initialProducts,
+    initialHasNextPage,
+    initialEndCursor,
+    loadMore: (after) =>
+      loadMoreDocuments({
+        category: categoryTitle,
+        text: query || null,
+        after,
+      }),
+  });
 
   return (
     <div className={classNames({ "opacity-60": isPending })}>
@@ -89,16 +62,10 @@ export const CategoryCatalog: React.FC<CategoryCatalogProps> = ({
           </div>
 
           {hasNextPage ? (
-            <div className="mt-10 flex justify-center">
-              <button
-                type="button"
-                onClick={handleLoadMore}
-                disabled={isLoadingMore}
-                className="border-ink text-ink hover:bg-ink cursor-pointer rounded-full border px-6 py-3 text-sm tracking-wide transition-colors hover:text-white disabled:cursor-wait disabled:opacity-60"
-              >
-                {isLoadingMore ? "Cargando…" : "Cargar más"}
-              </button>
-            </div>
+            <LoadMoreButton
+              isLoading={isLoadingMore}
+              onClick={handleLoadMore}
+            />
           ) : null}
         </>
       ) : (

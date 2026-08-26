@@ -32,13 +32,19 @@ export class CartUserError extends Error {
   }
 }
 
-/** Distinguishes "the cartId cookie points at a cart that no longer exists"
- * (should self-heal by clearing the cookie) from a `CartUserError` (the cart
- * is fine, Shopify just rejected this specific line — e.g. out of stock). */
-export function isCartNotFoundError(error: unknown): boolean {
-  if (!(error instanceof Error) || error instanceof CartUserError) {
-    return false;
+/** Thrown when a cart mutation returns no `cart` payload — the cartId
+ * cookie points at a cart that no longer exists on Shopify's side. */
+export class CartNotFoundError extends Error {
+  constructor() {
+    super("Cart not found");
+    this.name = "CartNotFoundError";
   }
+}
 
-  return /cart/i.test(error.message);
+/** Distinguishes "the cartId cookie points at a cart that no longer exists"
+ * (should self-heal by clearing the cookie) from any other failure — a
+ * transport/GraphQL error unrelated to the cookie shouldn't wipe a valid
+ * cart just because its message happens to mention "cart". */
+export function isCartNotFoundError(error: unknown): boolean {
+  return error instanceof CartNotFoundError;
 }

@@ -1,13 +1,13 @@
 "use client";
 
-import React, { useTransition } from "react";
+import React from "react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 
 import type { CartItem } from "@/lib/shopify/types";
 
 import { removeItem } from "../actions";
 import type { UpdateType } from "../CartContext";
-import { useCart } from "../CartContext";
+import { useCartMutation } from "../useCartMutation";
 
 interface DeleteItemButtonProps {
   item: CartItem;
@@ -18,18 +18,14 @@ export const DeleteItemButton: React.FC<DeleteItemButtonProps> = ({
   item,
   optimisticUpdate,
 }) => {
-  const { syncCart } = useCart();
-  const [isPending, startTransition] = useTransition();
+  const { isPending, runMutation } = useCartMutation();
   const merchandiseId = item.merchandise.id;
 
   const handleClick = () => {
-    startTransition(async () => {
-      optimisticUpdate(merchandiseId, "delete");
-      const result = await removeItem(null, { lineId: item.id, merchandiseId });
-      if (typeof result !== "string") {
-        syncCart(result);
-      }
-    });
+    runMutation(
+      () => optimisticUpdate(merchandiseId, "delete"),
+      () => removeItem(null, { lineId: item.id, merchandiseId })
+    );
   };
 
   return (

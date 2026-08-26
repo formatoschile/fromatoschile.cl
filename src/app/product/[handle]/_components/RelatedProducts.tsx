@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { CategoryPill } from "@/components/ui/CategoryPill/CategoryPill";
 import { getProducts } from "@/lib/shopify";
+import { buildProductSearchQuery } from "@/lib/shopify/search";
 import type { ProductCard } from "@/lib/shopify/types";
 import { getProductCardDisplay } from "@/lib/utils/product";
 
@@ -19,7 +20,7 @@ export const RelatedProducts = async ({
   // Fetch one extra in case the current product lands in the page — avoids
   // pulling the whole category just to keep 4.
   const products = await getProducts({
-    query: `product_type:"${category}"`,
+    query: buildProductSearchQuery({ category }),
     first: RELATED_PRODUCTS_LIMIT + 1,
   });
   const relatedProducts = products
@@ -30,7 +31,9 @@ export const RelatedProducts = async ({
 
   return (
     <div className="mt-24">
-      <h2 className="text-ink mb-6 text-2xl font-normal">Documentos simil</h2>
+      <h2 className="text-ink mb-6 text-2xl font-normal">
+        Documentos similares
+      </h2>
       <ul className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         {relatedProducts.map((product) => (
           <li key={product.handle}>

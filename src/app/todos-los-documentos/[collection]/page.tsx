@@ -1,5 +1,6 @@
 import { Suspense } from "react";
-import { Metadata } from "next";
+import * as Sentry from "@sentry/nextjs";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { JsonLd } from "@/components/JsonLd/JsonLd";
@@ -13,12 +14,13 @@ import { CategoryResults } from "./_components/CategoryResults";
 export async function generateStaticParams() {
   try {
     const collections = await getCollections();
-    // Skip the synthetic "All" collection (empty handle, not a real route).
-    return collections
-      .filter((collection) => collection.handle)
-      .map((collection) => ({ collection: collection.handle }));
+    return collections.map((collection) => ({
+      collection: collection.handle,
+    }));
   } catch (error) {
-    console.error("Failed to list collections for static generation:", error);
+    Sentry.captureException(error, {
+      tags: { action: "generateStaticParams:collections" },
+    });
     return [];
   }
 }

@@ -29,7 +29,7 @@ export const Footer = () => {
 
         {/* Support links */}
         <nav aria-label="Ayuda y soporte">
-          <h2 className="text-xs tracking-wider text-[#F5F5F580] uppercase">
+          <h2 className="text-graphite-muted text-xs tracking-wider uppercase">
             Ayuda y soporte
           </h2>
 
