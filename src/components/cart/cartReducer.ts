@@ -55,11 +55,11 @@ export function cartReducer(state: Cart | undefined, action: CartAction): Cart {
       const existingItem = currentCart.lines.find(
         (item) => item.merchandise.id === variant.id
       );
-      const updatedItem = createOrUpdateCartItem(
+      const updatedItem = createOrUpdateCartItem({
         existingItem,
         variant,
-        product
-      );
+        product,
+      });
 
       const updatedLines = existingItem
         ? currentCart.lines.map((item) =>
@@ -111,11 +111,15 @@ function updateCartItem(
   };
 }
 
-function createOrUpdateCartItem(
-  existingItem: CartItem | undefined,
-  variant: ProductVariant,
-  product: CartProduct
-): CartItem {
+function createOrUpdateCartItem({
+  existingItem,
+  variant,
+  product,
+}: {
+  existingItem: CartItem | undefined;
+  variant: ProductVariant;
+  product: CartProduct;
+}): CartItem {
   const quantity = existingItem ? existingItem.quantity + 1 : 1;
   const totalAmount = calculateItemCost(quantity, variant.price.amount);
 

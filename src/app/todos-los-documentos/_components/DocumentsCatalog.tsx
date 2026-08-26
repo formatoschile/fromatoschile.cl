@@ -56,23 +56,29 @@ export const DocumentsCatalog: React.FC<DocumentsCatalogProps> = ({
     });
   };
 
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchText(event.target.value);
+  };
+
+  const handleCategoryClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    handleToggleCategory(event.currentTarget.dataset.category ?? "");
+  };
+
   const [featured, ...rest] = products;
 
   return (
     <div className={classNames({ "opacity-60": isPending })}>
       {/* Search */}
       <div className="mt-10">
-        <SearchInput
-          value={searchText}
-          onChange={(event) => setSearchText(event.target.value)}
-        />
+        <SearchInput value={searchText} onChange={handleSearchChange} />
       </div>
 
       {/* Category filters */}
       <div className="mt-8 flex flex-wrap gap-x-8 gap-y-3">
         <button
           type="button"
-          onClick={() => handleToggleCategory("")}
+          data-category=""
+          onClick={handleCategoryClick}
           aria-pressed={!selectedCategory}
           className={classNames(
             "cursor-pointer text-xs uppercase tracking-widest transition-colors hover:text-ink",
@@ -89,7 +95,8 @@ export const DocumentsCatalog: React.FC<DocumentsCatalogProps> = ({
           <button
             key={category.handle}
             type="button"
-            onClick={() => handleToggleCategory(category.title)}
+            data-category={category.title}
+            onClick={handleCategoryClick}
             aria-pressed={selectedCategory === category.title}
             className={classNames(
               "cursor-pointer text-xs uppercase tracking-widest transition-colors hover:text-ink",

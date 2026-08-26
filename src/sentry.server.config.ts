@@ -7,7 +7,10 @@ Sentry.init({
   // 100% in dev, 20% in production
   tracesSampleRate: process.env.NODE_ENV === "development" ? 1.0 : 0.2,
 
-  includeLocalVariables: true,
+  // Local-variable capture surfaces cart/checkout identifiers (cart IDs,
+  // merchandise IDs, line items) sitting in scope at the exception site —
+  // only enable it outside production, where that data isn't real customer data.
+  includeLocalVariables: process.env.NODE_ENV !== "production",
 
   enableLogs: true,
 });

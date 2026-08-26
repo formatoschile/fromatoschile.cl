@@ -8,14 +8,21 @@ type ExtractVariables<T> = T extends { variables: object }
   ? T["variables"]
   : never;
 
-type GraphqlError = {
+interface GraphqlError {
   message: string;
   extensions?: { code?: string };
-};
+}
 
 const REQUEST_TIMEOUT_MS = 15_000;
 const MAX_RETRIES = 2;
 const RETRY_BASE_DELAY_MS = 300;
+// Every Server Component data fetch funnels through this one function, so an
+// unbounded worst case (each attempt getting its own full timeout) can hang a
+// page render past the platform's own function timeout during a Shopify
+// outage, trading a graceful error boundary for a raw 504. Cap the whole
+// retry sequence — including backoff — to a budget well under typical
+// serverless function limits instead.
+const TOTAL_BUDGET_MS = 12_000;
 
 export async function shopifyFetch<T>({
   headers: extraHeaders,
@@ -26,15 +33,30 @@ export async function shopifyFetch<T>({
   query: string;
   variables?: ExtractVariables<T>;
 }): Promise<{ status: number; body: T }> {
+  const deadline = Date.now() + TOTAL_BUDGET_MS;
   let lastError: unknown;
 
   for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
     if (attempt > 0) {
-      await sleep(RETRY_BASE_DELAY_MS * 2 ** (attempt - 1));
+      const backoffMs = RETRY_BASE_DELAY_MS * 2 ** (attempt - 1);
+      if (Date.now() + backoffMs >= deadline) {
+        break;
+      }
+      await sleep(backoffMs);
+    }
+
+    const remainingMs = deadline - Date.now();
+    if (remainingMs <= 0) {
+      break;
     }
 
     try {
-      return await performRequest<T>({ extraHeaders, query, variables });
+      return await performRequest<T>({
+        extraHeaders,
+        query,
+        variables,
+        timeoutMs: Math.min(REQUEST_TIMEOUT_MS, remainingMs),
+      });
     } catch (error) {
       lastError = error;
       if (!isRetryableError(error)) {
@@ -52,10 +74,12 @@ async function performRequest<T>({
   extraHeaders,
   query,
   variables,
+  timeoutMs,
 }: {
   extraHeaders?: Record<string, string>;
   query: string;
   variables?: object;
+  timeoutMs: number;
 }): Promise<{ status: number; body: T }> {
   let response: Response;
 
@@ -72,7 +96,7 @@ async function performRequest<T>({
         ...(query && { query }),
         ...(variables && { variables }),
       }),
-      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+      signal: AbortSignal.timeout(timeoutMs),
     });
   } catch (cause) {
     throw new ShopifyApiError({

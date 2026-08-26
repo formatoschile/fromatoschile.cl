@@ -6,11 +6,11 @@ import { useProduct, useUpdateURL } from "@/components/product/ProductContext";
 import type { ProductOption, ProductVariant } from "@/lib/shopify/types";
 import { classNames } from "@/lib/utils/classNames";
 
-type Combination = {
+interface Combination {
   id: string;
   availableForSale: boolean;
   [key: string]: string | boolean;
-};
+}
 
 interface VariantSelectorProps {
   options: ProductOption[];

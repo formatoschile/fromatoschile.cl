@@ -4,6 +4,7 @@ import { useTransition } from "react";
 import { ScaleIcon } from "@heroicons/react/24/outline";
 
 import { buyNow } from "@/components/cart/actions";
+import { useToast } from "@/components/ui/Toast/ToastContext";
 import { classNames } from "@/lib/utils/classNames";
 
 interface BuyButtonProps {
@@ -23,11 +24,17 @@ export const BuyButton: React.FC<BuyButtonProps> = ({
   children = "Compra",
 }) => {
   const [isPending, startTransition] = useTransition();
+  const { showToast } = useToast();
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
     startTransition(async () => {
-      await buyNow(null, variantId);
+      // `buyNow` redirects on success (throws internally) and only ever
+      // returns a value when checkout creation failed.
+      const errorMessage = await buyNow(null, variantId);
+      if (errorMessage) {
+        showToast({ message: errorMessage, variant: "error" });
+      }
     });
   };
 

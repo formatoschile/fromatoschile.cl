@@ -2,7 +2,7 @@
 
 import * as Sentry from "@sentry/nextjs";
 import type { Route } from "next";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 import {
@@ -14,9 +14,14 @@ import {
 } from "@/lib/shopify";
 import { CartUserError, isCartNotFoundError } from "@/lib/shopify/errors";
 import type { Cart } from "@/lib/shopify/types";
+import { isRateLimited } from "@/lib/utils/rateLimit";
 
 const MAX_ITEM_QUANTITY = 99;
+const MAX_ATTRIBUTES = 20;
+const MAX_ATTRIBUTE_LENGTH = 255;
 const CART_COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 30; // 30 days
+const RATE_LIMIT_MESSAGE =
+  "Demasiadas solicitudes, intenta de nuevo en unos segundos";
 
 export async function addItem(
   _prevState: unknown,
@@ -25,6 +30,10 @@ export async function addItem(
 ): Promise<Cart | string> {
   if (!selectedVariantId) {
     return "Error adding item to cart";
+  }
+
+  if (await isActionRateLimited("addItem")) {
+    return RATE_LIMIT_MESSAGE;
   }
 
   try {
@@ -36,7 +45,11 @@ export async function addItem(
     }
 
     return await addToCart([
-      { merchandiseId: selectedVariantId, quantity: 1, attributes },
+      {
+        merchandiseId: selectedVariantId,
+        quantity: 1,
+        attributes: sanitizeAttributes(attributes),
+      },
     ]);
   } catch (e) {
     return handleCartActionError(e, {
@@ -50,6 +63,10 @@ export async function removeItem(
   _prevState: unknown,
   payload: { lineId?: string; merchandiseId: string }
 ): Promise<Cart | string> {
+  if (await isActionRateLimited("removeItem")) {
+    return RATE_LIMIT_MESSAGE;
+  }
+
   try {
     const lineId = payload.lineId ?? (await findLineId(payload.merchandiseId));
 
@@ -82,6 +99,10 @@ export async function updateItemQuantity(
     quantity > MAX_ITEM_QUANTITY
   ) {
     return `La cantidad debe ser un número entero entre 0 y ${MAX_ITEM_QUANTITY}`;
+  }
+
+  if (await isActionRateLimited("updateItemQuantity")) {
+    return RATE_LIMIT_MESSAGE;
   }
 
   try {
@@ -124,6 +145,10 @@ export async function buyNow(
     return "Error starting checkout";
   }
 
+  if (await isActionRateLimited("buyNow")) {
+    return RATE_LIMIT_MESSAGE;
+  }
+
   let checkoutUrl: string;
 
   try {
@@ -145,6 +170,10 @@ export async function buyNow(
 }
 
 export async function redirectToCheckout() {
+  if (await isActionRateLimited("redirectToCheckout")) {
+    throw new Error("Too many requests");
+  }
+
   let checkoutUrl: string;
 
   try {
@@ -163,6 +192,33 @@ export async function redirectToCheckout() {
   // Must run outside try/catch — redirect() throws internally.
   // Checkout is an external Shopify URL, outside the typed-routes union.
   redirect(checkoutUrl as Route);
+}
+
+// Server Actions are POST-callable directly by their action id, bypassing
+// any client-side debouncing — key the limiter by caller IP so a scripted
+// loop can't burn through the shared Storefront API token via a single action.
+async function isActionRateLimited(action: string): Promise<boolean> {
+  const ip =
+    (await headers()).get("x-forwarded-for")?.split(",")[0]?.trim() ??
+    "unknown";
+
+  return isRateLimited(`${action}:${ip}`);
+}
+
+function sanitizeAttributes(
+  attributes: { key: string; value: string }[] | undefined
+): { key: string; value: string }[] | undefined {
+  if (!attributes) {
+    return undefined;
+  }
+
+  return attributes
+    .slice(0, MAX_ATTRIBUTES)
+    .filter((attribute) => attribute.key && attribute.value)
+    .map((attribute) => ({
+      key: attribute.key.slice(0, MAX_ATTRIBUTE_LENGTH),
+      value: attribute.value.slice(0, MAX_ATTRIBUTE_LENGTH),
+    }));
 }
 
 async function createCartAndSetCookie() {

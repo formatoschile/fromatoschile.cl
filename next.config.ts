@@ -3,7 +3,8 @@ import { withSentryConfig } from '@sentry/nextjs';
 
 // Sentry's client SDK reports through the same-origin `tunnelRoute` below and
 // Vercel Analytics/Speed Insights beacon through `/_vercel/*`, so `connect-src`
-// and `script-src` only need 'self' — no third-party origins to allowlist.
+// only needs 'self' plus Shopify's CDN — the PDF preview viewer (pdf.js) fetches
+// `previewPdf` files straight from `cdn.shopify.com` client-side.
 // 'unsafe-inline' on script/style is required because Next's App Router
 // streams RSC payloads via inline <script> tags and `inlineCss` emits inline
 // <style> tags; removing it needs a nonce-based CSP wired through middleware.
@@ -13,7 +14,7 @@ const CONTENT_SECURITY_POLICY = [
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: https://cdn.shopify.com",
   "font-src 'self' data:",
-  "connect-src 'self'",
+  "connect-src 'self' https://cdn.shopify.com",
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'self'",

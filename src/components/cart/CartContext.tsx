@@ -1,6 +1,13 @@
 "use client";
 
-import React, { createContext, use, useOptimistic, useState } from "react";
+import React, {
+  createContext,
+  use,
+  useCallback,
+  useMemo,
+  useOptimistic,
+  useState,
+} from "react";
 
 import type { Cart, CartProduct, ProductVariant } from "@/lib/shopify/types";
 
@@ -52,39 +59,58 @@ export const CartProvider: React.FC<CartProviderProps> = ({
     cartReducer
   );
 
-  const openCart = () => setIsCartOpen(true);
-  const closeCart = () => setIsCartOpen(false);
-  const syncCart = (nextCart: Cart | undefined) => setSyncedCart(nextCart);
+  const openCart = useCallback(() => setIsCartOpen(true), []);
+  const closeCart = useCallback(() => setIsCartOpen(false), []);
+  const syncCart = useCallback(
+    (nextCart: Cart | undefined) => setSyncedCart(nextCart),
+    []
+  );
 
   // Optimistic updates must run inside the same transition as the server
   // action that persists them (React useOptimistic contract).
-  const updateCartItem = (merchandiseId: string, updateType: UpdateType) => {
-    updateOptimisticCart({
-      type: "UPDATE_ITEM",
-      payload: { merchandiseId, updateType },
-    });
-  };
-
-  const addCartItem = (variant: ProductVariant, product: CartProduct) => {
-    updateOptimisticCart({ type: "ADD_ITEM", payload: { variant, product } });
-    setIsCartOpen(true);
-  };
-
-  return (
-    <CartContext
-      value={{
-        cart,
-        isCartOpen,
-        openCart,
-        closeCart,
-        updateCartItem,
-        addCartItem,
-        syncCart,
-      }}
-    >
-      {children}
-    </CartContext>
+  const updateCartItem = useCallback(
+    (merchandiseId: string, updateType: UpdateType) => {
+      updateOptimisticCart({
+        type: "UPDATE_ITEM",
+        payload: { merchandiseId, updateType },
+      });
+    },
+    [updateOptimisticCart]
   );
+
+  const addCartItem = useCallback(
+    (variant: ProductVariant, product: CartProduct) => {
+      updateOptimisticCart({
+        type: "ADD_ITEM",
+        payload: { variant, product },
+      });
+      setIsCartOpen(true);
+    },
+    [updateOptimisticCart]
+  );
+
+  const value = useMemo(
+    () => ({
+      cart,
+      isCartOpen,
+      openCart,
+      closeCart,
+      updateCartItem,
+      addCartItem,
+      syncCart,
+    }),
+    [
+      cart,
+      isCartOpen,
+      openCart,
+      closeCart,
+      updateCartItem,
+      addCartItem,
+      syncCart,
+    ]
+  );
+
+  return <CartContext value={value}>{children}</CartContext>;
 };
 
 export function useCart() {
