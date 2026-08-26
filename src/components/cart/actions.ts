@@ -37,6 +37,9 @@ export async function addItem(
     ]);
   } catch (e) {
     Sentry.captureException(e, { tags: { action: "addItem" } });
+    // Vercel's Node.js runtime can freeze the function right after the
+    // response is sent — block here so the event actually reaches Sentry.
+    await Sentry.flush(2000);
     await clearStaleCartCookie(e);
     return errorMessage(e, "Error adding item to cart");
   }
@@ -56,6 +59,7 @@ export async function removeItem(
     return await removeFromCart([lineId]);
   } catch (e) {
     Sentry.captureException(e, { tags: { action: "removeItem" } });
+    await Sentry.flush(2000);
     await clearStaleCartCookie(e);
     return errorMessage(e, "Error removing item from cart");
   }
@@ -89,6 +93,7 @@ export async function updateItemQuantity(
     return undefined;
   } catch (e) {
     Sentry.captureException(e, { tags: { action: "updateItemQuantity" } });
+    await Sentry.flush(2000);
     await clearStaleCartCookie(e);
     return errorMessage(e, "Error updating item quantity");
   }
@@ -120,6 +125,7 @@ export async function buyNow(
     checkoutUrl = cart.checkoutUrl;
   } catch (e) {
     Sentry.captureException(e, { tags: { action: "buyNow" } });
+    await Sentry.flush(2000);
     return errorMessage(e, "Error starting checkout");
   }
 
