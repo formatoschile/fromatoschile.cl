@@ -8,6 +8,8 @@ import { CartProvider } from "@/components/cart/CartContext";
 import { JsonLd } from "@/components/JsonLd/JsonLd";
 import { Footer } from "@/components/layout/Footer/Footer";
 import { Navbar } from "@/components/layout/Navbar/Navbar";
+import { ToastContainer } from "@/components/ui/Toast/ToastContainer";
+import { ToastProvider } from "@/components/ui/Toast/ToastContext";
 import { env } from "@/env";
 import { buildOrganizationJsonLd, buildWebSiteJsonLd } from "@/lib/seo/jsonLd";
 import { getCart } from "@/lib/shopify";
@@ -60,19 +62,23 @@ export default async function RootLayout({
         <JsonLd data={buildOrganizationJsonLd()} />
         <JsonLd data={buildWebSiteJsonLd()} />
 
-        <CartProvider cartPromise={cart}>
+        <ToastProvider>
           <Suspense>
-            <Navbar />
-          </Suspense>
+            <CartProvider cartPromise={cart}>
+              <Navbar />
 
-          <main id="main-content" tabIndex={-1}>
-            <Suspense>{children}</Suspense>
-          </main>
+              <main id="main-content" tabIndex={-1}>
+                {children}
+              </main>
+            </CartProvider>
+          </Suspense>
 
           <Footer />
 
           <Analytics />
-        </CartProvider>
+
+          <ToastContainer />
+        </ToastProvider>
       </body>
     </html>
   );
