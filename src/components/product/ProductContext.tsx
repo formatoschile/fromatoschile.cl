@@ -1,12 +1,6 @@
 "use client";
 
-import React, {
-  createContext,
-  use,
-  useCallback,
-  useMemo,
-  useOptimistic,
-} from "react";
+import React, { createContext, use, useOptimistic } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 interface ProductState {
@@ -45,18 +39,15 @@ export const ProductProvider: React.FC<ProductProviderProps> = ({
     })
   );
 
-  const updateOption = useCallback(
-    (name: string, value: string): ProductState => {
-      const newState = { [name]: value };
-      setOptimisticState(newState);
-      return { ...state, ...newState };
-    },
-    [state, setOptimisticState]
+  const updateOption = (name: string, value: string): ProductState => {
+    const newState = { [name]: value };
+    setOptimisticState(newState);
+    return { ...state, ...newState };
+  };
+
+  return (
+    <ProductContext value={{ state, updateOption }}>{children}</ProductContext>
   );
-
-  const value = useMemo(() => ({ state, updateOption }), [state, updateOption]);
-
-  return <ProductContext value={value}>{children}</ProductContext>;
 };
 
 export function useProduct(): ProductContextType {

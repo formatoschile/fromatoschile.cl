@@ -1,7 +1,5 @@
 "use client";
 
-import { useCallback } from "react";
-
 import type { Collection, ProductCard } from "@/lib/shopify/types";
 import { classNames } from "@/lib/utils/classNames";
 
@@ -33,10 +31,10 @@ export const DocumentsCatalog: React.FC<DocumentsCatalogProps> = ({
   const { searchText, setSearchText, isPending, navigateTo } =
     useDebouncedSearch({
       query,
-      buildParams: useCallback(
-        (text: string) => ({ categoria: selectedCategory, q: text || null }),
-        [selectedCategory]
-      ),
+      buildParams: (text: string) => ({
+        categoria: selectedCategory,
+        q: text || null,
+      }),
     });
 
   const { products, hasNextPage, isLoadingMore, handleLoadMore } = useLoadMore({

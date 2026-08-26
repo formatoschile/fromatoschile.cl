@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, use, useCallback, useState } from "react";
+import React, { createContext, use, useState } from "react";
 
 export type ToastVariant = "success" | "error" | "info";
 
@@ -33,22 +33,19 @@ interface ToastProviderProps {
 export const ToastProvider: React.FC<ToastProviderProps> = ({ children }) => {
   const [toasts, setToasts] = useState<ToastItem[]>([]);
 
-  const dismissToast = useCallback((id: string) => {
+  const dismissToast = (id: string) => {
     setToasts((current) => current.filter((toast) => toast.id !== id));
-  }, []);
+  };
 
-  const showToast = useCallback(
-    ({
-      message,
-      variant = "info",
-      durationMs = DEFAULT_DURATION_MS,
-    }: ShowToastOptions) => {
-      const id = crypto.randomUUID();
-      setToasts((current) => [...current, { id, message, variant }]);
-      setTimeout(() => dismissToast(id), durationMs);
-    },
-    [dismissToast]
-  );
+  const showToast = ({
+    message,
+    variant = "info",
+    durationMs = DEFAULT_DURATION_MS,
+  }: ShowToastOptions) => {
+    const id = crypto.randomUUID();
+    setToasts((current) => [...current, { id, message, variant }]);
+    setTimeout(() => dismissToast(id), durationMs);
+  };
 
   return (
     <ToastContext value={{ toasts, showToast, dismissToast }}>
