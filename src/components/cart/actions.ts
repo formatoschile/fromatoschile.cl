@@ -1,5 +1,6 @@
 "use server";
 
+import * as Sentry from "@sentry/nextjs";
 import type { Route } from "next";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
@@ -35,7 +36,7 @@ export async function addItem(
       { merchandiseId: selectedVariantId, quantity: 1, attributes },
     ]);
   } catch (e) {
-    console.error(e);
+    Sentry.captureException(e, { tags: { action: "addItem" } });
     await clearStaleCartCookie(e);
     return errorMessage(e, "Error adding item to cart");
   }
@@ -54,7 +55,7 @@ export async function removeItem(
 
     return await removeFromCart([lineId]);
   } catch (e) {
-    console.error(e);
+    Sentry.captureException(e, { tags: { action: "removeItem" } });
     await clearStaleCartCookie(e);
     return errorMessage(e, "Error removing item from cart");
   }
@@ -87,7 +88,7 @@ export async function updateItemQuantity(
 
     return undefined;
   } catch (e) {
-    console.error(e);
+    Sentry.captureException(e, { tags: { action: "updateItemQuantity" } });
     await clearStaleCartCookie(e);
     return errorMessage(e, "Error updating item quantity");
   }
@@ -118,7 +119,7 @@ export async function buyNow(
     });
     checkoutUrl = cart.checkoutUrl;
   } catch (e) {
-    console.error(e);
+    Sentry.captureException(e, { tags: { action: "buyNow" } });
     return errorMessage(e, "Error starting checkout");
   }
 

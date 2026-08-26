@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import * as Sentry from "@sentry/nextjs";
 import type { PDFDocumentLoadingTask, PDFDocumentProxy } from "pdfjs-dist";
 
 interface UsePdfViewerResult {
@@ -48,7 +49,9 @@ export const usePdfViewer = (url: string): UsePdfViewerResult => {
         setCurrentPage(1);
       } catch (error) {
         if (!isCancelled) {
-          console.error("Failed to load PDF document:", error);
+          Sentry.captureException(error, {
+            tags: { component: "PdfViewer", stage: "load" },
+          });
           setHasError(true);
         }
       } finally {
@@ -97,7 +100,9 @@ export const usePdfViewer = (url: string): UsePdfViewerResult => {
 
     renderPage().catch((error: unknown) => {
       if (!isCancelled) {
-        console.error("Failed to render PDF page:", error);
+        Sentry.captureException(error, {
+          tags: { component: "PdfViewer", stage: "render" },
+        });
         setHasError(true);
       }
     });
