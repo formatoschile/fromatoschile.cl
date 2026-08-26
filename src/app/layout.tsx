@@ -46,6 +46,13 @@ export default async function RootLayout({
   return (
     <html lang="es-CL" className={afacad.variable}>
       <body className="font-main">
+        <a
+          href="#main-content"
+          className="focus:text-ink sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:underline"
+        >
+          Saltar al contenido principal
+        </a>
+
         <Suspense fallback={null}>
           <RouteFocus />
         </Suspense>

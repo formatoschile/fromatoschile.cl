@@ -4,7 +4,8 @@ import React from "react";
 
 import { BuyButton } from "@/components/cart/BuyButton";
 import { useProduct } from "@/components/product/ProductContext";
-import { Product, ProductVariant } from "@/lib/shopify/types";
+import { Product } from "@/lib/shopify/types";
+import { getSelectedVariant } from "@/lib/utils/product";
 
 interface BuyNowButtonProps {
   product: Product;
@@ -25,13 +26,11 @@ export const BuyNowButton: React.FC<BuyNowButtonProps> = ({
   const { variants } = product;
   const { state } = useProduct();
 
-  const matchedVariant = variants.find((candidate: ProductVariant) =>
-    candidate.selectedOptions.every(
-      (option) => option.value === state[option.name.toLowerCase()]
-    )
-  );
-  const defaultVariantId = variants.length === 1 ? variants[0]?.id : undefined;
-  const variantId = matchedVariant?.id || defaultVariantId || "";
+  const selectedVariant = getSelectedVariant(variants, state);
+  const variantId =
+    selectedVariant?.availableForSale && selectedVariant.id
+      ? selectedVariant.id
+      : "";
 
   return (
     <BuyButton variantId={variantId} className={className}>

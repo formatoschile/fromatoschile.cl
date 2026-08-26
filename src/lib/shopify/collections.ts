@@ -4,22 +4,15 @@ import { TAGS } from "@/lib/utils/constants";
 
 import { shopifyFetch } from "./client";
 import { fetchAllPages } from "./pagination";
-import {
-  getCollectionProductsQuery,
-  getCollectionQuery,
-  getCollectionsQuery,
-} from "./queries/collection";
+import { getCollectionQuery, getCollectionsQuery } from "./queries/collection";
 import {
   removeEdgesAndNodes,
   reshapeCollection,
   reshapeCollections,
-  reshapeProducts,
 } from "./reshape";
 import type {
   Collection,
-  Product,
   ShopifyCollectionOperation,
-  ShopifyCollectionProductsOperation,
   ShopifyCollectionsOperation,
 } from "./types";
 
@@ -38,42 +31,6 @@ export async function getCollection(
   });
 
   return reshapeCollection(res.body.data.collection);
-}
-
-export async function getCollectionProducts({
-  collection,
-  reverse,
-  sortKey,
-}: {
-  collection: string;
-  reverse?: boolean;
-  sortKey?: string;
-}): Promise<Product[]> {
-  "use cache";
-  cacheTag(TAGS.collections, TAGS.products);
-  cacheLife("days");
-
-  const edges = await fetchAllPages((after) =>
-    shopifyFetch<ShopifyCollectionProductsOperation>({
-      query: getCollectionProductsQuery,
-      variables: {
-        handle: collection,
-        reverse,
-        sortKey: sortKey === "CREATED_AT" ? "CREATED" : sortKey,
-        after,
-      },
-    }).then((res) => {
-      if (!res.body.data.collectionByHandle) {
-        if (!after) {
-          console.log(`No collection found for \`${collection}\``);
-        }
-        return { edges: [], pageInfo: { hasNextPage: false, endCursor: null } };
-      }
-      return res.body.data.collectionByHandle.products;
-    })
-  );
-
-  return reshapeProducts(removeEdgesAndNodes({ edges }));
 }
 
 export async function getCollections(): Promise<Collection[]> {

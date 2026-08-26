@@ -1,4 +1,5 @@
 import type { NextConfig } from 'next';
+import { withSentryConfig } from '@sentry/nextjs';
 
 const nextConfig: NextConfig = {
   cacheComponents: true,
@@ -29,4 +30,16 @@ const nextConfig: NextConfig = {
   turbopack: {},
 };
 
-export default nextConfig;
+export default withSentryConfig(nextConfig, {
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+
+  // Source map upload auth token — set SENTRY_AUTH_TOKEN in CI to enable
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+
+  widenClientFileUpload: true,
+
+  tunnelRoute: '/monitoring',
+
+  silent: !process.env.CI,
+});

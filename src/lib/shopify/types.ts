@@ -70,7 +70,10 @@ export type Page = {
   updatedAt: string;
 };
 
-export type Product = Omit<ShopifyProduct, "variants" | "images" | "collections"> & {
+export type Product = Omit<
+  ShopifyProduct,
+  "variants" | "images" | "collections"
+> & {
   variants: ProductVariant[];
   images: Image[];
   collectionHandle: string | null;
@@ -179,8 +182,13 @@ export type ShopifyCartOperation = {
   };
 };
 
+export type ShopifyUserError = {
+  field: string[] | null;
+  message: string;
+};
+
 export type ShopifyCreateCartOperation = {
-  data: { cartCreate: { cart: ShopifyCart } };
+  data: { cartCreate: { cart: ShopifyCart; userErrors: ShopifyUserError[] } };
   variables: {
     lineItems?: { merchandiseId: string; quantity: number }[];
   };
@@ -195,6 +203,7 @@ export type ShopifyAddToCartOperation = {
   data: {
     cartLinesAdd: {
       cart: ShopifyCart;
+      userErrors: ShopifyUserError[];
     };
   };
   variables: {
@@ -211,6 +220,7 @@ export type ShopifyRemoveFromCartOperation = {
   data: {
     cartLinesRemove: {
       cart: ShopifyCart;
+      userErrors: ShopifyUserError[];
     };
   };
   variables: {
@@ -223,6 +233,7 @@ export type ShopifyUpdateCartOperation = {
   data: {
     cartLinesUpdate: {
       cart: ShopifyCart;
+      userErrors: ShopifyUserError[];
     };
   };
   variables: {
@@ -241,20 +252,6 @@ export type ShopifyCollectionOperation = {
   };
   variables: {
     handle: string;
-  };
-};
-
-export type ShopifyCollectionProductsOperation = {
-  data: {
-    collectionByHandle: {
-      products: Connection<ShopifyProduct>;
-    };
-  };
-  variables: {
-    handle: string;
-    reverse?: boolean;
-    sortKey?: string;
-    after?: string;
   };
 };
 

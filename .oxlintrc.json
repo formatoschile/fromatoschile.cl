@@ -37,6 +37,12 @@
       "rules": {
         "typescript/no-explicit-any": "off"
       }
+    },
+    {
+      "files": ["src/instrumentation-client.ts"],
+      "rules": {
+        "import/namespace": "off"
+      }
     }
   ]
 }

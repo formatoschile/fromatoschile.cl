@@ -41,9 +41,9 @@ export const CartModalContent: React.FC<CartModalContentProps> = ({
   return (
     <div className="flex h-full flex-col justify-between overflow-hidden p-1">
       <ul className="grow overflow-auto py-4">
-        {sortedLines.map((item, i) => (
+        {sortedLines.map((item) => (
           <CartItem
-            key={i}
+            key={item.id ?? item.merchandise.id}
             item={item}
             closeCart={closeCart}
             updateCartItem={updateCartItem}

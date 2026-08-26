@@ -46,8 +46,11 @@ export const usePdfViewer = (url: string): UsePdfViewerResult => {
         documentRef.current = pdfDocument;
         setNumPages(pdfDocument.numPages);
         setCurrentPage(1);
-      } catch {
-        if (!isCancelled) setHasError(true);
+      } catch (error) {
+        if (!isCancelled) {
+          console.error("Failed to load PDF document:", error);
+          setHasError(true);
+        }
       } finally {
         if (!isCancelled) setIsLoading(false);
       }
@@ -92,8 +95,11 @@ export const usePdfViewer = (url: string): UsePdfViewerResult => {
       await renderTask.promise;
     };
 
-    renderPage().catch(() => {
-      if (!isCancelled) setHasError(true);
+    renderPage().catch((error: unknown) => {
+      if (!isCancelled) {
+        console.error("Failed to render PDF page:", error);
+        setHasError(true);
+      }
     });
 
     return () => {

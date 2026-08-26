@@ -11,6 +11,7 @@ import {
   removeFromCart,
   updateCart,
 } from "@/lib/shopify";
+import { CartUserError, isCartNotFoundError } from "@/lib/shopify/errors";
 import type { Cart } from "@/lib/shopify/types";
 
 export async function addItem(
@@ -36,7 +37,7 @@ export async function addItem(
   } catch (e) {
     console.error(e);
     await clearStaleCartCookie(e);
-    return "Error adding item to cart";
+    return errorMessage(e, "Error adding item to cart");
   }
 }
 
@@ -55,7 +56,7 @@ export async function removeItem(
   } catch (e) {
     console.error(e);
     await clearStaleCartCookie(e);
-    return "Error removing item from cart";
+    return errorMessage(e, "Error removing item from cart");
   }
 }
 
@@ -88,7 +89,7 @@ export async function updateItemQuantity(
   } catch (e) {
     console.error(e);
     await clearStaleCartCookie(e);
-    return "Error updating item quantity";
+    return errorMessage(e, "Error updating item quantity");
   }
 }
 
@@ -118,7 +119,7 @@ export async function buyNow(
     checkoutUrl = cart.checkoutUrl;
   } catch (e) {
     console.error(e);
-    return "Error starting checkout";
+    return errorMessage(e, "Error starting checkout");
   }
 
   // Must run outside try/catch — redirect() throws internally.
@@ -152,11 +153,17 @@ async function createCartAndSetCookie() {
   });
 }
 
-// A stale/expired cartId cookie makes every cart mutation fail forever with
-// "Cart not found" until the cookie is cleared — self-heal so the next
-// attempt creates a fresh cart instead of repeating the same failure.
+// A stale/expired cartId cookie makes every cart mutation fail forever until
+// the cookie is cleared — self-heal so the next attempt creates a fresh cart
+// instead of repeating the same failure.
 async function clearStaleCartCookie(error: unknown) {
-  if (error instanceof Error && error.message === "Cart not found") {
+  if (isCartNotFoundError(error)) {
     (await cookies()).delete("cartId");
   }
+}
+
+// Shopify `userErrors` carry a message worth showing the customer (e.g. "this
+// variant is out of stock") — everything else collapses to a generic string.
+function errorMessage(error: unknown, fallback: string): string {
+  return error instanceof CartUserError ? error.message : fallback;
 }

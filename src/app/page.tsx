@@ -11,8 +11,9 @@ import { LegalGuidance } from "./_components/LegalGuidance/LegalGuidance";
 import { SecuritySection } from "./_components/SecuritySection/SecuritySection";
 
 export const metadata = {
-  title: "formatos.cl",
-  description: "El mejor e-commerce de contratos de Chile",
+  title: "Contratos y documentos legales para Chile",
+  description:
+    "Plantillas de contratos y documentos legales redactados por profesionales, adaptados a la normativa chilena. Descarga inmediata en PDF, listos para completar y firmar.",
   alternates: {
     canonical: "/",
   },

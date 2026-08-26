@@ -1,11 +1,21 @@
 import { env } from "@/env";
 import { ensureStartsWith } from "@/lib/utils";
 import { SHOPIFY_GRAPHQL_API_ENDPOINT } from "@/lib/utils/constants";
-import { isShopifyError } from "@/lib/utils/type-guards";
+
+import { ShopifyApiError } from "./errors";
 
 type ExtractVariables<T> = T extends { variables: object }
   ? T["variables"]
   : never;
+
+type GraphqlError = {
+  message: string;
+  extensions?: { code?: string };
+};
+
+const REQUEST_TIMEOUT_MS = 15_000;
+const MAX_RETRIES = 2;
+const RETRY_BASE_DELAY_MS = 300;
 
 export async function shopifyFetch<T>({
   headers: extraHeaders,
@@ -15,9 +25,42 @@ export async function shopifyFetch<T>({
   headers?: Record<string, string>;
   query: string;
   variables?: ExtractVariables<T>;
-}): Promise<{ status: number; body: T } | never> {
+}): Promise<{ status: number; body: T }> {
+  let lastError: unknown;
+
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+    if (attempt > 0) {
+      await sleep(RETRY_BASE_DELAY_MS * 2 ** (attempt - 1));
+    }
+
+    try {
+      return await performRequest<T>({ extraHeaders, query, variables });
+    } catch (error) {
+      lastError = error;
+      if (!isRetryableError(error)) {
+        console.error("Shopify request failed:", error);
+        throw error;
+      }
+    }
+  }
+
+  console.error("Shopify request failed after retries:", lastError);
+  throw lastError;
+}
+
+async function performRequest<T>({
+  extraHeaders,
+  query,
+  variables,
+}: {
+  extraHeaders?: Record<string, string>;
+  query: string;
+  variables?: object;
+}): Promise<{ status: number; body: T }> {
+  let response: Response;
+
   try {
-    const response = await fetch(getEndpoint(), {
+    response = await fetch(getEndpoint(), {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -29,31 +72,50 @@ export async function shopifyFetch<T>({
         ...(query && { query }),
         ...(variables && { variables }),
       }),
+      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
     });
-
-    const body = (await response.json()) as T & {
-      errors?: { message: string; cause?: unknown }[];
-    };
-
-    if (body.errors) {
-      throw body.errors[0];
-    }
-
-    return { status: response.status, body };
-  } catch (e: unknown) {
-    console.log("Error Requesting Shopify:", e);
-
-    if (isShopifyError(e)) {
-      throw {
-        cause: e.cause?.toString() ?? "unknown",
-        status: e.status ?? 500,
-        message: e.message,
-        query,
-      };
-    }
-
-    throw { error: e, query };
+  } catch (cause) {
+    throw new ShopifyApiError({
+      message: "Failed to reach Shopify Storefront API",
+      status: 503,
+      query,
+      cause,
+    });
   }
+
+  const body = (await response.json()) as T & { errors?: GraphqlError[] };
+
+  if (body.errors?.length) {
+    const [firstError] = body.errors;
+    throw new ShopifyApiError({
+      message: firstError.message,
+      status:
+        firstError.extensions?.code === "THROTTLED" ? 429 : response.status,
+      query,
+      cause: firstError,
+    });
+  }
+
+  if (!response.ok) {
+    throw new ShopifyApiError({
+      message: `Shopify Storefront API responded with ${response.status}`,
+      status: response.status,
+      query,
+    });
+  }
+
+  return { status: response.status, body };
+}
+
+function isRetryableError(error: unknown): boolean {
+  return (
+    error instanceof ShopifyApiError &&
+    (error.status === 429 || error.status >= 500)
+  );
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 export const getDomain = () =>

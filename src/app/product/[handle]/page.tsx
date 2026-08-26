@@ -17,8 +17,13 @@ import { Breadcrumb } from "./_components/Breadcrumb";
 import { RelatedProducts } from "./_components/RelatedProducts";
 
 export async function generateStaticParams() {
-  const products = await getProducts({});
-  return products.map((product) => ({ handle: product.handle }));
+  try {
+    const products = await getProducts({});
+    return products.map((product) => ({ handle: product.handle }));
+  } catch (error) {
+    console.error("Failed to list products for static generation:", error);
+    return [];
+  }
 }
 
 export async function generateMetadata(props: {

@@ -6,6 +6,10 @@ export const addToCartMutation = /* GraphQL */ `
       cart {
         ...cart
       }
+      userErrors {
+        field
+        message
+      }
     }
   }
   ${cartFragment}
@@ -16,6 +20,10 @@ export const createCartMutation = /* GraphQL */ `
     cartCreate(input: { lines: $lineItems }) {
       cart {
         ...cart
+      }
+      userErrors {
+        field
+        message
       }
     }
   }
@@ -28,6 +36,10 @@ export const editCartItemsMutation = /* GraphQL */ `
       cart {
         ...cart
       }
+      userErrors {
+        field
+        message
+      }
     }
   }
   ${cartFragment}
@@ -38,6 +50,10 @@ export const removeFromCartMutation = /* GraphQL */ `
     cartLinesRemove(cartId: $cartId, lineIds: $lineIds) {
       cart {
         ...cart
+      }
+      userErrors {
+        field
+        message
       }
     }
   }

@@ -5,9 +5,6 @@ import {
   DisclosureButton,
   DisclosurePanel,
 } from "@headlessui/react";
-import { motion } from "motion/react";
-
-import { itemVariants } from "@/lib/utils/animations";
 
 import { MinusIcon } from "../../icons/Minus";
 import { PlusIcon } from "../../icons/Plus";
@@ -28,14 +25,13 @@ export const Accordion: React.FC<AccordionProps> = ({ entries }) => {
         {entries.map((entry, i) => (
           <Disclosure
             key={entry.title}
-            as={motion.div}
-            variants={itemVariants}
-            className="border-t border-gray-900 first:pt-0 last:border-b last:pb-0"
+            as="div"
+            className="border-ink border-t first:pt-0 last:border-b last:pb-0"
           >
             {({ open }) => (
               <>
-                <motion.dt variants={itemVariants}>
-                  <DisclosureButton className="group flex w-full cursor-pointer items-start justify-between py-6 pl-1 text-left text-gray-900">
+                <dt>
+                  <DisclosureButton className="group text-ink flex w-full cursor-pointer items-start justify-between py-6 pl-1 text-left">
                     <span className="flex items-baseline gap-8 transition-all delay-300 duration-75">
                       <span className="text-ink text-4xl leading-[23px] font-bold">
                         {String(i + 1).padStart(2, "0")}
@@ -55,17 +51,17 @@ export const Accordion: React.FC<AccordionProps> = ({ entries }) => {
                       />
                     </span>
                   </DisclosureButton>
-                </motion.dt>
+                </dt>
+                {/* `static` keeps this content in the DOM (and visible to
+                    crawlers/AT that ignore CSS) even while visually collapsed. */}
                 <DisclosurePanel
                   static
-                  as={motion.dd}
-                  initial={false}
-                  animate={{
+                  as="dd"
+                  style={{
                     gridTemplateRows: open ? "1fr" : "0fr",
                     opacity: open ? 1 : 0,
                   }}
-                  style={{ display: "grid" }}
-                  className="border-t border-gray-900 md:pr-12"
+                  className="border-ink grid border-t transition-[grid-template-rows,opacity] duration-300 ease-in-out motion-reduce:transition-none md:pr-12"
                 >
                   <div className="min-h-0 overflow-hidden">
                     <div className="lg:w-4/5">

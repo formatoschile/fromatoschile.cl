@@ -1,6 +1,7 @@
-import { getProducts } from "@/lib/shopify";
+import { Suspense } from "react";
 
-import { DocumentsCatalog } from "./_components/DocumentsCatalog";
+import { CatalogResults } from "./_components/CatalogResults";
+import { DocumentsCatalogSkeleton } from "./_components/DocumentsCatalogSkeleton";
 
 export const metadata = {
   title: "Todos los documentos",
@@ -11,26 +12,21 @@ export const metadata = {
   },
 };
 
-export default async function DocumentsPage(props: {
-  searchParams?: Promise<{ categoria?: string }>;
+export default function DocumentsPage(props: {
+  searchParams?: Promise<{ categoria?: string; q?: string }>;
 }) {
-  const searchParams = await props.searchParams;
-  const initialCategory = searchParams?.categoria ?? null;
-
-  const products = await getProducts({});
-
   return (
     <>
       <h1 className="text-ink text-4xl sm:text-5xl">
         Encuentra tu Documento Legal
       </h1>
 
-      {/* Keyed by category so client-side navs with a new param reset the filter state. */}
-      <DocumentsCatalog
-        key={initialCategory ?? "all"}
-        products={products}
-        initialCategory={initialCategory}
-      />
+      {/* searchParams are only read inside this boundary, so the static shell
+          above (and generateStaticParams-driven routes elsewhere) stays
+          prerenderable under `cacheComponents`. */}
+      <Suspense fallback={<DocumentsCatalogSkeleton />}>
+        <CatalogResults searchParams={props.searchParams} />
+      </Suspense>
     </>
   );
 }

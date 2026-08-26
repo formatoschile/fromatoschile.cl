@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 
 import { shopifyFetch } from "./client";
+import { CartUserError } from "./errors";
 import {
   addToCartMutation,
   createCartMutation,
@@ -16,6 +17,7 @@ import type {
   ShopifyCreateCartOperation,
   ShopifyRemoveFromCartOperation,
   ShopifyUpdateCartOperation,
+  ShopifyUserError,
 } from "./types";
 
 export async function createCart({
@@ -28,7 +30,8 @@ export async function createCart({
     variables: { lineItems: lines },
   });
 
-  const cart = res.body.data.cartCreate.cart;
+  const { cart, userErrors } = res.body.data.cartCreate;
+  assertNoUserErrors(userErrors);
   if (!cart) {
     throw new Error("Cart not found");
   }
@@ -53,7 +56,8 @@ export async function addToCart(
     },
   });
 
-  const cart = res.body.data.cartLinesAdd.cart;
+  const { cart, userErrors } = res.body.data.cartLinesAdd;
+  assertNoUserErrors(userErrors);
   if (!cart) {
     throw new Error("Cart not found");
   }
@@ -72,7 +76,8 @@ export async function removeFromCart(lineIds: string[]): Promise<Cart> {
     },
   });
 
-  const cart = res.body.data.cartLinesRemove.cart;
+  const { cart, userErrors } = res.body.data.cartLinesRemove;
+  assertNoUserErrors(userErrors);
   if (!cart) {
     throw new Error("Cart not found");
   }
@@ -93,12 +98,19 @@ export async function updateCart(
     },
   });
 
-  const cart = res.body.data.cartLinesUpdate.cart;
+  const { cart, userErrors } = res.body.data.cartLinesUpdate;
+  assertNoUserErrors(userErrors);
   if (!cart) {
     throw new Error("Cart not found");
   }
 
   return reshapeCart(cart);
+}
+
+function assertNoUserErrors(userErrors: ShopifyUserError[]): void {
+  if (userErrors.length > 0) {
+    throw new CartUserError(userErrors);
+  }
 }
 
 export async function getCart(): Promise<Cart | undefined> {
@@ -108,17 +120,24 @@ export async function getCart(): Promise<Cart | undefined> {
     return undefined;
   }
 
-  const res = await shopifyFetch<ShopifyCartOperation>({
-    query: getCartQuery,
-    variables: { cartId },
-  });
+  // The cart is not essential to render — if Shopify is unreachable, degrade
+  // to "no cart" rather than taking down the root layout for every page.
+  try {
+    const res = await shopifyFetch<ShopifyCartOperation>({
+      query: getCartQuery,
+      variables: { cartId },
+    });
 
-  // Old carts becomes `null` when you checkout.
-  if (!res.body.data.cart) {
+    // Old carts becomes `null` when you checkout.
+    if (!res.body.data.cart) {
+      return undefined;
+    }
+
+    return reshapeCart(res.body.data.cart);
+  } catch (error) {
+    console.error("Failed to load cart:", error);
     return undefined;
   }
-
-  return reshapeCart(res.body.data.cart);
 }
 
 async function getCartId(): Promise<string> {

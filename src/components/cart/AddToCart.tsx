@@ -3,8 +3,9 @@
 import React, { useTransition } from "react";
 
 import { useProduct } from "@/components/product/ProductContext";
-import { Product, ProductVariant } from "@/lib/shopify/types";
+import { Product } from "@/lib/shopify/types";
 import { classNames } from "@/lib/utils/classNames";
+import { getSelectedVariant } from "@/lib/utils/product";
 
 import { addItem } from "./actions";
 import { useCart } from "./CartContext";
@@ -14,21 +15,14 @@ interface AddToCartProps {
 }
 
 export const AddToCart: React.FC<AddToCartProps> = ({ product }) => {
-  const { variants, availableForSale } = product;
+  const { variants } = product;
   const { addCartItem, syncCart } = useCart();
   const { state } = useProduct();
   const [isPending, startTransition] = useTransition();
 
-  const matchedVariant = variants.find((candidate: ProductVariant) =>
-    candidate.selectedOptions.every(
-      (option) => option.value === state[option.name.toLowerCase()]
-    )
-  );
-  const defaultVariantId = variants.length === 1 ? variants[0]?.id : undefined;
-  const selectedVariantId = matchedVariant?.id || defaultVariantId;
-  const finalVariant = variants.find(
-    (candidate) => candidate.id === selectedVariantId
-  );
+  const finalVariant = getSelectedVariant(variants, state);
+  const selectedVariantId = finalVariant?.id;
+  const availableForSale = finalVariant?.availableForSale ?? false;
 
   const handleAddToCart = () => {
     if (!finalVariant) {
@@ -72,14 +66,6 @@ const SubmitButton: React.FC<SubmitButtonProps> = ({
   const disabledClasses =
     "cursor-not-allowed opacity-60 hover:bg-white hover:text-ink";
 
-  if (!availableForSale) {
-    return (
-      <button disabled className={classNames(buttonClasses, disabledClasses)}>
-        No disponible
-      </button>
-    );
-  }
-
   if (!selectedVariantId) {
     return (
       <button
@@ -88,6 +74,14 @@ const SubmitButton: React.FC<SubmitButtonProps> = ({
         className={classNames(buttonClasses, disabledClasses)}
       >
         Agregar al carrito
+      </button>
+    );
+  }
+
+  if (!availableForSale) {
+    return (
+      <button disabled className={classNames(buttonClasses, disabledClasses)}>
+        No disponible
       </button>
     );
   }

@@ -30,6 +30,14 @@
   --color-category-laboral: #ffa8a8;
   --color-category-civil: #36e4ca;
   --color-category-comercial: #a8c1ff;
+  --color-category-inmobiliario: #bae6fd;
+  --color-category-sociedades: #c7d2fe;
+  --color-category-legal: #fde68a;
+  --color-category-mercantil: #ddd6fe;
+  --color-category-default: #e5e5e5;
+
+  /* Muted label text on dark graphite surfaces (footer) — verified ≥4.5:1 */
+  --color-graphite-muted: #b3b3b8;
 
   --animate-blink: blink 1.4s both infinite;
   --animate-tilt: tilt 1s ease-in-out infinite;

@@ -1,6 +1,7 @@
 import { revalidateTag } from "next/cache";
 import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
+import { createHmac, timingSafeEqual } from "node:crypto";
 
 import { env } from "@/env";
 import { TAGS } from "@/lib/utils/constants";
@@ -18,16 +19,18 @@ const productWebhooks = [
 const pageWebhooks = ["pages/create", "pages/delete", "pages/update"];
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
+  const rawBody = await req.text();
+  const signature = (await headers()).get("x-shopify-hmac-sha256");
+
+  if (!signature || !isValidSignature(rawBody, signature)) {
+    console.error("Invalid revalidation webhook signature.");
+    return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
+  }
+
   const topic = (await headers()).get("x-shopify-topic") || "unknown";
-  const secret = req.nextUrl.searchParams.get("secret");
   const isCollectionUpdate = collectionWebhooks.includes(topic);
   const isProductUpdate = productWebhooks.includes(topic);
   const isPageUpdate = pageWebhooks.includes(topic);
-
-  if (!secret || secret !== env.SHOPIFY_REVALIDATION_SECRET) {
-    console.error("Invalid revalidation secret.");
-    return NextResponse.json({ error: "Invalid secret" }, { status: 401 });
-  }
 
   if (!isCollectionUpdate && !isProductUpdate && !isPageUpdate) {
     // We don't need to revalidate anything for any other topics.
@@ -47,4 +50,18 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   }
 
   return NextResponse.json({ status: 200, revalidated: true, now: Date.now() });
+}
+
+function isValidSignature(rawBody: string, signature: string): boolean {
+  const digest = createHmac("sha256", env.SHOPIFY_WEBHOOK_SECRET)
+    .update(rawBody, "utf8")
+    .digest("base64");
+
+  const digestBuffer = Buffer.from(digest);
+  const signatureBuffer = Buffer.from(signature);
+
+  return (
+    digestBuffer.length === signatureBuffer.length &&
+    timingSafeEqual(digestBuffer, signatureBuffer)
+  );
 }

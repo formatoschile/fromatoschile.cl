@@ -1,5 +1,5 @@
-import { cacheLife } from "next/cache";
 import { sanitize } from "isomorphic-dompurify";
+import { cacheLife } from "next/cache";
 
 /**
  * isomorphic-dompurify's server-side sanitize touches `Date` internally,

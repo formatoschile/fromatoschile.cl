@@ -71,6 +71,21 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({ url }) => {
           style={{ display: isLoading ? "none" : "block" }}
         />
       </div>
+
+      {/* Canvas alt-text updates aren't reliably announced — call out page
+          changes explicitly, and give screen-reader users a real path to the
+          actual (tagged) PDF instead of only a canvas image description. */}
+      <p aria-live="polite" className="sr-only">
+        {numPages > 1
+          ? `Página ${currentPage} de ${numPages}`
+          : "Vista previa del documento"}
+      </p>
+      <a
+        href={url}
+        className="sr-only focus:not-sr-only focus:absolute focus:z-10 focus:bg-white focus:px-2 focus:py-1 focus:text-sm focus:underline"
+      >
+        Ver documento en PDF
+      </a>
     </div>
   );
 };

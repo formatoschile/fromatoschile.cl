@@ -127,3 +127,52 @@ export async function getProducts({
       variants: removeEdgesAndNodes(product.variants),
     }));
 }
+
+export type ProductsPage = {
+  products: ProductCard[];
+  hasNextPage: boolean;
+  endCursor: string | null;
+};
+
+/**
+ * A single bounded, cursor-paginated page of the catalog — the counterpart
+ * to `getProducts` for catalog/search UIs that shouldn't fetch (and ship)
+ * the entire product list to render one page of results.
+ */
+export async function getProductsPage({
+  query,
+  reverse,
+  sortKey,
+  first,
+  after,
+}: {
+  query?: string;
+  reverse?: boolean;
+  sortKey?: string;
+  first: number;
+  after?: string;
+}): Promise<ProductsPage> {
+  "use cache";
+  cacheTag(TAGS.products);
+  cacheLife("days");
+
+  const res = await shopifyFetch<ShopifyProductsOperation>({
+    query: getProductsQuery,
+    variables: { query, reverse, sortKey, first, after },
+  });
+
+  const { edges, pageInfo } = res.body.data.products;
+
+  const products = removeEdgesAndNodes({ edges })
+    .filter((product) => !product.tags.includes(HIDDEN_PRODUCT_TAG))
+    .map((product) => ({
+      ...product,
+      variants: removeEdgesAndNodes(product.variants),
+    }));
+
+  return {
+    products,
+    hasNextPage: pageInfo?.hasNextPage ?? false,
+    endCursor: pageInfo?.endCursor ?? null,
+  };
+}

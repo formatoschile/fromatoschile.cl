@@ -4,6 +4,7 @@ import { Fragment } from "react";
 import {
   Dialog,
   DialogPanel,
+  DialogTitle,
   Transition,
   TransitionChild,
 } from "@headlessui/react";
@@ -55,7 +56,9 @@ export const CartModal: React.FC<CartModalProps> = ({ iconClassName }) => {
           >
             <DialogPanel className="border-brand-ink/10 bg-primary/90 text-brand-ink fixed top-0 right-0 bottom-0 flex h-full w-full flex-col border-l p-6 backdrop-blur-xl md:w-[390px]">
               <div className="flex items-center justify-between">
-                <p className="text-lg font-semibold">Tu carrito</p>
+                <DialogTitle as="p" className="text-lg font-semibold">
+                  Tu carrito
+                </DialogTitle>
                 <button
                   className="cursor-pointer"
                   aria-label="Cerrar carrito"
