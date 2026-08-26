@@ -64,6 +64,9 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({ url }) => {
         )}
         <canvas
           ref={canvasRef}
+          // oxlint-disable-next-line jsx-a11y/prefer-tag-over-role -- canvas renders pixels, an <img> can't replace it
+          role="img"
+          aria-label={`Vista previa del documento, página ${currentPage} de ${numPages}`}
           className="max-h-[70vh] w-full object-contain"
           style={{ display: isLoading ? "none" : "block" }}
         />

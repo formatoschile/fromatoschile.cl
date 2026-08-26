@@ -1,15 +1,16 @@
 import { ReactNode, Suspense } from "react";
 import { Afacad } from "next/font/google";
 
+import { RouteFocus } from "@/components/a11y/RouteFocus";
 import { Analytics } from "@/components/Analytics/Analytics";
 import { CartProvider } from "@/components/cart/CartContext";
 import { JsonLd } from "@/components/JsonLd/JsonLd";
 import { Footer } from "@/components/layout/Footer/Footer";
 import { Navbar } from "@/components/layout/Navbar/Navbar";
+import { env } from "@/env";
 import { buildOrganizationJsonLd, buildWebSiteJsonLd } from "@/lib/seo/jsonLd";
 import { getCart } from "@/lib/shopify";
 import { baseUrl } from "@/lib/utils";
-import { env } from "@/lib/utils/env";
 
 import "./globals.css";
 
@@ -29,6 +30,9 @@ export const metadata = {
     follow: true,
     index: true,
   },
+  twitter: {
+    card: "summary_large_image",
+  },
 };
 
 export default async function RootLayout({
@@ -42,6 +46,9 @@ export default async function RootLayout({
   return (
     <html lang="es-CL" className={afacad.variable}>
       <body className="font-main">
+        <Suspense fallback={null}>
+          <RouteFocus />
+        </Suspense>
         <JsonLd data={buildOrganizationJsonLd()} />
         <JsonLd data={buildWebSiteJsonLd()} />
 
@@ -50,7 +57,7 @@ export default async function RootLayout({
             <Navbar />
           </Suspense>
 
-          <main>
+          <main id="main-content" tabIndex={-1}>
             <Suspense>{children}</Suspense>
           </main>
 

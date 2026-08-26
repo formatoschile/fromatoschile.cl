@@ -81,31 +81,44 @@ export async function getProductRecommendations(
 /**
  * Lightweight product listing (catalog cards, sitemap). Uses the slim
  * `productCard` fragment — use `getProduct` for the full product detail.
+ *
+ * Pass `first` to cap the result to a single page (e.g. a "related products"
+ * widget that only needs a handful) — omit it to page through the full
+ * result set (sitemap, catalog listings).
  */
 export async function getProducts({
   query,
   reverse,
   sortKey,
+  first,
 }: {
   query?: string;
   reverse?: boolean;
   sortKey?: string;
+  first?: number;
 }): Promise<ProductCard[]> {
   "use cache";
   cacheTag(TAGS.products);
   cacheLife("days");
 
-  const edges = await fetchAllPages((after) =>
-    shopifyFetch<ShopifyProductsOperation>({
-      query: getProductsQuery,
-      variables: {
-        query,
-        reverse,
-        sortKey,
-        after,
-      },
-    }).then((res) => res.body.data.products)
-  );
+  const edges = first
+    ? (
+        await shopifyFetch<ShopifyProductsOperation>({
+          query: getProductsQuery,
+          variables: { query, reverse, sortKey, first },
+        })
+      ).body.data.products.edges
+    : await fetchAllPages((after) =>
+        shopifyFetch<ShopifyProductsOperation>({
+          query: getProductsQuery,
+          variables: {
+            query,
+            reverse,
+            sortKey,
+            after,
+          },
+        }).then((res) => res.body.data.products)
+      );
 
   return removeEdgesAndNodes({ edges })
     .filter((product) => !product.tags.includes(HIDDEN_PRODUCT_TAG))

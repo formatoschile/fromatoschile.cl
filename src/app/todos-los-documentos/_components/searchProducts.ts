@@ -1,4 +1,5 @@
 import type { ProductCard } from "@/lib/shopify/types";
+import { getProductCategory } from "@/lib/utils/product";
 
 export function matchesQuery(product: ProductCard, query: string): boolean {
   const normalizedQuery = normalize(query.trim());
@@ -7,7 +8,7 @@ export function matchesQuery(product: ProductCard, query: string): boolean {
     return true;
   }
 
-  const category = product.productType || "General";
+  const category = getProductCategory(product);
   const haystack = normalize(
     [product.title, category, ...product.tags].join(" ")
   );

@@ -3,15 +3,14 @@ import Link from "next/link";
 import { BuyButton } from "@/components/cart/BuyButton";
 import { CategoryPill } from "@/components/ui/CategoryPill/CategoryPill";
 import type { ProductCard } from "@/lib/shopify/types";
-import { formatPrice } from "@/lib/utils/money";
+import { getProductCardDisplay } from "@/lib/utils/product";
 
 interface FeaturedCardProps {
   product: ProductCard;
 }
 
 export const FeaturedCard: React.FC<FeaturedCardProps> = ({ product }) => {
-  const category = product.productType || "General";
-  const price = formatPrice(product.priceRange.minVariantPrice);
+  const { category, price } = getProductCardDisplay(product);
   const variantId = product.variants[0]?.id ?? "";
 
   return (

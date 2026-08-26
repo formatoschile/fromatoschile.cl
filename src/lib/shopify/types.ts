@@ -310,5 +310,6 @@ export type ShopifyProductsOperation = {
     reverse?: boolean;
     sortKey?: string;
     after?: string;
+    first?: number;
   };
 };

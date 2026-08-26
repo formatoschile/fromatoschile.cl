@@ -6,11 +6,12 @@ import { JsonLd } from "@/components/JsonLd/JsonLd";
 import { PdfViewer } from "@/components/product/PdfViewer/PdfViewer";
 import { ProductProvider } from "@/components/product/ProductContext";
 import { ProductDescription } from "@/components/product/ProductDescription";
+import { env } from "@/env";
 import { buildBreadcrumbJsonLd } from "@/lib/seo/jsonLd";
 import { getProduct, getProducts } from "@/lib/shopify";
 import { baseUrl } from "@/lib/utils";
 import { HIDDEN_PRODUCT_TAG } from "@/lib/utils/constants";
-import { env } from "@/lib/utils/env";
+import { getProductCategory } from "@/lib/utils/product";
 
 import { Breadcrumb } from "./_components/Breadcrumb";
 import { RelatedProducts } from "./_components/RelatedProducts";
@@ -68,7 +69,7 @@ export default async function ProductPage(props: {
 
   if (!product) return notFound();
 
-  const category = product.productType || "General";
+  const category = getProductCategory(product);
 
   const availability = product.availableForSale
     ? "https://schema.org/InStock"

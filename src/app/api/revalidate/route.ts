@@ -2,8 +2,8 @@ import { revalidateTag } from "next/cache";
 import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
+import { env } from "@/env";
 import { TAGS } from "@/lib/utils/constants";
-import { env } from "@/lib/utils/env";
 
 const collectionWebhooks = [
   "collections/create",

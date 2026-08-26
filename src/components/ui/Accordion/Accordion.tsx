@@ -60,16 +60,18 @@ export const Accordion: React.FC<AccordionProps> = ({ entries }) => {
                   static
                   as={motion.dd}
                   initial={false}
-                  animate={open ? "open" : "collapsed"}
-                  variants={{
-                    open: { height: "auto", opacity: 1 },
-                    collapsed: { height: 0, opacity: 0 },
+                  animate={{
+                    gridTemplateRows: open ? "1fr" : "0fr",
+                    opacity: open ? 1 : 0,
                   }}
-                  className="overflow-hidden border-t border-gray-900 md:pr-12"
+                  style={{ display: "grid" }}
+                  className="border-t border-gray-900 md:pr-12"
                 >
-                  <div className="lg:w-4/5">
-                    <div className="pt-12 pb-12 text-base/7 leading-6 text-black/50 md:pl-7">
-                      {entry.description}
+                  <div className="min-h-0 overflow-hidden">
+                    <div className="lg:w-4/5">
+                      <div className="pt-12 pb-12 text-base/7 leading-6 text-neutral-600 md:pl-7">
+                        {entry.description}
+                      </div>
                     </div>
                   </div>
                 </DisclosurePanel>

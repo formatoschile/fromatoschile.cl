@@ -15,12 +15,13 @@ export const getProductsQuery = /* GraphQL */ `
     $reverse: Boolean
     $query: String
     $after: String
+    $first: Int = 100
   ) {
     products(
       sortKey: $sortKey
       reverse: $reverse
       query: $query
-      first: 100
+      first: $first
       after: $after
     ) {
       edges {

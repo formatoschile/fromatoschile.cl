@@ -3,14 +3,14 @@
 import React, { createContext, use, useOptimistic } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
-type ProductState = {
+interface ProductState {
   [key: string]: string;
-};
+}
 
-type ProductContextType = {
+interface ProductContextType {
   state: ProductState;
   updateOption: (name: string, value: string) => ProductState;
-};
+}
 
 const ProductContext = createContext<ProductContextType | undefined>(undefined);
 

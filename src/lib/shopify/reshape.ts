@@ -15,15 +15,14 @@ export const removeEdgesAndNodes = <T>(array: Connection<T>): T[] => {
 };
 
 export const reshapeCart = (cart: ShopifyCart): Cart => {
-  if (!cart.cost?.totalTaxAmount) {
-    cart.cost.totalTaxAmount = {
-      amount: "0.0",
-      currencyCode: cart.cost.totalAmount.currencyCode,
-    };
-  }
+  const totalTaxAmount = cart.cost?.totalTaxAmount ?? {
+    amount: "0.0",
+    currencyCode: cart.cost.totalAmount.currencyCode,
+  };
 
   return {
     ...cart,
+    cost: { ...cart.cost, totalTaxAmount },
     lines: removeEdgesAndNodes(cart.lines),
   };
 };
@@ -59,11 +58,11 @@ export const reshapeCollections = (collections: ShopifyCollection[]) => {
 
 export const reshapeProduct = (
   product: ShopifyProduct,
-  filterHiddenProducts: boolean = true
+  shouldFilterHiddenProducts: boolean = true
 ) => {
   if (
     !product ||
-    (filterHiddenProducts && product.tags.includes(HIDDEN_PRODUCT_TAG))
+    (shouldFilterHiddenProducts && product.tags.includes(HIDDEN_PRODUCT_TAG))
   ) {
     return undefined;
   }

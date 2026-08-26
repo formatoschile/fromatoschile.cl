@@ -6,7 +6,7 @@ import {
 } from "@/components/ui/CategoryPill/CategoryPill";
 import type { ProductCard } from "@/lib/shopify/types";
 import { classNames } from "@/lib/utils/classNames";
-import { formatPrice } from "@/lib/utils/money";
+import { getProductCardDisplay } from "@/lib/utils/product";
 
 import { PreviewThumbnail } from "./PreviewPlaceholder";
 
@@ -15,8 +15,7 @@ interface DocumentCardProps {
 }
 
 export const DocumentCard: React.FC<DocumentCardProps> = ({ product }) => {
-  const category = product.productType || "General";
-  const price = formatPrice(product.priceRange.minVariantPrice);
+  const { category, price } = getProductCardDisplay(product);
 
   return (
     <Link

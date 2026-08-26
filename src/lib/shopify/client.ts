@@ -1,6 +1,6 @@
+import { env } from "@/env";
 import { ensureStartsWith } from "@/lib/utils";
 import { SHOPIFY_GRAPHQL_API_ENDPOINT } from "@/lib/utils/constants";
-import { env } from "@/lib/utils/env";
 import { isShopifyError } from "@/lib/utils/type-guards";
 
 type ExtractVariables<T> = T extends { variables: object }

@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 
 import type { ProductCard } from "@/lib/shopify/types";
+import { getProductCategory } from "@/lib/utils/product";
 
 import { matchesQuery } from "./searchProducts";
 
@@ -22,7 +23,7 @@ export function useDocumentFilters(
   const categories = useMemo<CategoryCount[]>(() => {
     const counts = new Map<string, number>();
     for (const product of products) {
-      const category = product.productType || "General";
+      const category = getProductCategory(product);
       counts.set(category, (counts.get(category) ?? 0) + 1);
     }
     return Array.from(counts, ([label, count]) => ({ label, count }));
@@ -30,7 +31,7 @@ export function useDocumentFilters(
 
   const filteredProducts = useMemo(() => {
     return products.filter((product) => {
-      const category = product.productType || "General";
+      const category = getProductCategory(product);
 
       if (selectedCategory && category !== selectedCategory) {
         return false;

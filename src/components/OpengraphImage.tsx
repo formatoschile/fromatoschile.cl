@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 
-import { env } from "@/lib/utils/env";
+import { env } from "@/env";
 
 export interface OpengraphImageProps {
   title?: string;

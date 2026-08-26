@@ -5,6 +5,7 @@ import { CategoryPill } from "@/components/ui/CategoryPill/CategoryPill";
 import { Price } from "@/components/ui/Price";
 import { Prose } from "@/components/ui/Prose";
 import { Product } from "@/lib/shopify/types";
+import { getProductCategory } from "@/lib/utils/product";
 
 import { BuyNowButton } from "./BuyNowButton";
 import { DetailAccordion } from "./DetailAccordion";
@@ -18,7 +19,7 @@ export const ProductDescription: React.FC<ProductDescriptionProps> = ({
   product,
 }) => {
   const sku = product.variants[0]?.sku;
-  const category = product.productType || "General";
+  const category = getProductCategory(product);
 
   return (
     <div className="flex flex-col lg:h-full">

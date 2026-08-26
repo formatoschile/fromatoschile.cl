@@ -3,7 +3,7 @@ import Link from "next/link";
 import { BuyButton } from "@/components/cart/BuyButton";
 import { CategoryPill } from "@/components/ui/CategoryPill/CategoryPill";
 import type { ProductCard } from "@/lib/shopify/types";
-import { formatPrice } from "@/lib/utils/money";
+import { getProductCardDisplay } from "@/lib/utils/product";
 
 const MAX_FEATURES = 3;
 
@@ -12,7 +12,7 @@ interface TemplateCardProps {
 }
 
 export const TemplateCard: React.FC<TemplateCardProps> = ({ product }) => {
-  const price = formatPrice(product.priceRange.minVariantPrice);
+  const { category, price } = getProductCardDisplay(product);
   const variantId = product.variants[0]?.id ?? "";
   const features = product.tags.slice(0, MAX_FEATURES);
 
@@ -24,10 +24,7 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({ product }) => {
         </h3>
       </Link>
 
-      <CategoryPill
-        category={product.productType || "General"}
-        className="mt-3 self-start"
-      />
+      <CategoryPill category={category} className="mt-3 self-start" />
 
       {features.length > 0 ? (
         <ul className="mt-4 list-disc space-y-1.5 pl-4 text-sm text-neutral-500">

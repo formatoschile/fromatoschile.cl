@@ -11,9 +11,9 @@ import type { UpdateType } from "../cartReducer";
 import { DeleteItemButton } from "./DeleteItemButton";
 import { EditItemQuantityButton } from "./EditItemQuantityButton";
 
-type MerchandiseSearchParams = {
+interface MerchandiseSearchParams {
   [key: string]: string;
-};
+}
 
 interface CartItemProps {
   item: CartItemType;

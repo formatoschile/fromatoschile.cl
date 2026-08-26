@@ -3,18 +3,7 @@ import Link from "next/link";
 import { CategoryPill } from "@/components/ui/CategoryPill/CategoryPill";
 import { getCollections, getProducts } from "@/lib/shopify";
 import type { Collection } from "@/lib/shopify/types";
-
-// Marketing copy per category, keyed by collection handle. Collections
-// without an entry still render — counts always come from the live catalog.
-const CATEGORY_DESCRIPTIONS: Record<string, string> = {
-  laboral: "Contratos de trabajo, confidencialidad, finiquitos",
-  inmobiliario: "Arrendamiento, compraventa, opciones de compra",
-  sociedades: "Constitución, pactos sociales, acuerdos",
-  comercial: "Compraventa, distribución, servicios",
-  civil: "Préstamos, donaciones, poderes",
-  legal: "Reclamaciones, acuerdos extrajudiciales",
-  mercantil: "Joint ventures, acuerdos de inversión",
-};
+import { getProductCategory } from "@/lib/utils/product";
 
 interface Category {
   collection: Collection;
@@ -30,7 +19,7 @@ export const DocumentCategories = async () => {
 
   const counts = new Map<string, number>();
   for (const product of products) {
-    const handle = (product.productType || "General").toLowerCase();
+    const handle = getProductCategory(product).toLowerCase();
     counts.set(handle, (counts.get(handle) ?? 0) + 1);
   }
 
@@ -39,7 +28,7 @@ export const DocumentCategories = async () => {
     .filter((collection) => collection.handle)
     .map((collection) => ({
       collection,
-      description: CATEGORY_DESCRIPTIONS[collection.handle] ?? "",
+      description: collection.description || collection.seo?.description || "",
       count: counts.get(collection.handle) ?? 0,
     }));
 

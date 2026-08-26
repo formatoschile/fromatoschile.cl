@@ -81,10 +81,15 @@ export const CartModalContent: React.FC<CartModalContentProps> = ({
 };
 
 const CheckoutButton = () => {
-  const { pending } = useFormStatus();
+  const { pending: isPending } = useFormStatus();
 
   return (
-    <Button className="w-full" type="submit" variant="ink" pending={pending}>
+    <Button
+      className="w-full"
+      type="submit"
+      variant="ink"
+      isPending={isPending}
+    >
       Continuar con el pago
     </Button>
   );

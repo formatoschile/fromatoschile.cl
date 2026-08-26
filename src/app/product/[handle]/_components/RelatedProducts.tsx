@@ -3,7 +3,7 @@ import Link from "next/link";
 import { CategoryPill } from "@/components/ui/CategoryPill/CategoryPill";
 import { getProducts } from "@/lib/shopify";
 import type { ProductCard } from "@/lib/shopify/types";
-import { formatPrice } from "@/lib/utils/money";
+import { getProductCardDisplay } from "@/lib/utils/product";
 
 const RELATED_PRODUCTS_LIMIT = 4;
 
@@ -16,7 +16,12 @@ export const RelatedProducts = async ({
   handle,
   category,
 }: RelatedProductsProps) => {
-  const products = await getProducts({ query: `product_type:"${category}"` });
+  // Fetch one extra in case the current product lands in the page — avoids
+  // pulling the whole category just to keep 4.
+  const products = await getProducts({
+    query: `product_type:"${category}"`,
+    first: RELATED_PRODUCTS_LIMIT + 1,
+  });
   const relatedProducts = products
     .filter((product) => product.handle !== handle)
     .slice(0, RELATED_PRODUCTS_LIMIT);
@@ -42,6 +47,8 @@ interface RelatedProductCardProps {
 }
 
 const RelatedProductCard: React.FC<RelatedProductCardProps> = ({ product }) => {
+  const { category, price } = getProductCardDisplay(product);
+
   return (
     <Link
       href={`/product/${product.handle}`}
@@ -53,10 +60,8 @@ const RelatedProductCard: React.FC<RelatedProductCardProps> = ({ product }) => {
       </p>
 
       <div className="mt-auto flex items-center justify-between gap-2 border-t border-neutral-200 pt-6">
-        <CategoryPill category={product.productType || "General"} />
-        <span className="text-ink text-2xl">
-          {formatPrice(product.priceRange.minVariantPrice)}
-        </span>
+        <CategoryPill category={category} />
+        <span className="text-ink text-2xl">{price}</span>
       </div>
     </Link>
   );

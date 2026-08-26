@@ -1,5 +1,3 @@
-"use client";
-
 import { Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -38,7 +36,7 @@ export const Navbar = () => {
         <div className="flex items-center justify-end gap-6 justify-self-end">
           <Suspense
             fallback={
-              <button aria-label="Open cart">
+              <button aria-label="Abrir carrito">
                 <OpenCart quantity={0} className="text-brand-ink" />
               </button>
             }

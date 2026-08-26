@@ -16,7 +16,7 @@ import { cartReducer } from "./cartReducer";
 
 export type { UpdateType } from "./cartReducer";
 
-type CartContextType = {
+interface CartContextType {
   cartPromise: Promise<Cart | undefined>;
   isCartOpen: boolean;
   openCart: () => void;
@@ -25,7 +25,7 @@ type CartContextType = {
   // promise"; `undefined` is a legitimate synced state (no/empty cart).
   syncedCart: Cart | undefined | null;
   syncCart: (cart: Cart | undefined) => void;
-};
+}
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 

@@ -6,8 +6,8 @@ import type {
   WithContext,
 } from "schema-dts";
 
+import { env } from "@/env";
 import { baseUrl } from "@/lib/utils";
-import { env } from "@/lib/utils/env";
 
 const ORGANIZATION_ID = `${baseUrl}/#organization`;
 
