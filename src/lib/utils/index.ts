@@ -1,8 +1,20 @@
 import { ReadonlyURLSearchParams } from "next/navigation";
 
-export const baseUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
-  ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
-  : "http://localhost:3000";
+const PRODUCTION_URL = "https://formatos.cl";
+
+export const baseUrl = getBaseUrl();
+
+function getBaseUrl() {
+  if (process.env.VERCEL_ENV === "production") {
+    return PRODUCTION_URL;
+  }
+
+  if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
+    return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
+  }
+
+  return "http://localhost:3000";
+}
 
 export const createUrl = (
   pathname: string,

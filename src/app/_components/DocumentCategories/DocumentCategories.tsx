@@ -1,11 +1,11 @@
 import Link from "next/link";
 
 import { CategoryPill } from "@/components/ui/CategoryPill/CategoryPill";
-import { getProducts } from "@/lib/shopify";
+import { getCollections, getProducts } from "@/lib/shopify";
+import type { Collection } from "@/lib/shopify/types";
 
-// Marketing copy per category (Shopify product type, lowercased — product
-// types aren't reliably cased). Categories without an entry still render —
-// counts always come from the live catalog.
+// Marketing copy per category, keyed by collection handle. Collections
+// without an entry still render — counts always come from the live catalog.
 const CATEGORY_DESCRIPTIONS: Record<string, string> = {
   laboral: "Contratos de trabajo, confidencialidad, finiquitos",
   inmobiliario: "Arrendamiento, compraventa, opciones de compra",
@@ -17,14 +17,31 @@ const CATEGORY_DESCRIPTIONS: Record<string, string> = {
 };
 
 interface Category {
-  label: string;
+  collection: Collection;
   description: string;
   count: number;
 }
 
 export const DocumentCategories = async () => {
-  const products = await getProducts({});
-  const categories = getCategories(products.map((p) => p.productType));
+  const [collections, products] = await Promise.all([
+    getCollections(),
+    getProducts({}),
+  ]);
+
+  const counts = new Map<string, number>();
+  for (const product of products) {
+    const handle = (product.productType || "General").toLowerCase();
+    counts.set(handle, (counts.get(handle) ?? 0) + 1);
+  }
+
+  const categories: Category[] = collections
+    // The synthetic "All" collection (empty handle) links to the full catalog.
+    .filter((collection) => collection.handle)
+    .map((collection) => ({
+      collection,
+      description: CATEGORY_DESCRIPTIONS[collection.handle] ?? "",
+      count: counts.get(collection.handle) ?? 0,
+    }));
 
   if (categories.length === 0) {
     return null;
@@ -45,7 +62,7 @@ export const DocumentCategories = async () => {
 
       <div className="hide-scrollbar mt-10 flex gap-5 overflow-x-auto pb-4">
         {categories.map((category) => (
-          <CategoryCard key={category.label} category={category} />
+          <CategoryCard key={category.collection.handle} category={category} />
         ))}
       </div>
     </section>
@@ -57,21 +74,18 @@ interface CategoryCardProps {
 }
 
 const CategoryCard: React.FC<CategoryCardProps> = ({ category }) => {
-  const { label, description, count } = category;
+  const { collection, description, count } = category;
 
   return (
     <div className="flex min-h-40 w-64 shrink-0 flex-col justify-between rounded-xl bg-white p-6 shadow-sm first:ml-(--inset-x) last:mr-(--inset-x)">
       <div>
-        <CategoryPill category={label} />
+        <CategoryPill category={collection.title} />
 
         <p className="mt-4 text-sm text-neutral-600">{description}</p>
       </div>
 
       <Link
-        href={{
-          pathname: "/todos-los-documentos",
-          query: { categoria: label },
-        }}
+        href={`/todos-los-documentos/${collection.handle}`}
         className="text-ink mt-6 self-end text-sm font-normal underline underline-offset-4 hover:text-black"
       >
         ver {count} documentos
@@ -79,18 +93,3 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category }) => {
     </div>
   );
 };
-
-function getCategories(productTypes: string[]): Category[] {
-  const counts = new Map<string, number>();
-
-  for (const productType of productTypes) {
-    const label = productType || "General";
-    counts.set(label, (counts.get(label) ?? 0) + 1);
-  }
-
-  return Array.from(counts, ([label, count]) => ({
-    label,
-    count,
-    description: CATEGORY_DESCRIPTIONS[label.toLowerCase()] ?? "",
-  }));
-}

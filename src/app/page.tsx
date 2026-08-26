@@ -12,7 +12,10 @@ import { SecuritySection } from "./_components/SecuritySection/SecuritySection";
 
 export const metadata = {
   title: "formatos.cl",
-  description: "El mejor e-commerce de contractos de Chile",
+  description: "El mejor e-commerce de contratos de Chile",
+  alternates: {
+    canonical: "/",
+  },
   openGraph: {
     type: "website",
   },

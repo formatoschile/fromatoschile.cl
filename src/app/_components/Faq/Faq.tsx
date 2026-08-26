@@ -1,4 +1,6 @@
+import { JsonLd } from "@/components/JsonLd/JsonLd";
 import { Accordion } from "@/components/ui/Accordion/Accordion";
+import { buildFaqJsonLd } from "@/lib/seo/jsonLd";
 
 const faqs = [
   {
@@ -31,6 +33,8 @@ const faqs = [
 export const Faq = () => {
   return (
     <section className="section-inset bg-white py-20">
+      <JsonLd data={buildFaqJsonLd(faqs)} />
+
       <div className="mx-auto max-w-7xl">
         <h2 className="text-ink text-4xl font-normal sm:text-5xl">FAQ</h2>
 

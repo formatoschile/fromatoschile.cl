@@ -1,21 +1,9 @@
 import { classNames } from "@/lib/utils/classNames";
 
 /**
- * Faux-document placeholders shown while products have no watermarked
- * preview asset yet. `PreviewThumbnail` is the small card version;
- * `PreviewPage` is the full A4 page used in the modal.
+ * Faux-document placeholder shown while a product has no watermarked
+ * preview asset yet.
  */
-
-const PAGE_LINE_WIDTHS = [
-  "w-full",
-  "w-11/12",
-  "w-full",
-  "w-10/12",
-  "w-full",
-  "w-9/12",
-  "w-11/12",
-  "w-8/12",
-];
 
 const THUMBNAIL_LINE_WIDTHS = [
   "w-11/12",
@@ -60,41 +48,6 @@ export const PreviewThumbnail = () => {
       <PlaceholderLines
         widths={THUMBNAIL_LINE_WIDTHS}
         className="mt-4 space-y-1.5"
-      />
-    </div>
-  );
-};
-
-export const PreviewPage = () => {
-  return (
-    <div className="relative mx-auto aspect-[1/1.414] w-full max-w-md overflow-hidden rounded-sm bg-white px-10 py-8 shadow-md">
-      {/* Watermark */}
-      <span className="pointer-events-none absolute inset-0 flex items-center justify-center">
-        <span className="text-ink/5 -rotate-45 text-4xl font-bold tracking-widest uppercase select-none">
-          Vista previa
-        </span>
-      </span>
-
-      {/* Letterhead */}
-      <div className="flex items-center justify-end gap-2 text-neutral-400">
-        <span className="font-serif text-lg leading-none">
-          <span className="inline-block -scale-x-100">R</span>K
-        </span>
-        <span className="text-[7px] leading-tight uppercase">
-          Retamales
-          <br />
-          Kowalski
-          <br />
-          Abogados
-        </span>
-      </div>
-
-      <div className="mx-auto mt-6 h-1.5 w-3/4 rounded bg-neutral-300" />
-
-      <PlaceholderLines widths={PAGE_LINE_WIDTHS} className="mt-6 space-y-2" />
-      <PlaceholderLines
-        widths={PAGE_LINE_WIDTHS.slice(0, 6)}
-        className="mt-6 space-y-2"
       />
     </div>
   );

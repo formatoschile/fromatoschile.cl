@@ -1,41 +1,35 @@
 "use client";
 
-import { useState } from "react";
-
+import type { ProductCard } from "@/lib/shopify/types";
 import { classNames } from "@/lib/utils/classNames";
 
 import { DocumentCard } from "./DocumentCard";
-import { DocumentModal } from "./DocumentModal";
 import { FeaturedCard } from "./FeaturedCard";
-import type { DocItem } from "./types";
 import { useDocumentFilters } from "./useDocumentFilters";
 
 interface DocumentsCatalogProps {
-  docs: DocItem[];
+  products: ProductCard[];
   initialCategory?: string | null;
 }
 
 export const DocumentsCatalog: React.FC<DocumentsCatalogProps> = ({
-  docs,
+  products,
   initialCategory = null,
 }) => {
-  const [selected, setSelected] = useState<DocItem | null>(null);
   const {
     query,
     setQuery,
     categories,
     selectedCategory,
     toggleCategory,
-    filteredDocs,
-  } = useDocumentFilters(docs, initialCategory);
-
-  const handleClose = () => setSelected(null);
+    filteredProducts,
+  } = useDocumentFilters(products, initialCategory);
 
   const handleQueryChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setQuery(event.target.value);
   };
 
-  if (!docs.length) {
+  if (!products.length) {
     return (
       <p className="mt-12 text-sm text-neutral-500">
         No hay documentos disponibles por el momento.
@@ -43,7 +37,7 @@ export const DocumentsCatalog: React.FC<DocumentsCatalogProps> = ({
     );
   }
 
-  const [featured, ...rest] = filteredDocs;
+  const [featured, ...rest] = filteredProducts;
 
   return (
     <>
@@ -83,14 +77,10 @@ export const DocumentsCatalog: React.FC<DocumentsCatalogProps> = ({
 
       {featured ? (
         <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          <FeaturedCard doc={featured} onSelect={() => setSelected(featured)} />
+          <FeaturedCard product={featured} />
 
-          {rest.map((doc) => (
-            <DocumentCard
-              key={doc.handle}
-              doc={doc}
-              onSelect={() => setSelected(doc)}
-            />
+          {rest.map((product) => (
+            <DocumentCard key={product.handle} product={product} />
           ))}
         </div>
       ) : (
@@ -98,8 +88,6 @@ export const DocumentsCatalog: React.FC<DocumentsCatalogProps> = ({
           No encontramos documentos para tu búsqueda.
         </p>
       )}
-
-      <DocumentModal doc={selected} onClose={handleClose} />
     </>
   );
 };

@@ -2,9 +2,11 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
+import { JsonLd } from "@/components/JsonLd/JsonLd";
 import { PdfViewer } from "@/components/product/PdfViewer/PdfViewer";
 import { ProductProvider } from "@/components/product/ProductContext";
 import { ProductDescription } from "@/components/product/ProductDescription";
+import { buildBreadcrumbJsonLd } from "@/lib/seo/jsonLd";
 import { getProduct } from "@/lib/shopify";
 import { HIDDEN_PRODUCT_TAG } from "@/lib/utils/constants";
 
@@ -25,6 +27,9 @@ export async function generateMetadata(props: {
   return {
     title: product.seo.title || product.title,
     description: product.seo.description || product.description,
+    alternates: {
+      canonical: `/product/${params.handle}`,
+    },
     robots: {
       index: indexable,
       follow: indexable,
@@ -56,6 +61,8 @@ export default async function ProductPage(props: {
 
   if (!product) return notFound();
 
+  const category = product.productType || "General";
+
   const productJsonLd = {
     "@context": "https://schema.org",
     "@type": "Product",
@@ -73,20 +80,21 @@ export default async function ProductPage(props: {
     },
   };
 
+  const breadcrumbJsonLd = buildBreadcrumbJsonLd([
+    { name: "Todos los documentos", path: "/todos-los-documentos" },
+    {
+      name: category,
+      path: `/todos-los-documentos/${category.toLowerCase()}`,
+    },
+    { name: product.title, path: `/product/${product.handle}` },
+  ]);
+
   return (
     <ProductProvider>
-      <script
-        type="application/ld+json"
-        /* oxlint-disable-next-line react/no-danger -- JSON-LD from app data */
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(productJsonLd),
-        }}
-      />
+      <JsonLd data={productJsonLd} />
+      <JsonLd data={breadcrumbJsonLd} />
       <div className="section-inset pt-28 pb-24">
-        <Breadcrumb
-          category={product.productType || "General"}
-          title={product.title}
-        />
+        <Breadcrumb category={category} title={product.title} />
 
         <div className="flex flex-col gap-8 lg:flex-row">
           <div className="w-full lg:basis-4/6">
@@ -103,10 +111,7 @@ export default async function ProductPage(props: {
         </div>
         {/* Suspense keeps recommendations from blocking the page stream. */}
         <Suspense fallback={null}>
-          <RelatedProducts
-            handle={product.handle}
-            category={product.productType || "General"}
-          />
+          <RelatedProducts handle={product.handle} category={category} />
         </Suspense>
       </div>
     </ProductProvider>

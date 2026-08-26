@@ -1,10 +1,10 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 
-import { ProductGridItems } from "@/components/layout/ProductGridItems";
-import { Grid } from "@/components/ui/Grid/Grid";
 import { getCollection, getCollectionProducts } from "@/lib/shopify";
 import { defaultSort, sorting } from "@/lib/utils/constants";
+
+import { DocumentCard } from "../_components/DocumentCard";
 
 export async function generateMetadata(props: {
   params: Promise<{ collection: string }>;
@@ -20,6 +20,9 @@ export async function generateMetadata(props: {
       collection.seo?.description ||
       collection.description ||
       `${collection.title} products`,
+    alternates: {
+      canonical: `/todos-los-documentos/${params.collection}`,
+    },
   };
 }
 
@@ -43,9 +46,11 @@ export default async function CategoryPage(props: {
       {products.length === 0 ? (
         <p className="py-3 text-lg">No hay documentos en esta colección.</p>
       ) : (
-        <Grid className="grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-          <ProductGridItems products={products} />
-        </Grid>
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          {products.map((product) => (
+            <DocumentCard key={product.handle} product={product} />
+          ))}
+        </div>
       )}
     </section>
   );

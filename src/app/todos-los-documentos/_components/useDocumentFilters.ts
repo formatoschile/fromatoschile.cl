@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 
-import type { DocItem } from "./types";
+import type { ProductCard } from "@/lib/shopify/types";
 
 interface CategoryCount {
   label: string;
@@ -9,7 +9,7 @@ interface CategoryCount {
 
 /** Client-side search + category filtering over the fetched catalog. */
 export function useDocumentFilters(
-  docs: DocItem[],
+  products: ProductCard[],
   initialCategory: string | null = null
 ) {
   const [query, setQuery] = useState("");
@@ -19,17 +19,20 @@ export function useDocumentFilters(
 
   const categories = useMemo<CategoryCount[]>(() => {
     const counts = new Map<string, number>();
-    for (const doc of docs) {
-      counts.set(doc.category, (counts.get(doc.category) ?? 0) + 1);
+    for (const product of products) {
+      const category = product.productType || "General";
+      counts.set(category, (counts.get(category) ?? 0) + 1);
     }
     return Array.from(counts, ([label, count]) => ({ label, count }));
-  }, [docs]);
+  }, [products]);
 
-  const filteredDocs = useMemo(() => {
+  const filteredProducts = useMemo(() => {
     const normalizedQuery = normalize(query.trim());
 
-    return docs.filter((doc) => {
-      if (selectedCategory && doc.category !== selectedCategory) {
+    return products.filter((product) => {
+      const category = product.productType || "General";
+
+      if (selectedCategory && category !== selectedCategory) {
         return false;
       }
 
@@ -38,11 +41,11 @@ export function useDocumentFilters(
       }
 
       const haystack = normalize(
-        [doc.title, doc.category, ...doc.tags].join(" ")
+        [product.title, category, ...product.tags].join(" ")
       );
       return haystack.includes(normalizedQuery);
     });
-  }, [docs, query, selectedCategory]);
+  }, [products, query, selectedCategory]);
 
   const toggleCategory = (category: string) => {
     setSelectedCategory((current) => (current === category ? null : category));
@@ -54,7 +57,7 @@ export function useDocumentFilters(
     categories,
     selectedCategory,
     toggleCategory,
-    filteredDocs,
+    filteredProducts,
   };
 }
 

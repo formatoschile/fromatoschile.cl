@@ -16,10 +16,7 @@ export const Breadcrumb: React.FC<BreadcrumbProps> = ({ category, title }) => {
       </Link>
       <span aria-hidden="true">—</span>
       <Link
-        href={{
-          pathname: "/todos-los-documentos",
-          query: { categoria: category },
-        }}
+        href={`/todos-los-documentos/${category.toLowerCase()}`}
         className="hover:text-ink"
       >
         {category}
