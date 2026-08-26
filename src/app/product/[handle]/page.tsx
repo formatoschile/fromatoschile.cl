@@ -7,11 +7,16 @@ import { PdfViewer } from "@/components/product/PdfViewer/PdfViewer";
 import { ProductProvider } from "@/components/product/ProductContext";
 import { ProductDescription } from "@/components/product/ProductDescription";
 import { buildBreadcrumbJsonLd } from "@/lib/seo/jsonLd";
-import { getProduct } from "@/lib/shopify";
+import { getProduct, getProducts } from "@/lib/shopify";
 import { HIDDEN_PRODUCT_TAG } from "@/lib/utils/constants";
 
 import { Breadcrumb } from "./_components/Breadcrumb";
 import { RelatedProducts } from "./_components/RelatedProducts";
+
+export async function generateStaticParams() {
+  const products = await getProducts({});
+  return products.map((product) => ({ handle: product.handle }));
+}
 
 export async function generateMetadata(props: {
   params: Promise<{ handle: string }>;

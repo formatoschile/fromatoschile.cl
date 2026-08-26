@@ -1,10 +1,22 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 
-import { getCollection, getCollectionProducts } from "@/lib/shopify";
+import {
+  getCollection,
+  getCollectionProducts,
+  getCollections,
+} from "@/lib/shopify";
 import { defaultSort, sorting } from "@/lib/utils/constants";
 
-import { DocumentCard } from "../_components/DocumentCard";
+import { CategoryCatalog } from "./_components/CategoryCatalog";
+
+export async function generateStaticParams() {
+  const collections = await getCollections();
+  // Skip the synthetic "All" collection (empty handle, not a real route).
+  return collections
+    .filter((collection) => collection.handle)
+    .map((collection) => ({ collection: collection.handle }));
+}
 
 export async function generateMetadata(props: {
   params: Promise<{ collection: string }>;
@@ -35,23 +47,29 @@ export default async function CategoryPage(props: {
   const { sort } = searchParams as { [key: string]: string };
   const { sortKey, reverse } =
     sorting.find((item) => item.slug === sort) || defaultSort;
-  const products = await getCollectionProducts({
-    collection: params.collection,
-    sortKey,
-    reverse,
-  });
+
+  const [collection, products] = await Promise.all([
+    getCollection(params.collection),
+    getCollectionProducts({
+      collection: params.collection,
+      sortKey,
+      reverse,
+    }),
+  ]);
+
+  if (!collection) return notFound();
+
+  const description = collection.seo?.description || collection.description;
 
   return (
     <section>
-      {products.length === 0 ? (
-        <p className="py-3 text-lg">No hay documentos en esta colección.</p>
-      ) : (
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {products.map((product) => (
-            <DocumentCard key={product.handle} product={product} />
-          ))}
-        </div>
-      )}
+      <h1 className="text-ink text-4xl sm:text-5xl">{collection.title}</h1>
+
+      {description ? (
+        <p className="mt-4 max-w-2xl text-lg text-neutral-500">{description}</p>
+      ) : null}
+
+      <CategoryCatalog products={products} />
     </section>
   );
 }

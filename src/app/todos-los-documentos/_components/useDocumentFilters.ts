@@ -2,6 +2,8 @@ import { useMemo, useState } from "react";
 
 import type { ProductCard } from "@/lib/shopify/types";
 
+import { matchesQuery } from "./searchProducts";
+
 interface CategoryCount {
   label: string;
   count: number;
@@ -27,8 +29,6 @@ export function useDocumentFilters(
   }, [products]);
 
   const filteredProducts = useMemo(() => {
-    const normalizedQuery = normalize(query.trim());
-
     return products.filter((product) => {
       const category = product.productType || "General";
 
@@ -36,14 +36,7 @@ export function useDocumentFilters(
         return false;
       }
 
-      if (!normalizedQuery) {
-        return true;
-      }
-
-      const haystack = normalize(
-        [product.title, category, ...product.tags].join(" ")
-      );
-      return haystack.includes(normalizedQuery);
+      return matchesQuery(product, query);
     });
   }, [products, query, selectedCategory]);
 
@@ -59,12 +52,4 @@ export function useDocumentFilters(
     toggleCategory,
     filteredProducts,
   };
-}
-
-/** Lowercases and strips accents so "sesión" matches "sesion". */
-function normalize(value: string): string {
-  return value
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/\p{Diacritic}/gu, "");
 }

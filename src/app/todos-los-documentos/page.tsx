@@ -20,7 +20,7 @@ export default async function DocumentsPage(props: {
   const products = await getProducts({});
 
   return (
-    <div className="mx-auto max-w-7xl px-6 py-12 lg:px-10">
+    <>
       <h1 className="text-ink text-4xl sm:text-5xl">
         Encuentra tu Documento Legal
       </h1>
@@ -31,6 +31,6 @@ export default async function DocumentsPage(props: {
         products={products}
         initialCategory={initialCategory}
       />
-    </div>
+    </>
   );
 }
