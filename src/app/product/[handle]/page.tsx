@@ -8,7 +8,9 @@ import { ProductProvider } from "@/components/product/ProductContext";
 import { ProductDescription } from "@/components/product/ProductDescription";
 import { buildBreadcrumbJsonLd } from "@/lib/seo/jsonLd";
 import { getProduct, getProducts } from "@/lib/shopify";
+import { baseUrl } from "@/lib/utils";
 import { HIDDEN_PRODUCT_TAG } from "@/lib/utils/constants";
+import { env } from "@/lib/utils/env";
 
 import { Breadcrumb } from "./_components/Breadcrumb";
 import { RelatedProducts } from "./_components/RelatedProducts";
@@ -68,38 +70,62 @@ export default async function ProductPage(props: {
 
   const category = product.productType || "General";
 
+  const availability = product.availableForSale
+    ? "https://schema.org/InStock"
+    : "https://schema.org/OutOfStock";
+  const isSinglePrice =
+    product.priceRange.minVariantPrice.amount ===
+    product.priceRange.maxVariantPrice.amount;
+  const offers = isSinglePrice
+    ? {
+        "@type": "Offer",
+        availability,
+        priceCurrency: product.priceRange.minVariantPrice.currencyCode,
+        price: product.priceRange.minVariantPrice.amount,
+      }
+    : {
+        "@type": "AggregateOffer",
+        availability,
+        priceCurrency: product.priceRange.minVariantPrice.currencyCode,
+        highPrice: product.priceRange.maxVariantPrice.amount,
+        lowPrice: product.priceRange.minVariantPrice.amount,
+      };
+
   const productJsonLd = {
     "@context": "https://schema.org",
     "@type": "Product",
     name: product.title,
     description: product.description,
     image: product.featuredImage?.url,
-    offers: {
-      "@type": "AggregateOffer",
-      availability: product.availableForSale
-        ? "https://schema.org/InStock"
-        : "https://schema.org/OutOfStock",
-      priceCurrency: product.priceRange.minVariantPrice.currencyCode,
-      highPrice: product.priceRange.maxVariantPrice.amount,
-      lowPrice: product.priceRange.minVariantPrice.amount,
-    },
+    sku: product.variants[0]?.sku,
+    url: `${baseUrl}/product/${product.handle}`,
+    brand: { "@type": "Brand", name: env.SITE_NAME },
+    offers,
   };
 
-  const breadcrumbJsonLd = buildBreadcrumbJsonLd([
-    { name: "Todos los documentos", path: "/todos-los-documentos" },
-    {
-      name: category,
-      path: `/todos-los-documentos/${category.toLowerCase()}`,
-    },
-    { name: product.title, path: `/product/${product.handle}` },
-  ]);
+  const breadcrumbJsonLd = buildBreadcrumbJsonLd(
+    [
+      { name: "Todos los documentos", path: "/todos-los-documentos" },
+      product.collectionHandle
+        ? {
+            name: category,
+            path: `/todos-los-documentos/${product.collectionHandle}`,
+          }
+        : null,
+      { name: product.title, path: `/product/${product.handle}` },
+    ].filter((item) => item !== null)
+  );
 
   return (
     <ProductProvider>
       <JsonLd data={productJsonLd} />
       <JsonLd data={breadcrumbJsonLd} />
       <div className="section-inset pt-28 pb-24">
-        <Breadcrumb category={category} title={product.title} />
+        <Breadcrumb
+          category={category}
+          collectionHandle={product.collectionHandle}
+          title={product.title}
+        />
 
         <div className="flex flex-col gap-8 lg:flex-row">
           <div className="w-full lg:basis-4/6">

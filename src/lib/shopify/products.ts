@@ -3,6 +3,7 @@ import { cacheLife, cacheTag } from "next/cache";
 import { HIDDEN_PRODUCT_TAG, TAGS } from "@/lib/utils/constants";
 
 import { shopifyFetch } from "./client";
+import { fetchAllPages } from "./pagination";
 import {
   getProductByIdQuery,
   getProductQuery,
@@ -94,16 +95,19 @@ export async function getProducts({
   cacheTag(TAGS.products);
   cacheLife("days");
 
-  const res = await shopifyFetch<ShopifyProductsOperation>({
-    query: getProductsQuery,
-    variables: {
-      query,
-      reverse,
-      sortKey,
-    },
-  });
+  const edges = await fetchAllPages((after) =>
+    shopifyFetch<ShopifyProductsOperation>({
+      query: getProductsQuery,
+      variables: {
+        query,
+        reverse,
+        sortKey,
+        after,
+      },
+    }).then((res) => res.body.data.products)
+  );
 
-  return removeEdgesAndNodes(res.body.data.products)
+  return removeEdgesAndNodes({ edges })
     .filter((product) => !product.tags.includes(HIDDEN_PRODUCT_TAG))
     .map((product) => ({
       ...product,

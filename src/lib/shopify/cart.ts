@@ -28,7 +28,12 @@ export async function createCart({
     variables: { lineItems: lines },
   });
 
-  return reshapeCart(res.body.data.cartCreate.cart);
+  const cart = res.body.data.cartCreate.cart;
+  if (!cart) {
+    throw new Error("Cart not found");
+  }
+
+  return reshapeCart(cart);
 }
 
 export async function addToCart(
@@ -48,7 +53,12 @@ export async function addToCart(
     },
   });
 
-  return reshapeCart(res.body.data.cartLinesAdd.cart);
+  const cart = res.body.data.cartLinesAdd.cart;
+  if (!cart) {
+    throw new Error("Cart not found");
+  }
+
+  return reshapeCart(cart);
 }
 
 export async function removeFromCart(lineIds: string[]): Promise<Cart> {
@@ -62,7 +72,12 @@ export async function removeFromCart(lineIds: string[]): Promise<Cart> {
     },
   });
 
-  return reshapeCart(res.body.data.cartLinesRemove.cart);
+  const cart = res.body.data.cartLinesRemove.cart;
+  if (!cart) {
+    throw new Error("Cart not found");
+  }
+
+  return reshapeCart(cart);
 }
 
 export async function updateCart(
@@ -78,7 +93,12 @@ export async function updateCart(
     },
   });
 
-  return reshapeCart(res.body.data.cartLinesUpdate.cart);
+  const cart = res.body.data.cartLinesUpdate.cart;
+  if (!cart) {
+    throw new Error("Cart not found");
+  }
+
+  return reshapeCart(cart);
 }
 
 export async function getCart(): Promise<Cart | undefined> {

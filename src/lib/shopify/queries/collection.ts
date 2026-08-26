@@ -29,12 +29,16 @@ export const getCollectionQuery = /* GraphQL */ `
 `;
 
 export const getCollectionsQuery = /* GraphQL */ `
-  query getCollections {
-    collections(first: 100, sortKey: TITLE) {
+  query getCollections($after: String) {
+    collections(first: 100, after: $after, sortKey: TITLE) {
       edges {
         node {
           ...collection
         }
+      }
+      pageInfo {
+        hasNextPage
+        endCursor
       }
     }
   }
@@ -46,13 +50,23 @@ export const getCollectionProductsQuery = /* GraphQL */ `
     $handle: String!
     $sortKey: ProductCollectionSortKeys
     $reverse: Boolean
+    $after: String
   ) {
     collectionByHandle(handle: $handle) {
-      products(sortKey: $sortKey, reverse: $reverse, first: 100) {
+      products(
+        sortKey: $sortKey
+        reverse: $reverse
+        first: 100
+        after: $after
+      ) {
         edges {
           node {
             ...product
           }
+        }
+        pageInfo {
+          hasNextPage
+          endCursor
         }
       }
     }

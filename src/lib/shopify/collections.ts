@@ -3,6 +3,7 @@ import { cacheLife, cacheTag } from "next/cache";
 import { TAGS } from "@/lib/utils/constants";
 
 import { shopifyFetch } from "./client";
+import { fetchAllPages } from "./pagination";
 import {
   getCollectionProductsQuery,
   getCollectionQuery,
@@ -52,23 +53,27 @@ export async function getCollectionProducts({
   cacheTag(TAGS.collections, TAGS.products);
   cacheLife("days");
 
-  const res = await shopifyFetch<ShopifyCollectionProductsOperation>({
-    query: getCollectionProductsQuery,
-    variables: {
-      handle: collection,
-      reverse,
-      sortKey: sortKey === "CREATED_AT" ? "CREATED" : sortKey,
-    },
-  });
-
-  if (!res.body.data.collectionByHandle) {
-    console.log(`No collection found for \`${collection}\``);
-    return [];
-  }
-
-  return reshapeProducts(
-    removeEdgesAndNodes(res.body.data.collectionByHandle.products)
+  const edges = await fetchAllPages((after) =>
+    shopifyFetch<ShopifyCollectionProductsOperation>({
+      query: getCollectionProductsQuery,
+      variables: {
+        handle: collection,
+        reverse,
+        sortKey: sortKey === "CREATED_AT" ? "CREATED" : sortKey,
+        after,
+      },
+    }).then((res) => {
+      if (!res.body.data.collectionByHandle) {
+        if (!after) {
+          console.log(`No collection found for \`${collection}\``);
+        }
+        return { edges: [], pageInfo: { hasNextPage: false, endCursor: null } };
+      }
+      return res.body.data.collectionByHandle.products;
+    })
   );
+
+  return reshapeProducts(removeEdgesAndNodes({ edges }));
 }
 
 export async function getCollections(): Promise<Collection[]> {
@@ -76,10 +81,13 @@ export async function getCollections(): Promise<Collection[]> {
   cacheTag(TAGS.collections);
   cacheLife("days");
 
-  const res = await shopifyFetch<ShopifyCollectionsOperation>({
-    query: getCollectionsQuery,
-  });
-  const shopifyCollections = removeEdgesAndNodes(res.body?.data?.collections);
+  const edges = await fetchAllPages((after) =>
+    shopifyFetch<ShopifyCollectionsOperation>({
+      query: getCollectionsQuery,
+      variables: { after },
+    }).then((res) => res.body?.data?.collections ?? { edges: [] })
+  );
+  const shopifyCollections = removeEdgesAndNodes({ edges });
   const collections = [
     {
       handle: "",

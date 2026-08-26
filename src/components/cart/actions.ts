@@ -35,6 +35,7 @@ export async function addItem(
     ]);
   } catch (e) {
     console.error(e);
+    await clearStaleCartCookie(e);
     return "Error adding item to cart";
   }
 }
@@ -53,6 +54,7 @@ export async function removeItem(
     return await removeFromCart([lineId]);
   } catch (e) {
     console.error(e);
+    await clearStaleCartCookie(e);
     return "Error removing item from cart";
   }
 }
@@ -85,6 +87,7 @@ export async function updateItemQuantity(
     return undefined;
   } catch (e) {
     console.error(e);
+    await clearStaleCartCookie(e);
     return "Error updating item quantity";
   }
 }
@@ -141,5 +144,19 @@ async function createCartAndSetCookie() {
     throw new Error("Cart created without an id");
   }
 
-  (await cookies()).set("cartId", cart.id);
+  (await cookies()).set("cartId", cart.id, {
+    httpOnly: true,
+    secure: true,
+    sameSite: "lax",
+    path: "/",
+  });
+}
+
+// A stale/expired cartId cookie makes every cart mutation fail forever with
+// "Cart not found" until the cookie is cleared — self-heal so the next
+// attempt creates a fresh cart instead of repeating the same failure.
+async function clearStaleCartCookie(error: unknown) {
+  if (error instanceof Error && error.message === "Cart not found") {
+    (await cookies()).delete("cartId");
+  }
 }

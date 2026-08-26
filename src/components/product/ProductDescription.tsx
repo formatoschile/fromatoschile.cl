@@ -1,12 +1,12 @@
 import React from "react";
 
 import { AddToCart } from "@/components/cart/AddToCart";
-import { BuyButton } from "@/components/cart/BuyButton";
 import { CategoryPill } from "@/components/ui/CategoryPill/CategoryPill";
 import { Price } from "@/components/ui/Price";
 import { Prose } from "@/components/ui/Prose";
 import { Product } from "@/lib/shopify/types";
 
+import { BuyNowButton } from "./BuyNowButton";
 import { DetailAccordion } from "./DetailAccordion";
 import { VariantSelector } from "./VariantSelector";
 
@@ -60,12 +60,12 @@ export const ProductDescription: React.FC<ProductDescriptionProps> = ({
         ) : null}
 
         <div className="flex flex-col gap-3">
-          <BuyButton
-            variantId={product.variants[0]?.id ?? ""}
+          <BuyNowButton
+            product={product}
             className="bg-charcoal hover:bg-charcoal/80 w-full border border-transparent py-4 text-sm font-medium tracking-widest text-white uppercase"
           >
             Compra
-          </BuyButton>
+          </BuyNowButton>
           <AddToCart product={product} />
         </div>
 

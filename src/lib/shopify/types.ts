@@ -1,7 +1,13 @@
 export type Maybe<T> = T | null;
 
+export type PageInfo = {
+  hasNextPage: boolean;
+  endCursor: string | null;
+};
+
 export type Connection<T> = {
   edges: Array<Edge<T>>;
+  pageInfo?: PageInfo;
 };
 
 export type Edge<T> = {
@@ -64,9 +70,10 @@ export type Page = {
   updatedAt: string;
 };
 
-export type Product = Omit<ShopifyProduct, "variants" | "images"> & {
+export type Product = Omit<ShopifyProduct, "variants" | "images" | "collections"> & {
   variants: ProductVariant[];
   images: Image[];
+  collectionHandle: string | null;
 };
 
 /** Slim listing model backed by the `productCard` fragment. */
@@ -138,6 +145,7 @@ export type ShopifyProduct = {
   previewPdf: ProductPreviewPdf;
   tags: string[];
   updatedAt: string;
+  collections: Connection<{ handle: string }>;
 };
 
 export type ShopifyProductCard = {
@@ -246,12 +254,16 @@ export type ShopifyCollectionProductsOperation = {
     handle: string;
     reverse?: boolean;
     sortKey?: string;
+    after?: string;
   };
 };
 
 export type ShopifyCollectionsOperation = {
   data: {
     collections: Connection<ShopifyCollection>;
+  };
+  variables: {
+    after?: string;
   };
 };
 
@@ -297,5 +309,6 @@ export type ShopifyProductsOperation = {
     query?: string;
     reverse?: boolean;
     sortKey?: string;
+    after?: string;
   };
 };

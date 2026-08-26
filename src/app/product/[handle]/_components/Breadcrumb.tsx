@@ -2,10 +2,15 @@ import Link from "next/link";
 
 interface BreadcrumbProps {
   category: string;
+  collectionHandle: string | null;
   title: string;
 }
 
-export const Breadcrumb: React.FC<BreadcrumbProps> = ({ category, title }) => {
+export const Breadcrumb: React.FC<BreadcrumbProps> = ({
+  category,
+  collectionHandle,
+  title,
+}) => {
   return (
     <nav
       aria-label="Breadcrumb"
@@ -15,12 +20,16 @@ export const Breadcrumb: React.FC<BreadcrumbProps> = ({ category, title }) => {
         Todos los documentos
       </Link>
       <span aria-hidden="true">—</span>
-      <Link
-        href={`/todos-los-documentos/${category.toLowerCase()}`}
-        className="hover:text-ink"
-      >
-        {category}
-      </Link>
+      {collectionHandle ? (
+        <Link
+          href={`/todos-los-documentos/${collectionHandle}`}
+          className="hover:text-ink"
+        >
+          {category}
+        </Link>
+      ) : (
+        <span>{category}</span>
+      )}
       <span aria-hidden="true">—</span>
       <span className="text-ink truncate">{title}</span>
     </nav>

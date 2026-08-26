@@ -15,21 +15,21 @@ const productWebhooks = [
   "products/delete",
   "products/update",
 ];
+const pageWebhooks = ["pages/create", "pages/delete", "pages/update"];
 
-// Shopify webhook receiver. We always respond with a 200 status code,
-// otherwise Shopify will continue to retry the request.
 export async function POST(req: NextRequest): Promise<NextResponse> {
   const topic = (await headers()).get("x-shopify-topic") || "unknown";
   const secret = req.nextUrl.searchParams.get("secret");
   const isCollectionUpdate = collectionWebhooks.includes(topic);
   const isProductUpdate = productWebhooks.includes(topic);
+  const isPageUpdate = pageWebhooks.includes(topic);
 
   if (!secret || secret !== env.SHOPIFY_REVALIDATION_SECRET) {
     console.error("Invalid revalidation secret.");
-    return NextResponse.json({ status: 401 });
+    return NextResponse.json({ error: "Invalid secret" }, { status: 401 });
   }
 
-  if (!isCollectionUpdate && !isProductUpdate) {
+  if (!isCollectionUpdate && !isProductUpdate && !isPageUpdate) {
     // We don't need to revalidate anything for any other topics.
     return NextResponse.json({ status: 200 });
   }
@@ -40,6 +40,10 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
   if (isProductUpdate) {
     revalidateTag(TAGS.products, "seconds");
+  }
+
+  if (isPageUpdate) {
+    revalidateTag(TAGS.pages, "seconds");
   }
 
   return NextResponse.json({ status: 200, revalidated: true, now: Date.now() });
