@@ -1,13 +1,6 @@
 "use client";
 
-import React, {
-  createContext,
-  use,
-  useCallback,
-  useMemo,
-  useOptimistic,
-  useState,
-} from "react";
+import React, { createContext, use, useOptimistic, useState } from "react";
 
 import type { Cart, CartProduct, ProductVariant } from "@/lib/shopify/types";
 
@@ -17,13 +10,12 @@ import { cartReducer } from "./cartReducer";
 export type { UpdateType } from "./cartReducer";
 
 interface CartContextType {
-  cartPromise: Promise<Cart | undefined>;
+  cart: Cart | undefined;
   isCartOpen: boolean;
   openCart: () => void;
   closeCart: () => void;
-  // `null` means "no mutation has settled yet, fall back to the streamed
-  // promise"; `undefined` is a legitimate synced state (no/empty cart).
-  syncedCart: Cart | undefined | null;
+  updateCartItem: (merchandiseId: string, updateType: UpdateType) => void;
+  addCartItem: (variant: ProductVariant, product: CartProduct) => void;
   syncCart: (cart: Cart | undefined) => void;
 }
 
@@ -35,59 +27,34 @@ interface CartProviderProps {
 }
 
 /**
- * Holds the server cart promise and the cart-drawer open state. The promise
- * is resolved with `use()` inside `useCart`, so consumers must render inside
- * a Suspense boundary.
+ * Resolves the server cart promise and holds the one shared optimistic cart
+ * state for the whole app. Every consumer (header badge, cart drawer,
+ * add-to-cart buttons) reads from this single `useOptimistic` instance, so
+ * an optimistic update triggered from anywhere (e.g. a product page's "add
+ * to cart" button) is reflected everywhere immediately (e.g. the header
+ * icon), instead of waiting for the mutation's server round trip. Must
+ * render inside a Suspense boundary, since it calls `use()` on the cart
+ * promise.
  */
 export const CartProvider: React.FC<CartProviderProps> = ({
   children,
   cartPromise,
 }) => {
   const [isCartOpen, setIsCartOpen] = useState(false);
+  // `null` means "no mutation has settled yet, fall back to the streamed
+  // promise"; `undefined` is a legitimate synced state (no/empty cart).
   const [syncedCart, setSyncedCart] = useState<Cart | undefined | null>(null);
 
-  const openCart = useCallback(() => {
-    setIsCartOpen(true);
-  }, []);
-
-  const closeCart = useCallback(() => {
-    setIsCartOpen(false);
-  }, []);
-
-  const syncCart = useCallback((cart: Cart | undefined) => {
-    setSyncedCart(cart);
-  }, []);
-
-  const value = useMemo(
-    () => ({
-      cartPromise,
-      isCartOpen,
-      openCart,
-      closeCart,
-      syncedCart,
-      syncCart,
-    }),
-    [cartPromise, closeCart, isCartOpen, openCart, syncedCart, syncCart]
-  );
-
-  return <CartContext value={value}>{children}</CartContext>;
-};
-
-export function useCart() {
-  const context = use(CartContext);
-  if (context === undefined) {
-    throw new Error("useCart must be used within a CartProvider");
-  }
-
-  // Falls back to the server-streamed promise until some mutation's syncCart
-  // call (shared via context, so every useCart() consumer agrees) settles.
-  const initialCart = use(context.cartPromise);
-  const confirmedCart =
-    context.syncedCart === null ? initialCart : context.syncedCart;
+  const initialCart = use(cartPromise);
+  const confirmedCart = syncedCart === null ? initialCart : syncedCart;
   const [cart, updateOptimisticCart] = useOptimistic(
     confirmedCart,
     cartReducer
   );
+
+  const openCart = () => setIsCartOpen(true);
+  const closeCart = () => setIsCartOpen(false);
+  const syncCart = (nextCart: Cart | undefined) => setSyncedCart(nextCart);
 
   // Optimistic updates must run inside the same transition as the server
   // action that persists them (React useOptimistic contract).
@@ -100,16 +67,31 @@ export function useCart() {
 
   const addCartItem = (variant: ProductVariant, product: CartProduct) => {
     updateOptimisticCart({ type: "ADD_ITEM", payload: { variant, product } });
-    context.openCart();
+    setIsCartOpen(true);
   };
 
-  return {
-    cart,
-    isCartOpen: context.isCartOpen,
-    openCart: context.openCart,
-    closeCart: context.closeCart,
-    updateCartItem,
-    addCartItem,
-    syncCart: context.syncCart,
-  };
+  return (
+    <CartContext
+      value={{
+        cart,
+        isCartOpen,
+        openCart,
+        closeCart,
+        updateCartItem,
+        addCartItem,
+        syncCart,
+      }}
+    >
+      {children}
+    </CartContext>
+  );
+};
+
+export function useCart() {
+  const context = use(CartContext);
+  if (context === undefined) {
+    throw new Error("useCart must be used within a CartProvider");
+  }
+
+  return context;
 }
