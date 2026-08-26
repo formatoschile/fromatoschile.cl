@@ -14,6 +14,7 @@ import { getProductCategory } from "@/lib/utils/product";
 
 import { Breadcrumb } from "./_components/Breadcrumb";
 import { RelatedProducts } from "./_components/RelatedProducts";
+import { RelatedProductsSkeleton } from "./_components/RelatedProductsSkeleton";
 
 export async function generateStaticParams() {
   try {
@@ -92,34 +93,41 @@ export default async function ProductPage(props: {
   );
 
   return (
-    <ProductProvider>
-      <JsonLd data={productJsonLd} />
-      <JsonLd data={breadcrumbJsonLd} />
-      <div className="section-inset pt-28 pb-24">
-        <Breadcrumb
-          category={category}
-          collectionHandle={product.collectionHandle}
-          title={product.title}
-        />
+    // ProductProvider reads the client `useSearchParams()` hook (to
+    // pre-select a variant from the URL) — kept out of the static shell via
+    // this `<Suspense>` so the route stays prerenderable under
+    // `cacheComponents`. The hook itself does no I/O, so this boundary
+    // resolves same-tick; `fallback={null}` never actually renders.
+    <Suspense fallback={null}>
+      <ProductProvider>
+        <JsonLd data={productJsonLd} />
+        <JsonLd data={breadcrumbJsonLd} />
+        <div className="section-inset pt-28 pb-24">
+          <Breadcrumb
+            category={category}
+            collectionHandle={product.collectionHandle}
+            title={product.title}
+          />
 
-        <div className="flex flex-col gap-8 lg:flex-row">
-          <div className="w-full lg:basis-4/6">
-            {product.previewPdf?.reference?.url ? (
-              <PdfViewer url={product.previewPdf.reference.url} />
-            ) : null}
-          </div>
+          <div className="flex flex-col gap-8 lg:flex-row">
+            <div className="w-full lg:basis-4/6">
+              {product.previewPdf?.reference?.url ? (
+                <PdfViewer url={product.previewPdf.reference.url} />
+              ) : null}
+            </div>
 
-          <div className="w-full lg:basis-2/6">
-            <Suspense fallback={null}>
-              <ProductDescription product={product} />
-            </Suspense>
+            <div className="w-full lg:basis-2/6">
+              <Suspense fallback={null}>
+                <ProductDescription product={product} />
+              </Suspense>
+            </div>
           </div>
+          {/* Suspense keeps recommendations from blocking the page stream. */}
+          <Suspense fallback={<RelatedProductsSkeleton />}>
+            <RelatedProducts handle={product.handle} category={category} />
+          </Suspense>
         </div>
-        {/* Suspense keeps recommendations from blocking the page stream. */}
-        <Suspense fallback={null}>
-          <RelatedProducts handle={product.handle} category={category} />
-        </Suspense>
-      </div>
-    </ProductProvider>
+      </ProductProvider>
+    </Suspense>
   );
 }

@@ -4,7 +4,7 @@ import { Afacad } from "next/font/google";
 
 import { RouteFocus } from "@/components/a11y/RouteFocus";
 import { Analytics } from "@/components/Analytics/Analytics";
-import { CartProvider } from "@/components/cart/CartContext";
+import { CartHydrator, CartProvider } from "@/components/cart/CartContext";
 import { JsonLd } from "@/components/JsonLd/JsonLd";
 import { Footer } from "@/components/layout/Footer/Footer";
 import { Navbar } from "@/components/layout/Navbar/Navbar";
@@ -43,7 +43,7 @@ export default async function RootLayout({
 }: {
   children: ReactNode;
 }) {
-  // Don't await the fetch, pass the Promise to the context provider
+  // Don't await the fetch — pass the Promise to CartHydrator to resolve.
   const cart = getCart();
 
   return (
@@ -63,15 +63,21 @@ export default async function RootLayout({
         <JsonLd data={buildWebSiteJsonLd()} />
 
         <ToastProvider>
-          <Suspense>
-            <CartProvider cartPromise={cart}>
-              <Navbar />
+          <CartProvider>
+            {/* Resolves the cart fetch in its own isolated boundary — a
+                slow/cold Shopify response suspends only this (it renders no
+                DOM), never Navbar or `children` below, which always render
+                immediately regardless of how long this takes. */}
+            <Suspense fallback={null}>
+              <CartHydrator cartPromise={cart} />
+            </Suspense>
 
-              <main id="main-content" tabIndex={-1}>
-                {children}
-              </main>
-            </CartProvider>
-          </Suspense>
+            <Navbar />
+
+            <main id="main-content" tabIndex={-1}>
+              {children}
+            </main>
+          </CartProvider>
 
           <Footer />
 
