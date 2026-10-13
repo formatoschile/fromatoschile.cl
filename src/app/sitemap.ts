@@ -5,7 +5,10 @@ import { getCollections, getPages, getProducts } from "@/lib/shopify";
 import { baseUrl } from "@/lib/utils";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const homeRoute = { url: baseUrl, lastModified: new Date().toISOString() };
+  const lastModified = new Date().toISOString();
+  const staticRoutes = ["", "/preguntas-frecuentes", "/contacto"].map(
+    (path) => ({ url: `${baseUrl}${path}`, lastModified })
+  );
 
   const collectionsPromise = getCollections()
     .then((collections) =>
@@ -52,5 +55,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     await Promise.all([collectionsPromise, productsPromise, pagesPromise])
   ).flat();
 
-  return [homeRoute, ...fetchedRoutes];
+  return [...staticRoutes, ...fetchedRoutes];
 }

@@ -2,11 +2,8 @@ import Image from "next/image";
 import Link from "next/link";
 
 const supportLinks = [
-  { label: "Centro de ayuda", href: "/centro-de-ayuda" },
   { label: "Preguntas frecuentes", href: "/preguntas-frecuentes" },
-  { label: "Cómo personalizar", href: "/como-personalizar" },
   { label: "Contacto", href: "/contacto" },
-  { label: "Soporte legal", href: "/soporte-legal" },
 ] as const;
 
 export const Footer = () => {

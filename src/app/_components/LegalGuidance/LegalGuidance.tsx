@@ -27,7 +27,7 @@ export const LegalGuidance = () => {
               normativa chilena. Sin embargo, si tu situación requiere una
               revisión especifica, una estrategia legal o la intervención
               directa de un abogado, puedes solicitar asesoría personalizada con
-              nuestro estudio jurídico asociado:{" "}
+              el estudio jurídico asociado:{" "}
               <strong className="font-bold">RK Abogados</strong>
             </p>
 
