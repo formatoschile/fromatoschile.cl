@@ -23,6 +23,9 @@ interface CartContextType {
   // synced a cart at least once — lets `CartHydrator` (below) tell "no cart
   // yet" apart from "confirmed empty cart" without exposing internal state.
   hasSyncedCart: boolean;
+  // `true` while an optimistic mutation's server action is still in flight —
+  // the Shopify cart may not include that change yet.
+  hasPendingCartUpdate: boolean;
   isCartOpen: boolean;
   openCart: () => void;
   closeCart: () => void;
@@ -94,11 +97,15 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
   );
 
   const hasSyncedCart = syncedCart !== null;
+  // With no pending optimistic actions, `useOptimistic` passes the confirmed
+  // state through by reference.
+  const hasPendingCartUpdate = cart !== confirmedCart;
 
   const value = useMemo(
     () => ({
       cart,
       hasSyncedCart,
+      hasPendingCartUpdate,
       isCartOpen,
       openCart,
       closeCart,
@@ -109,6 +116,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     [
       cart,
       hasSyncedCart,
+      hasPendingCartUpdate,
       isCartOpen,
       openCart,
       closeCart,

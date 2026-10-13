@@ -11,6 +11,7 @@ import { redirectToCheckout } from "../actions";
 import type { UpdateType } from "../cartReducer";
 
 import { CartItem } from "./CartItem";
+import { useCheckoutRedirect } from "./useCheckoutRedirect";
 
 interface CartModalContentProps {
   closeCart: () => void;
@@ -73,14 +74,26 @@ export const CartModalContent: React.FC<CartModalContentProps> = ({
         </div>
       </div>
 
-      <form action={redirectToCheckout}>
-        <CheckoutButton />
-      </form>
+      <CheckoutForm />
     </div>
   );
 };
 
-const CheckoutButton = () => {
+const CheckoutForm = () => {
+  const { isRedirecting, handleCheckoutSubmit } = useCheckoutRedirect();
+
+  return (
+    <form action={redirectToCheckout} onSubmit={handleCheckoutSubmit}>
+      <CheckoutButton isRedirecting={isRedirecting} />
+    </form>
+  );
+};
+
+interface CheckoutButtonProps {
+  isRedirecting: boolean;
+}
+
+const CheckoutButton: React.FC<CheckoutButtonProps> = ({ isRedirecting }) => {
   const { pending: isPending } = useFormStatus();
 
   return (
@@ -88,7 +101,7 @@ const CheckoutButton = () => {
       className="w-full"
       type="submit"
       variant="ink"
-      isPending={isPending}
+      isPending={isPending || isRedirecting}
     >
       Continuar con el pago
     </Button>
