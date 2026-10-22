@@ -11,7 +11,15 @@ Sentry.init({
   replaysSessionSampleRate: 0.1,
   replaysOnErrorSampleRate: 1.0,
 
-  enableLogs: true,
+  // SDK v11 collects bodies, headers, cookies, query params and user info by
+  // default; cart/checkout traffic carries customer data, so opt out of all of it.
+  dataCollection: {
+    userInfo: false,
+    cookies: false,
+    httpHeaders: false,
+    httpBodies: [],
+    urlQueryParams: false,
+  },
 
   integrations: [Sentry.replayIntegration()],
 });

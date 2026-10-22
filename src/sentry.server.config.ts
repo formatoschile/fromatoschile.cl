@@ -12,5 +12,13 @@ Sentry.init({
   // only enable it outside production, where that data isn't real customer data.
   includeLocalVariables: process.env.NODE_ENV !== "production",
 
-  enableLogs: true,
+  // SDK v11 collects bodies, headers, cookies, query params and user info by
+  // default; cart/checkout traffic carries customer data, so opt out of all of it.
+  dataCollection: {
+    userInfo: false,
+    cookies: false,
+    httpHeaders: false,
+    httpBodies: [],
+    urlQueryParams: false,
+  },
 });

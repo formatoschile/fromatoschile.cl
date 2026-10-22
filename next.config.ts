@@ -1,5 +1,5 @@
 import type { NextConfig } from 'next';
-import { withSentryConfig } from '@sentry/nextjs';
+import { withSentryConfig } from '@sentry/nextjs/config';
 
 // Sentry's client SDK reports through the same-origin `tunnelRoute` below and
 // Vercel Analytics/Speed Insights beacon through `/_vercel/*`, so `connect-src`
