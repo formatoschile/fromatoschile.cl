@@ -24,7 +24,6 @@ export const CatalogResults = async ({ searchParams }: CatalogResultsProps) => {
 
   return (
     <DocumentsCatalog
-      key={`${category ?? "all"}:${text ?? ""}`}
       categories={collections}
       selectedCategory={category}
       query={text ?? ""}

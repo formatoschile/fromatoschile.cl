@@ -38,6 +38,7 @@ export const DocumentsCatalog: React.FC<DocumentsCatalogProps> = ({
     });
 
   const { products, hasNextPage, isLoadingMore, handleLoadMore } = useLoadMore({
+    resultsKey: `${selectedCategory ?? ""}:${query}`,
     initialProducts,
     initialHasNextPage,
     initialEndCursor,

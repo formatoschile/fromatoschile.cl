@@ -30,7 +30,6 @@ export const CategoryResults = async ({
 
   return (
     <CategoryCatalog
-      key={text ?? ""}
       categoryTitle={categoryTitle}
       query={text ?? ""}
       initialProducts={page.products}

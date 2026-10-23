@@ -24,6 +24,10 @@ interface UseDebouncedSearchResult {
  * Debounces the catalog/category search box before pushing it to the URL
  * (and re-fetching), and exposes `navigateTo` for filters that should push
  * immediately (e.g. a category toggle) rather than wait for the debounce.
+ *
+ * The component using this must NOT be remounted per query (e.g. via a `key`
+ * on the query): the user keeps typing while a search loads, and a remount
+ * would reset the box to the older query that just arrived.
  */
 export function useDebouncedSearch({
   query,
@@ -33,33 +37,66 @@ export function useDebouncedSearch({
   const pathname = usePathname();
   const [isPending, startTransition] = useTransition();
   const [searchText, setSearchText] = useState(query);
+  // The `q` this hook last navigated to, and the `query` prop last seen —
+  // used to tell our own (stale, by the time it lands) results apart from
+  // external URL changes such as the back button.
+  const [requestedQuery, setRequestedQuery] = useState(query);
+  const [seenQuery, setSeenQuery] = useState(query);
 
-  const navigateTo = useCallback(
-    (params: SearchParams) => {
+  if (query !== seenQuery) {
+    setSeenQuery(query);
+    if (query !== requestedQuery) {
+      setSearchText(query);
+      setRequestedQuery(query);
+    }
+  }
+
+  const navigate = useCallback(
+    ({
+      params,
+      isReplacing,
+    }: {
+      params: SearchParams;
+      isReplacing: boolean;
+    }) => {
       const search = new URLSearchParams();
       for (const [key, value] of Object.entries(params)) {
         if (value) search.set(key, value);
       }
 
       const queryString = search.toString();
+      const href = (
+        queryString ? `${pathname}?${queryString}` : pathname
+      ) as Route;
+
+      setRequestedQuery(params.q ?? "");
       startTransition(() => {
-        router.push(
-          (queryString ? `${pathname}?${queryString}` : pathname) as Route
-        );
+        if (isReplacing) {
+          router.replace(href, { scroll: false });
+          return;
+        }
+        router.push(href, { scroll: false });
       });
     },
     [pathname, router]
   );
 
-  useEffect(() => {
-    if (searchText === query) return;
+  const navigateTo = useCallback(
+    (params: SearchParams) => navigate({ params, isReplacing: false }),
+    [navigate]
+  );
 
+  useEffect(() => {
+    if (searchText === requestedQuery) return;
+
+    // Typing replaces the history entry so Back doesn't step through every
+    // intermediate search.
     const timeout = setTimeout(() => {
-      navigateTo(buildParams(searchText));
+      navigate({ params: buildParams(searchText), isReplacing: true });
     }, SEARCH_DEBOUNCE_MS);
 
     return () => clearTimeout(timeout);
-  }, [searchText, query, buildParams, navigateTo]);
+  }, [searchText, requestedQuery, buildParams, navigate]);
 
   return { searchText, setSearchText, isPending, navigateTo };
 }

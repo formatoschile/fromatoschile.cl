@@ -31,6 +31,7 @@ export const CategoryCatalog: React.FC<CategoryCatalogProps> = ({
   });
 
   const { products, hasNextPage, isLoadingMore, handleLoadMore } = useLoadMore({
+    resultsKey: query,
     initialProducts,
     initialHasNextPage,
     initialEndCursor,
@@ -42,13 +43,14 @@ export const CategoryCatalog: React.FC<CategoryCatalogProps> = ({
       }),
   });
 
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchText(event.target.value);
+  };
+
   return (
     <div className={classNames({ "opacity-60": isPending })}>
       <div className="mt-10">
-        <SearchInput
-          value={searchText}
-          onChange={(event) => setSearchText(event.target.value)}
-        />
+        <SearchInput value={searchText} onChange={handleSearchChange} />
       </div>
 
       {products.length ? (

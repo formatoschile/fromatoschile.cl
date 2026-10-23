@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface LoadMoreResult<T> {
   products: T[];
@@ -9,6 +9,9 @@ interface LoadMoreResult<T> {
 }
 
 interface UseLoadMoreOptions<T> {
+  // Identifies the current result set (e.g. category + query); when it
+  // changes the list restarts from the new `initialProducts`.
+  resultsKey: string;
   initialProducts: T[];
   initialHasNextPage: boolean;
   initialEndCursor: string | null;
@@ -24,6 +27,7 @@ interface UseLoadMoreResult<T> {
 
 /** Shared "load more" pagination state for the catalog and category listings. */
 export function useLoadMore<T>({
+  resultsKey,
   initialProducts,
   initialHasNextPage,
   initialEndCursor,
@@ -33,16 +37,35 @@ export function useLoadMore<T>({
   const [hasNextPage, setHasNextPage] = useState(initialHasNextPage);
   const [endCursor, setEndCursor] = useState(initialEndCursor);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [currentResultsKey, setCurrentResultsKey] = useState(resultsKey);
+  // Read after `await` in `handleLoadMore`, where render values are stale.
+  const latestResultsKeyRef = useRef(resultsKey);
+
+  useEffect(() => {
+    latestResultsKeyRef.current = resultsKey;
+  }, [resultsKey]);
+
+  if (resultsKey !== currentResultsKey) {
+    setCurrentResultsKey(resultsKey);
+    setProducts(initialProducts);
+    setHasNextPage(initialHasNextPage);
+    setEndCursor(initialEndCursor);
+  }
 
   const handleLoadMore = async () => {
     if (!endCursor) return;
 
+    const requestedResultsKey = resultsKey;
     setIsLoadingMore(true);
     const nextPage = await loadMore(endCursor);
+    setIsLoadingMore(false);
+
+    // The search changed while this page was loading — drop it.
+    if (requestedResultsKey !== latestResultsKeyRef.current) return;
+
     setProducts((current) => [...current, ...nextPage.products]);
     setHasNextPage(nextPage.hasNextPage);
     setEndCursor(nextPage.endCursor);
-    setIsLoadingMore(false);
   };
 
   return { products, hasNextPage, isLoadingMore, handleLoadMore };
