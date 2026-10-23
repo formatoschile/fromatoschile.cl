@@ -58,9 +58,9 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({ url }) => {
         </div>
       )}
 
-      {/* A4-shaped sheet: width is the smallest of the column, 36rem, or what
-          keeps the sheet's height within 80vh — so it never letterboxes. */}
-      <div className="mx-auto aspect-[210/297] w-[min(100%,36rem,calc(80vh*210/297))] overflow-hidden bg-white shadow-md">
+      {/* A4-shaped sheet sized from the column width (capped at 40rem), so it
+          reads like a real page and never letterboxes. */}
+      <div className="mx-auto aspect-[210/297] w-[min(100%,40rem)] overflow-hidden bg-white shadow-md">
         {isLoading && (
           <div className="h-full w-full animate-pulse bg-neutral-100" />
         )}

@@ -13,6 +13,7 @@ import { HIDDEN_PRODUCT_TAG } from "@/lib/utils/constants";
 import { getProductCategory } from "@/lib/utils/product";
 
 import { Breadcrumb } from "./_components/Breadcrumb";
+import { ProductPageSkeleton } from "./_components/ProductPageSkeleton";
 import { RelatedProducts } from "./_components/RelatedProducts";
 import { RelatedProductsSkeleton } from "./_components/RelatedProductsSkeleton";
 
@@ -97,8 +98,8 @@ export default async function ProductPage(props: {
     // pre-select a variant from the URL) — kept out of the static shell via
     // this `<Suspense>` so the route stays prerenderable under
     // `cacheComponents`. The hook itself does no I/O, so this boundary
-    // resolves same-tick; `fallback={null}` never actually renders.
-    <Suspense fallback={null}>
+    // usually resolves same-tick; the skeleton covers any frame where it doesn't.
+    <Suspense fallback={<ProductPageSkeleton />}>
       <ProductProvider>
         <JsonLd data={productJsonLd} />
         <JsonLd data={breadcrumbJsonLd} />
