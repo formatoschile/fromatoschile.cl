@@ -2,11 +2,16 @@ import * as Sentry from "@sentry/nextjs";
 import { revalidateTag } from "next/cache";
 import { headers } from "next/headers";
 import type { NextRequest } from "next/server";
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
 import { createHmac, timingSafeEqual } from "node:crypto";
 
 import { env } from "@/env";
+import { hasAdminCredentials } from "@/lib/shopify/admin/client";
+import { syncProductThumbnail } from "@/lib/shopify/admin/previewThumbnails";
 import { TAGS } from "@/lib/utils/constants";
+
+// Thumbnail rendering runs in `after()` and is bounded by this duration.
+export const maxDuration = 120;
 
 const collectionWebhooks = [
   "collections/create",
@@ -19,6 +24,7 @@ const productWebhooks = [
   "products/update",
 ];
 const pageWebhooks = ["pages/create", "pages/delete", "pages/update"];
+const thumbnailWebhooks = ["products/create", "products/update"];
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
   const rawBody = await req.text();
@@ -52,11 +58,55 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     revalidateTag(TAGS.products, "seconds");
   }
 
+  if (thumbnailWebhooks.includes(topic)) {
+    scheduleThumbnailSync({ rawBody });
+  }
+
   if (isPageUpdate) {
     revalidateTag(TAGS.pages, "seconds");
   }
 
   return NextResponse.json({ status: 200, revalidated: true, now: Date.now() });
+}
+
+/**
+ * Regenerates the product's card thumbnail after responding, so Shopify's
+ * webhook timeout never waits on PDF rendering. Our own thumbnail writes
+ * trigger this webhook again; `syncProductThumbnail` skips those.
+ */
+function scheduleThumbnailSync({ rawBody }: { rawBody: string }): void {
+  if (!hasAdminCredentials()) {
+    return;
+  }
+
+  const productId = getProductGid({ rawBody });
+  if (!productId) {
+    return;
+  }
+
+  after(async () => {
+    const result = await syncProductThumbnail({ productId });
+    if (result.action === "failed") {
+      Sentry.captureMessage("Preview thumbnail sync failed", {
+        level: "error",
+        tags: { action: "preview-thumbnail" },
+        extra: { ...result },
+      });
+    }
+  });
+}
+
+function getProductGid({ rawBody }: { rawBody: string }): string | null {
+  try {
+    const { admin_graphql_api_id: gid } = JSON.parse(rawBody) as {
+      admin_graphql_api_id?: unknown;
+    };
+    return typeof gid === "string" && gid.startsWith("gid://shopify/Product/")
+      ? gid
+      : null;
+  } catch {
+    return null;
+  }
 }
 
 function isValidSignature(rawBody: string, signature: string): boolean {

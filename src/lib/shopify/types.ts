@@ -161,6 +161,7 @@ export type ShopifyProductCard = {
     minVariantPrice: Money;
   };
   variants: Connection<ProductVariant>;
+  featuredImage: Image | null;
   previewPdf: ProductPreviewPdf;
   collections: Connection<{ handle: string }>;
 };

@@ -46,6 +46,20 @@ const nextConfig: NextConfig = {
     ];
   },
   cacheComponents: true,
+  // Server-side PDF thumbnail rendering (src/lib/pdf): load these from
+  // node_modules at runtime instead of bundling them — `@napi-rs/canvas` ships
+  // a native binary, and pdf.js loads its worker and fonts by path.
+  serverExternalPackages: ['pdfjs-dist', '@napi-rs/canvas'],
+  outputFileTracingIncludes: {
+    '/api/revalidate': [
+      './node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs',
+      './node_modules/pdfjs-dist/standard_fonts/**',
+    ],
+    '/api/cron/preview-thumbnails': [
+      './node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs',
+      './node_modules/pdfjs-dist/standard_fonts/**',
+    ],
+  },
   experimental: {
     inlineCss: true
   },

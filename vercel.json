@@ -1,5 +1,11 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nextjs",
-  "bunVersion": "1.x"
+  "bunVersion": "1.x",
+  "crons": [
+    {
+      "path": "/api/cron/preview-thumbnails",
+      "schedule": "0 6 * * *"
+    }
+  ]
 }

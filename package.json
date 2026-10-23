@@ -10,11 +10,13 @@
     "format": "oxfmt src",
     "typecheck": "tsc --project tsconfig.json --noEmit",
     "verify": "bun run lint && bun run format:check && bun run typecheck",
-    "update-packages": "bun scripts/update-packages.ts"
+    "update-packages": "bun scripts/update-packages.ts",
+    "backfill-thumbnails": "bun scripts/backfill-preview-thumbnails.ts"
   },
   "dependencies": {
     "@headlessui/react": "2.2.10",
     "@heroicons/react": "2.2.0",
+    "@napi-rs/canvas": "1.0.13",
     "@sentry/nextjs": "^11.8.0",
     "@t3-oss/env-nextjs": "0.13.11",
     "@vercel/analytics": "^2.0.1",

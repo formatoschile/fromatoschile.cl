@@ -12,6 +12,12 @@ export const env = createEnv({
       }),
     SHOPIFY_STOREFRONT_ACCESS_TOKEN: z.string().min(1),
     SHOPIFY_WEBHOOK_SECRET: z.string().min(1),
+    // Admin API app credentials (Dev Dashboard, client credentials grant) —
+    // only needed for generating product preview thumbnails.
+    SHOPIFY_ADMIN_CLIENT_ID: z.string().min(1).optional(),
+    SHOPIFY_ADMIN_CLIENT_SECRET: z.string().min(1).optional(),
+    // Define in Vercel env vars; Vercel sends it as the cron's bearer token.
+    CRON_SECRET: z.string().min(1).optional(),
     SITE_NAME: z.string().min(1),
     SENTRY_DSN: z.string().min(1).optional(),
   },
@@ -23,6 +29,9 @@ export const env = createEnv({
     SHOPIFY_STOREFRONT_ACCESS_TOKEN:
       process.env.SHOPIFY_STOREFRONT_ACCESS_TOKEN,
     SHOPIFY_WEBHOOK_SECRET: process.env.SHOPIFY_WEBHOOK_SECRET,
+    SHOPIFY_ADMIN_CLIENT_ID: process.env.SHOPIFY_ADMIN_CLIENT_ID,
+    SHOPIFY_ADMIN_CLIENT_SECRET: process.env.SHOPIFY_ADMIN_CLIENT_SECRET,
+    CRON_SECRET: process.env.CRON_SECRET,
     SITE_NAME: process.env.SITE_NAME,
     SENTRY_DSN: process.env.SENTRY_DSN,
     NEXT_PUBLIC_SENTRY_DSN: process.env.NEXT_PUBLIC_SENTRY_DSN,

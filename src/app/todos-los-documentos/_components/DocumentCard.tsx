@@ -8,7 +8,7 @@ import type { ProductCard } from "@/lib/shopify/types";
 import { classNames } from "@/lib/utils/classNames";
 import { getProductCardDisplay } from "@/lib/utils/product";
 
-import { PreviewThumbnail } from "./PreviewPlaceholder";
+import { DocumentThumbnail } from "./DocumentThumbnail";
 
 interface DocumentCardProps {
   product: ProductCard;
@@ -31,7 +31,7 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({ product }) => {
           <CategoryPill category={category} />
         </div>
 
-        <PreviewThumbnail />
+        <DocumentThumbnail image={product.featuredImage} />
 
         <h3 className="text-ink mt-4 min-h-[3rem] text-base leading-snug">
           {product.title}
