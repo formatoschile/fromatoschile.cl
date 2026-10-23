@@ -1,12 +1,7 @@
 import { CheckIcon } from "@heroicons/react/24/solid";
 import Link from "next/link";
 
-const certifications = [
-  "Cumplimiento RGPD",
-  "Abogados Colegiados",
-  "Pago Seguro SSL",
-  "ISO 9001",
-];
+import { TRUST_BADGES } from "@/components/TrustBadges/constants";
 
 export const SecuritySection = () => {
   return (
@@ -43,11 +38,11 @@ export const SecuritySection = () => {
           </p>
 
           <ul className="mt-6 grid grid-cols-1 gap-x-8 gap-y-4 sm:grid-cols-2">
-            {certifications.map((item) => (
-              <li key={item} className="flex items-center gap-3">
+            {TRUST_BADGES.map(({ label }) => (
+              <li key={label} className="flex items-center gap-3">
                 <CheckIcon className="text-ink h-5 w-5 shrink-0" />
                 <span className="text-base font-normal text-neutral-700">
-                  {item}
+                  {label}
                 </span>
               </li>
             ))}

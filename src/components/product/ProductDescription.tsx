@@ -1,6 +1,7 @@
 import React from "react";
 
 import { AddToCart } from "@/components/cart/AddToCart";
+import { TrustBadges } from "@/components/TrustBadges/TrustBadges";
 import { CategoryPill } from "@/components/ui/CategoryPill/CategoryPill";
 import { Price } from "@/components/ui/Price";
 import { Prose } from "@/components/ui/Prose";
@@ -69,6 +70,8 @@ export const ProductDescription: React.FC<ProductDescriptionProps> = ({
           </BuyNowButton>
           <AddToCart product={product} />
         </div>
+
+        <TrustBadges />
 
         <div>
           <DetailAccordion title="Detalles producto">

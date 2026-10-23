@@ -58,16 +58,18 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({ url }) => {
         </div>
       )}
 
-      <div className="mx-auto flex max-h-[70vh] w-full max-w-md justify-center overflow-hidden bg-white shadow-md sm:max-w-lg">
+      {/* A4-shaped sheet: width is the smallest of the column, 36rem, or what
+          keeps the sheet's height within 80vh — so it never letterboxes. */}
+      <div className="mx-auto aspect-[210/297] w-[min(100%,36rem,calc(80vh*210/297))] overflow-hidden bg-white shadow-md">
         {isLoading && (
-          <div className="aspect-[1/1.414] w-full animate-pulse bg-neutral-100" />
+          <div className="h-full w-full animate-pulse bg-neutral-100" />
         )}
         <canvas
           ref={canvasRef}
           // oxlint-disable-next-line jsx-a11y/prefer-tag-over-role -- canvas renders pixels, an <img> can't replace it
           role="img"
           aria-label={`Vista previa del documento, página ${currentPage} de ${numPages}`}
-          className="max-h-[70vh] w-full object-contain"
+          className="h-full w-full object-contain"
           style={{ display: isLoading ? "none" : "block" }}
         />
       </div>
