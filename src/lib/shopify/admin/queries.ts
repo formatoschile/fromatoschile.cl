@@ -10,8 +10,11 @@ const thumbnailProductFields = /* GraphQL */ `
     handle
     previewPdf: metafield(namespace: "custom", key: "previewPdf") {
       reference {
+        __typename
         ... on GenericFile {
+          id
           url
+          mimeType
         }
       }
     }

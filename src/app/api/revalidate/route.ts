@@ -8,6 +8,7 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 import { env } from "@/env";
 import { hasAdminCredentials } from "@/lib/shopify/admin/client";
 import { syncProductThumbnail } from "@/lib/shopify/admin/previewThumbnails";
+import type { ThumbnailSyncAction } from "@/lib/shopify/admin/previewThumbnails";
 import { TAGS } from "@/lib/utils/constants";
 
 // Thumbnail rendering runs in `after()` and is bounded by this duration.
@@ -25,6 +26,16 @@ const productWebhooks = [
 ];
 const pageWebhooks = ["pages/create", "pages/delete", "pages/update"];
 const thumbnailWebhooks = ["products/create", "products/update"];
+
+// Thumbnail sync outcomes someone should hear about. A non-PDF picked as the
+// preview PDF can't be prevented in Shopify's picker, so we report it.
+const THUMBNAIL_ALERTS: Partial<Record<ThumbnailSyncAction, string>> = {
+  failed: "Preview thumbnail sync failed",
+  restored:
+    "A non-PDF file was picked as previewPdf; the previous PDF was restored",
+  "invalid-pdf":
+    "A non-PDF file was picked as previewPdf and there was no PDF to restore",
+};
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
   const rawBody = await req.text();
@@ -86,9 +97,10 @@ function scheduleThumbnailSync({ rawBody }: { rawBody: string }): void {
 
   after(async () => {
     const result = await syncProductThumbnail({ productId });
-    if (result.action === "failed") {
-      Sentry.captureMessage("Preview thumbnail sync failed", {
-        level: "error",
+    const message = THUMBNAIL_ALERTS[result.action];
+    if (message) {
+      Sentry.captureMessage(message, {
+        level: result.action === "failed" ? "error" : "warning",
         tags: { action: "preview-thumbnail" },
         extra: { ...result },
       });

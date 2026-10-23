@@ -27,12 +27,20 @@ import { getThumbnailProductQuery, getThumbnailProductsQuery } from "./queries";
  *   died, once they're older than `STALE_CLAIM_MS`.
  * - If two runs race, each keeps only the newest thumbnail (highest media
  *   id) and deletes are idempotent, so they converge on one image.
+ * - Shopify's file picker can't be limited to PDFs (and lists our thumbnails
+ *   first, being the newest files), so a wrong pick is easy. When
+ *   `custom.previewPdf` points at anything but a PDF, the last PDF we
+ *   rendered is put back (`restored`), or the product is left untouched and
+ *   reported (`invalid-pdf`) if there's none to restore.
  */
 
 export const THUMBNAIL_ALT = "Vista previa del documento";
 
 const SOURCE_NAMESPACE = "$app";
 const SOURCE_KEY = "preview_thumbnail_source";
+const PREVIEW_PDF_NAMESPACE = "custom";
+const PREVIEW_PDF_KEY = "previewPdf";
+const PDF_MIME_TYPE = "application/pdf";
 const DEFAULT_CONCURRENCY = 3;
 const UPLOAD_TIMEOUT_MS = 30_000;
 // Longer than any run can take (webhook `maxDuration` is 120s).
@@ -42,6 +50,8 @@ export type ThumbnailSyncAction =
   | "generated"
   | "unchanged"
   | "removed"
+  | "restored"
+  | "invalid-pdf"
   | "no-pdf"
   | "not-found"
   | "failed";
@@ -67,7 +77,14 @@ interface ThumbnailMedia {
 interface ThumbnailProduct {
   id: string;
   handle: string;
-  previewPdf: { reference: { url?: string } | null } | null;
+  previewPdf: {
+    reference: {
+      __typename: string;
+      id?: string;
+      url?: string;
+      mimeType?: string | null;
+    } | null;
+  } | null;
   thumbnailSource: { value: string; updatedAt: string } | null;
   media: { nodes: ThumbnailMedia[] };
 }
@@ -81,8 +98,15 @@ interface ThumbnailProductsResponse {
 
 interface ThumbnailSource {
   pdfUrl: string;
+  // Missing on records written before wrong-file restoring existed.
+  pdfFileId: string | null;
   isAttached: boolean;
   updatedAt: number;
+}
+
+interface PreviewPdf {
+  id: string;
+  url: string;
 }
 
 interface UserError {
@@ -189,11 +213,29 @@ async function syncThumbnail({
   const { handle } = product;
 
   try {
-    const pdfUrl = product.previewPdf?.reference?.url ?? null;
+    const reference = product.previewPdf?.reference ?? null;
     const ownMedia = getOwnMedia({ product });
     const source = parseSource({ product });
 
-    if (!pdfUrl) {
+    if (reference && !isPdf({ reference })) {
+      if (!source?.pdfFileId) {
+        return { handle, action: "invalid-pdf" };
+      }
+      if (!isDryRun) {
+        await setPreviewPdf({
+          productId: product.id,
+          fileId: source.pdfFileId,
+        });
+      }
+      return { handle, action: "restored" };
+    }
+
+    const pdf: PreviewPdf | null =
+      reference?.id && reference.url
+        ? { id: reference.id, url: reference.url }
+        : null;
+
+    if (!pdf) {
       if (ownMedia.length === 0 && !source) {
         return { handle, action: "no-pdf" };
       }
@@ -204,7 +246,15 @@ async function syncThumbnail({
       return { handle, action: "removed" };
     }
 
-    if (isCurrent({ source, pdfUrl, ownMedia, isSweep })) {
+    if (isCurrent({ source, pdfUrl: pdf.url, ownMedia, isSweep })) {
+      // Records written before restoring existed lack the file id.
+      if (!isDryRun && source && source.pdfFileId !== pdf.id) {
+        await setSource({
+          productId: product.id,
+          pdf,
+          isAttached: source.isAttached,
+        });
+      }
       return { handle, action: "unchanged" };
     }
 
@@ -212,14 +262,14 @@ async function syncThumbnail({
       return { handle, action: "generated" };
     }
 
-    const image = await renderPdfThumbnail({ pdfUrl });
+    const image = await renderPdfThumbnail({ pdfUrl: pdf.url });
     const resourceUrl = await uploadImage({
       filename: `${handle}-vista-previa.webp`,
       image,
     });
 
     // Claim the source first so the webhooks fired by the writes below skip.
-    await setSource({ productId: product.id, pdfUrl, isAttached: false });
+    await setSource({ productId: product.id, pdf, isAttached: false });
 
     try {
       await addMedia({ productId: product.id, resourceUrl });
@@ -232,7 +282,7 @@ async function syncThumbnail({
     // for the sweep to retry rather than releasing it (which would make our
     // own webhooks regenerate immediately).
     await promoteNewestThumbnail({ productId: product.id });
-    await setSource({ productId: product.id, pdfUrl, isAttached: true });
+    await setSource({ productId: product.id, pdf, isAttached: true });
 
     return { handle, action: "generated" };
   } catch (error) {
@@ -272,6 +322,17 @@ function isCurrent({
   return ownMedia.some((media) => media.status !== "FAILED");
 }
 
+function isPdf({
+  reference,
+}: {
+  reference: NonNullable<ThumbnailProduct["previewPdf"]>["reference"];
+}): boolean {
+  return (
+    reference?.__typename === "GenericFile" &&
+    reference.mimeType === PDF_MIME_TYPE
+  );
+}
+
 /** Our thumbnails on the product, newest (highest media id) first. */
 function getOwnMedia({
   product,
@@ -303,7 +364,7 @@ function parseSource({
   }
 
   try {
-    const { pdfUrl, isAttached } = JSON.parse(
+    const { pdfUrl, pdfFileId, isAttached } = JSON.parse(
       product.thumbnailSource.value
     ) as Partial<ThumbnailSource>;
 
@@ -313,6 +374,7 @@ function parseSource({
 
     return {
       pdfUrl,
+      pdfFileId: typeof pdfFileId === "string" ? pdfFileId : null,
       isAttached: isAttached === true,
       updatedAt: Date.parse(product.thumbnailSource.updatedAt),
     };
@@ -461,11 +523,11 @@ async function deleteFiles({ fileIds }: { fileIds: string[] }): Promise<void> {
 
 async function setSource({
   productId,
-  pdfUrl,
+  pdf,
   isAttached,
 }: {
   productId: string;
-  pdfUrl: string;
+  pdf: PreviewPdf;
   isAttached: boolean;
 }): Promise<void> {
   const { metafieldsSet } = await adminFetch<{
@@ -479,7 +541,44 @@ async function setSource({
           namespace: SOURCE_NAMESPACE,
           key: SOURCE_KEY,
           type: "json",
-          value: JSON.stringify({ pdfUrl, isAttached }),
+          value: JSON.stringify({
+            pdfUrl: pdf.url,
+            pdfFileId: pdf.id,
+            isAttached,
+          }),
+        },
+      ],
+    },
+  });
+  assertNoUserErrors({
+    operation: "metafieldsSet",
+    userErrors: metafieldsSet.userErrors,
+  });
+}
+
+/**
+ * Points `custom.previewPdf` back at a PDF. Fires `products/update`, whose
+ * sync then finds the PDF matching the stored source and does nothing.
+ */
+async function setPreviewPdf({
+  productId,
+  fileId,
+}: {
+  productId: string;
+  fileId: string;
+}): Promise<void> {
+  const { metafieldsSet } = await adminFetch<{
+    metafieldsSet: { userErrors: UserError[] };
+  }>({
+    query: metafieldsSetMutation,
+    variables: {
+      metafields: [
+        {
+          ownerId: productId,
+          namespace: PREVIEW_PDF_NAMESPACE,
+          key: PREVIEW_PDF_KEY,
+          type: "file_reference",
+          value: fileId,
         },
       ],
     },
@@ -538,6 +637,8 @@ function summarize({
     generated: 0,
     unchanged: 0,
     removed: 0,
+    restored: 0,
+    "invalid-pdf": 0,
     "no-pdf": 0,
     "not-found": 0,
     failed: 0,

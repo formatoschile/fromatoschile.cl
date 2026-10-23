@@ -50,7 +50,18 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     });
   }
 
-  return NextResponse.json({ counts, hasMore, failures });
+  const wrongFiles = results.filter(
+    (result) => result.action === "restored" || result.action === "invalid-pdf"
+  );
+  if (wrongFiles.length > 0) {
+    Sentry.captureMessage("Non-PDF files picked as previewPdf", {
+      level: "warning",
+      tags: { action: "preview-thumbnail" },
+      extra: { wrongFiles },
+    });
+  }
+
+  return NextResponse.json({ counts, hasMore, failures, wrongFiles });
 }
 
 function isAuthorized({ header }: { header: string | null }): boolean {

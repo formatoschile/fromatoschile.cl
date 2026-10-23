@@ -25,6 +25,10 @@ const ACTION_LABELS: Record<ThumbnailSyncResult["action"], string> = {
   generated: IS_DRY_RUN ? "would generate" : "generated",
   unchanged: "up to date",
   removed: IS_DRY_RUN ? "would remove" : "removed (no PDF)",
+  restored: IS_DRY_RUN
+    ? "would restore PDF (non-PDF picked)"
+    : "restored PDF (non-PDF picked)",
+  "invalid-pdf": "NOT A PDF — fix in admin",
   "no-pdf": "no preview PDF",
   "not-found": "not found",
   failed: "FAILED",
