@@ -22,6 +22,17 @@ const CONTENT_SECURITY_POLICY = [
   "frame-src 'none'",
 ].join('; ');
 
+// Files the PDF thumbnail routes load at runtime that Next's file tracing
+// can't see: pdf.js requires `@napi-rs/canvas` by name (plus its per-platform
+// native binary, e.g. `@napi-rs/canvas-linux-x64-gnu` on Vercel) and loads
+// its worker and fonts by path.
+const PDF_RENDERING_FILES = [
+  './node_modules/@napi-rs/canvas/**',
+  './node_modules/@napi-rs/canvas-*/**',
+  './node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs',
+  './node_modules/pdfjs-dist/standard_fonts/**',
+];
+
 const nextConfig: NextConfig = {
   async headers() {
     return [
@@ -51,14 +62,8 @@ const nextConfig: NextConfig = {
   // a native binary, and pdf.js loads its worker and fonts by path.
   serverExternalPackages: ['pdfjs-dist', '@napi-rs/canvas'],
   outputFileTracingIncludes: {
-    '/api/revalidate': [
-      './node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs',
-      './node_modules/pdfjs-dist/standard_fonts/**',
-    ],
-    '/api/cron/preview-thumbnails': [
-      './node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs',
-      './node_modules/pdfjs-dist/standard_fonts/**',
-    ],
+    '/api/revalidate': PDF_RENDERING_FILES,
+    '/api/cron/preview-thumbnails': PDF_RENDERING_FILES,
   },
   experimental: {
     inlineCss: true
