@@ -1,10 +1,8 @@
 "use server";
 
-import { getProductsPage } from "@/lib/shopify";
 import type { ProductsPage } from "@/lib/shopify";
-import { buildProductSearchQuery } from "@/lib/shopify/search";
 
-import { CATALOG_PAGE_SIZE } from "./constants";
+import { getCatalogPage } from "./getCatalogPage";
 
 export async function loadMoreDocuments({
   category,
@@ -15,9 +13,5 @@ export async function loadMoreDocuments({
   text: string | null;
   after: string;
 }): Promise<ProductsPage> {
-  return getProductsPage({
-    query: buildProductSearchQuery({ category, text }),
-    first: CATALOG_PAGE_SIZE,
-    after,
-  });
+  return getCatalogPage({ category, text, after });
 }

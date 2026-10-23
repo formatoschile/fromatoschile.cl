@@ -39,3 +39,25 @@ export function getSelectedVariant(
 
   return variants.length === 1 ? variants[0] : undefined;
 }
+
+/**
+ * Reorders products so every category is spread evenly across the list
+ * (e.g. 3 laboral : 1 civil throughout) instead of appearing in blocks.
+ * Each product is placed at its relative position within its own category,
+ * so the original order inside a category is preserved.
+ */
+export function interleaveByCategory<T extends { productType: string }>(
+  products: T[]
+): T[] {
+  const byCategory = Map.groupBy(products, getProductCategory);
+
+  return [...byCategory.values()]
+    .flatMap((group) =>
+      group.map((product, index) => ({
+        product,
+        position: (index + 0.5) / group.length,
+      }))
+    )
+    .toSorted((a, b) => a.position - b.position)
+    .map(({ product }) => product);
+}

@@ -1,8 +1,7 @@
-import { getCollections, getProductsPage } from "@/lib/shopify";
-import { buildProductSearchQuery } from "@/lib/shopify/search";
+import { getCollections } from "@/lib/shopify";
 
-import { CATALOG_PAGE_SIZE } from "./constants";
 import { DocumentsCatalog } from "./DocumentsCatalog";
+import { getCatalogPage } from "./getCatalogPage";
 
 interface CatalogResultsProps {
   searchParams?: Promise<{ categoria?: string; q?: string }>;
@@ -16,10 +15,7 @@ export const CatalogResults = async ({ searchParams }: CatalogResultsProps) => {
 
   const [collections, page] = await Promise.all([
     getCollections(),
-    getProductsPage({
-      query: buildProductSearchQuery({ category, text }),
-      first: CATALOG_PAGE_SIZE,
-    }),
+    getCatalogPage({ category, text }),
   ]);
 
   return (
