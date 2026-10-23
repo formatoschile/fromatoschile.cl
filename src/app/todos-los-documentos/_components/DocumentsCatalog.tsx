@@ -68,7 +68,7 @@ export const DocumentsCatalog: React.FC<DocumentsCatalogProps> = ({
   const [featured, ...rest] = products;
 
   return (
-    <div className={classNames({ "opacity-60": isPending })}>
+    <div>
       {/* Search */}
       <div className="mt-10">
         <SearchInput value={searchText} onChange={handleSearchChange} />
@@ -113,28 +113,35 @@ export const DocumentsCatalog: React.FC<DocumentsCatalogProps> = ({
         ))}
       </div>
 
-      {featured ? (
-        <>
-          <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            <FeaturedCard product={featured} />
+      {/* Only the results fade while a search loads — not the search box */}
+      <div
+        className={classNames("transition-opacity", {
+          "opacity-60": isPending,
+        })}
+      >
+        {featured ? (
+          <>
+            <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+              <FeaturedCard product={featured} />
 
-            {rest.map((product) => (
-              <DocumentCard key={product.handle} product={product} />
-            ))}
-          </div>
+              {rest.map((product) => (
+                <DocumentCard key={product.handle} product={product} />
+              ))}
+            </div>
 
-          {hasNextPage ? (
-            <LoadMoreButton
-              isLoading={isLoadingMore}
-              onClick={handleLoadMore}
-            />
-          ) : null}
-        </>
-      ) : (
-        <p className="mt-12 text-sm text-neutral-500">
-          No encontramos documentos para tu búsqueda.
-        </p>
-      )}
+            {hasNextPage ? (
+              <LoadMoreButton
+                isLoading={isLoadingMore}
+                onClick={handleLoadMore}
+              />
+            ) : null}
+          </>
+        ) : (
+          <p className="mt-12 text-sm text-neutral-500">
+            No encontramos documentos para tu búsqueda.
+          </p>
+        )}
+      </div>
     </div>
   );
 };

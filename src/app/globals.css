@@ -102,8 +102,9 @@
   }
 }
 
+/* Keyboard focus ring. Text inputs are left out: `:focus-visible` matches
+   them on every click too, and they show focus via their border instead. */
 a,
-input,
 button {
   @apply focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 focus-visible:outline-hidden;
 }

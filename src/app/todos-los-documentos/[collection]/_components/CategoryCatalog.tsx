@@ -48,33 +48,40 @@ export const CategoryCatalog: React.FC<CategoryCatalogProps> = ({
   };
 
   return (
-    <div className={classNames({ "opacity-60": isPending })}>
+    <div>
       <div className="mt-10">
         <SearchInput value={searchText} onChange={handleSearchChange} />
       </div>
 
-      {products.length ? (
-        <>
-          <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {products.map((product) => (
-              <DocumentCard key={product.handle} product={product} />
-            ))}
-          </div>
+      {/* Only the results fade while a search loads — not the search box */}
+      <div
+        className={classNames("transition-opacity", {
+          "opacity-60": isPending,
+        })}
+      >
+        {products.length ? (
+          <>
+            <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+              {products.map((product) => (
+                <DocumentCard key={product.handle} product={product} />
+              ))}
+            </div>
 
-          {hasNextPage ? (
-            <LoadMoreButton
-              isLoading={isLoadingMore}
-              onClick={handleLoadMore}
-            />
-          ) : null}
-        </>
-      ) : (
-        <p className="mt-12 text-sm text-neutral-500">
-          {query
-            ? "No encontramos documentos para tu búsqueda."
-            : "No hay documentos en esta colección."}
-        </p>
-      )}
+            {hasNextPage ? (
+              <LoadMoreButton
+                isLoading={isLoadingMore}
+                onClick={handleLoadMore}
+              />
+            ) : null}
+          </>
+        ) : (
+          <p className="mt-12 text-sm text-neutral-500">
+            {query
+              ? "No encontramos documentos para tu búsqueda."
+              : "No hay documentos en esta colección."}
+          </p>
+        )}
+      </div>
     </div>
   );
 };
