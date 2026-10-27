@@ -1,18 +1,26 @@
 import * as Sentry from "@sentry/nextjs";
 import type { MetadataRoute } from "next";
-import { connection } from "next/server";
+import { cacheLife } from "next/cache";
 
 import { getCollections, getPages, getProducts } from "@/lib/shopify";
 import { baseUrl } from "@/lib/utils";
 
 /**
- * Rendered per request: `lastModified` reads the current time, which ends a
- * build-time prerender and makes the in-flight `"use cache"` Shopify calls
- * below reject. Opting out up front avoids that; the Shopify lists themselves
- * stay cached by their own `"use cache"` and tags.
+ * Prerendered and served from the CDN, regenerated in the background at most
+ * hourly (`cacheLife("hours")`) and whenever a Shopify webhook revalidates
+ * the collections/products/pages tags of the lists below.
  */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  await connection();
+  return getSitemapEntries();
+}
+
+/**
+ * Errors propagate on purpose: a failed regeneration keeps serving the
+ * previous sitemap instead of caching one with missing sections.
+ */
+async function getSitemapEntries(): Promise<MetadataRoute.Sitemap> {
+  "use cache";
+  cacheLife("hours");
 
   const lastModified = new Date().toISOString();
   const staticRoutes = ["", "/preguntas-frecuentes", "/contacto"].map(
@@ -26,13 +34,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         lastModified: collection.updatedAt,
       }))
     )
-    .catch((error) => {
-      console.error("Failed to list collections for sitemap:", error);
-      Sentry.captureException(error, {
-        tags: { action: "sitemap:collections" },
-      });
-      return [];
-    });
+    .catch(reportError({ action: "sitemap:collections" }));
 
   const productsPromise = getProducts({})
     .then((products) =>
@@ -41,11 +43,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         lastModified: product.updatedAt,
       }))
     )
-    .catch((error) => {
-      console.error("Failed to list products for sitemap:", error);
-      Sentry.captureException(error, { tags: { action: "sitemap:products" } });
-      return [];
-    });
+    .catch(reportError({ action: "sitemap:products" }));
 
   const pagesPromise = getPages()
     .then((pages) =>
@@ -54,15 +52,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         lastModified: page.updatedAt,
       }))
     )
-    .catch((error) => {
-      console.error("Failed to list pages for sitemap:", error);
-      Sentry.captureException(error, { tags: { action: "sitemap:pages" } });
-      return [];
-    });
+    .catch(reportError({ action: "sitemap:pages" }));
 
   const fetchedRoutes = (
     await Promise.all([collectionsPromise, productsPromise, pagesPromise])
   ).flat();
 
   return [...staticRoutes, ...fetchedRoutes];
+}
+
+function reportError({ action }: { action: string }) {
+  return (error: unknown): never => {
+    console.error(`Failed to build sitemap (${action}):`, error);
+    Sentry.captureException(error, { tags: { action } });
+    throw error;
+  };
 }

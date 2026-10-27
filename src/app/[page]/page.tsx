@@ -4,8 +4,16 @@ import { notFound } from "next/navigation";
 import { Prose } from "@/components/ui/Prose";
 import { getPage, getPages } from "@/lib/shopify";
 
+// Cache Components fails the build when this returns no params, which happens
+// when the store has no Shopify pages; the placeholder renders `notFound()`.
+const PLACEHOLDER_PARAMS = [{ page: "__placeholder__" }];
+
 export async function generateStaticParams() {
   const pages = await getPages();
+  if (pages.length === 0) {
+    return PLACEHOLDER_PARAMS;
+  }
+
   return pages.map((page) => ({ page: page.handle }));
 }
 

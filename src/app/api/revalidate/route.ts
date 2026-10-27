@@ -27,6 +27,12 @@ const productWebhooks = [
 const pageWebhooks = ["pages/create", "pages/delete", "pages/update"];
 const thumbnailWebhooks = ["products/create", "products/update"];
 
+// Expire tagged data outright, so the next request fetches fresh from
+// Shopify. A stale-while-revalidate profile (e.g. "seconds") lets a cached
+// page regenerate from still-stale `"use cache"` data and keep it for days —
+// which kept deleted Shopify pages alive.
+const EXPIRE_NOW = { expire: 0 };
+
 // Thumbnail sync outcomes someone should hear about. A non-PDF picked as the
 // preview PDF can't be prevented in Shopify's picker, so we report it.
 const THUMBNAIL_ALERTS: Partial<Record<ThumbnailSyncAction, string>> = {
@@ -62,11 +68,11 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   }
 
   if (isCollectionUpdate) {
-    revalidateTag(TAGS.collections, "seconds");
+    revalidateTag(TAGS.collections, EXPIRE_NOW);
   }
 
   if (isProductUpdate) {
-    revalidateTag(TAGS.products, "seconds");
+    revalidateTag(TAGS.products, EXPIRE_NOW);
   }
 
   if (thumbnailWebhooks.includes(topic)) {
@@ -74,7 +80,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   }
 
   if (isPageUpdate) {
-    revalidateTag(TAGS.pages, "seconds");
+    revalidateTag(TAGS.pages, EXPIRE_NOW);
   }
 
   return NextResponse.json({ status: 200, revalidated: true, now: Date.now() });
