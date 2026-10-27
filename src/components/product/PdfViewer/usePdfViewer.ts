@@ -2,9 +2,10 @@ import { useEffect, useRef, useState } from "react";
 import * as Sentry from "@sentry/nextjs";
 import type { PDFDocumentLoadingTask, PDFDocumentProxy } from "pdfjs-dist";
 
-// pdf.js' WebAssembly image decoders, copied into `public/` by
-// `scripts/copy-pdfjs-wasm.ts`. Without them, CCITTFax/JBIG2/JPEG 2000 images
-// (typical of scanned documents) are dropped and the page renders blank.
+// Copied into `public/` by `scripts/copy-pdfjs-assets.ts`. Without the wasm
+// image decoders, CCITTFax/JBIG2/JPEG 2000 images (typical of scanned
+// documents) are dropped and the page renders blank.
+const PDFJS_WORKER_URL = "/pdfjs/pdf.worker.min.mjs";
 const PDFJS_WASM_URL = "/pdfjs/wasm/";
 
 interface UsePdfViewerResult {
@@ -39,10 +40,7 @@ export const usePdfViewer = (url: string): UsePdfViewerResult => {
 
       try {
         const pdfjs = await import("pdfjs-dist");
-        pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-          "pdfjs-dist/build/pdf.worker.min.mjs",
-          import.meta.url
-        ).toString();
+        pdfjs.GlobalWorkerOptions.workerSrc = PDFJS_WORKER_URL;
 
         const loadingTask = pdfjs.getDocument({
           url,

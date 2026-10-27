@@ -16,7 +16,7 @@
 # production
 /build
 
-# copied from node_modules by scripts/copy-pdfjs-wasm.ts
+# copied from node_modules by scripts/copy-pdfjs-assets.ts
 /public/pdfjs/
 
 # misc
