@@ -8,9 +8,11 @@ import { withSentryConfig } from '@sentry/nextjs/config';
 // 'unsafe-inline' on script/style is required because Next's App Router
 // streams RSC payloads via inline <script> tags and `inlineCss` emits inline
 // <style> tags; removing it needs a nonce-based CSP wired through middleware.
+// 'wasm-unsafe-eval' lets pdf.js compile its WebAssembly image decoders
+// (served from `/pdfjs/wasm/`), needed for scanned PDFs.
 const CONTENT_SECURITY_POLICY = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline'",
+  "script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'",
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: https://cdn.shopify.com",
   "font-src 'self' data:",
@@ -25,12 +27,13 @@ const CONTENT_SECURITY_POLICY = [
 // Files the PDF thumbnail routes load at runtime that Next's file tracing
 // can't see: pdf.js requires `@napi-rs/canvas` by name (plus its per-platform
 // native binary, e.g. `@napi-rs/canvas-linux-x64-gnu` on Vercel) and loads
-// its worker and fonts by path.
+// its worker, fonts and wasm image decoders by path.
 const PDF_RENDERING_FILES = [
   './node_modules/@napi-rs/canvas/**',
   './node_modules/@napi-rs/canvas-*/**',
   './node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs',
   './node_modules/pdfjs-dist/standard_fonts/**',
+  './node_modules/pdfjs-dist/wasm/**',
 ];
 
 const nextConfig: NextConfig = {

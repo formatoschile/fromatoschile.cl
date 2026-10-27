@@ -1,5 +1,6 @@
 import { createCanvas, DOMMatrix, Path2D } from "@napi-rs/canvas";
 import type { Canvas } from "@napi-rs/canvas";
+import path from "node:path";
 
 /**
  * Server-side rendering of a PDF's first page to a WebP image, used for
@@ -12,11 +13,19 @@ import type { Canvas } from "@napi-rs/canvas";
  * Contexts must be created with `willReadFrequently: true` (software
  * rendering) like pdf.js does — a default context segfaults on some of our
  * watermarked PDFs.
+ *
+ * pdf.js decodes CCITTFax, JBIG2 and JPEG 2000 images (common in scanned
+ * documents) and ICC colour profiles with WebAssembly modules it reads from
+ * `wasmUrl` — without it those images are dropped and the page renders blank.
+ * In Node `wasmUrl` is a directory path, read with `fs`.
  */
 
 const DEFAULT_WIDTH_PX = 1000;
 const WEBP_QUALITY = 82;
 const DOWNLOAD_TIMEOUT_MS = 30_000;
+// Resolved from the project root rather than `import.meta.url`, for the same
+// reason as above; shipped via `outputFileTracingIncludes` in next.config.ts.
+const PDFJS_WASM_DIR = `${path.join(process.cwd(), "node_modules/pdfjs-dist/wasm")}/`;
 
 interface CanvasAndContext {
   canvas: Canvas | null;
@@ -43,6 +52,7 @@ export async function renderPdfThumbnail({
   const loadingTask = pdfjs.getDocument({
     data,
     CanvasFactory: NapiCanvasFactory,
+    wasmUrl: PDFJS_WASM_DIR,
   } as Parameters<typeof pdfjs.getDocument>[0]);
   const doc = await loadingTask.promise;
 

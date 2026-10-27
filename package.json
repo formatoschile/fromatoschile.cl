@@ -1,8 +1,9 @@
 {
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
+    "dev": "bun run copy-pdfjs-wasm && next dev",
+    "build": "bun run copy-pdfjs-wasm && next build",
+    "copy-pdfjs-wasm": "bun scripts/copy-pdfjs-wasm.ts",
     "start": "next start",
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
