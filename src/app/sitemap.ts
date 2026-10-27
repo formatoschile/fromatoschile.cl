@@ -1,10 +1,19 @@
 import * as Sentry from "@sentry/nextjs";
 import type { MetadataRoute } from "next";
+import { connection } from "next/server";
 
 import { getCollections, getPages, getProducts } from "@/lib/shopify";
 import { baseUrl } from "@/lib/utils";
 
+/**
+ * Rendered per request: `lastModified` reads the current time, which ends a
+ * build-time prerender and makes the in-flight `"use cache"` Shopify calls
+ * below reject. Opting out up front avoids that; the Shopify lists themselves
+ * stay cached by their own `"use cache"` and tags.
+ */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  await connection();
+
   const lastModified = new Date().toISOString();
   const staticRoutes = ["", "/preguntas-frecuentes", "/contacto"].map(
     (path) => ({ url: `${baseUrl}${path}`, lastModified })
