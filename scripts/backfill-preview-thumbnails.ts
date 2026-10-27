@@ -3,7 +3,9 @@
 /**
  * Generates card thumbnails (page 1 of the watermarked preview PDF) for every
  * product that doesn't have a current one. Safe to stop and re-run: products
- * whose thumbnail already matches their PDF are skipped.
+ * whose thumbnail already matches their PDF are skipped, unless `--force`
+ * is passed (e.g. to redo thumbnails after a rendering fix). A forced run
+ * starts over each time, so `--limit` with `--force` is for trials only.
  *
  * Needs the app's usual env vars (validated by `src/env.ts`) plus
  * SHOPIFY_ADMIN_CLIENT_ID and SHOPIFY_ADMIN_CLIENT_SECRET in `.env` — Bun
@@ -13,12 +15,14 @@
  *   bun scripts/backfill-preview-thumbnails.ts --dry-run    # report only
  *   bun scripts/backfill-preview-thumbnails.ts --limit 5    # trial batch
  *   bun scripts/backfill-preview-thumbnails.ts              # everything
+ *   bun scripts/backfill-preview-thumbnails.ts --force      # regenerate all
  */
 
 import { syncAllProductThumbnails } from "@/lib/shopify/admin/previewThumbnails";
 import type { ThumbnailSyncResult } from "@/lib/shopify/admin/previewThumbnails";
 
 const IS_DRY_RUN = process.argv.includes("--dry-run");
+const IS_FORCE = process.argv.includes("--force");
 const LIMIT = parseLimit();
 
 const ACTION_LABELS: Record<ThumbnailSyncResult["action"], string> = {
@@ -36,12 +40,13 @@ const ACTION_LABELS: Record<ThumbnailSyncResult["action"], string> = {
 
 console.log(
   `Backfilling preview thumbnails${IS_DRY_RUN ? " (dry run)" : ""}${
-    LIMIT ? `, at most ${LIMIT}` : ""
-  }…\n`
+    IS_FORCE ? " (forced)" : ""
+  }${LIMIT ? `, at most ${LIMIT}` : ""}…\n`
 );
 
 const { counts, hasMore, results } = await syncAllProductThumbnails({
   isDryRun: IS_DRY_RUN,
+  isForce: IS_FORCE,
   maxGenerated: LIMIT ?? Number.POSITIVE_INFINITY,
   // One at a time for a limited trial, so the limit is exact.
   concurrency: LIMIT ? 1 : undefined,

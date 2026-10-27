@@ -140,16 +140,20 @@ export async function syncProductThumbnail({
 /**
  * Walks the whole catalog and syncs every product — used by the backfill
  * script and the daily cron. Stops early (with `hasMore: true`) once
- * `deadline` passes or `maxGenerated` thumbnails have been made.
+ * `deadline` passes or `maxGenerated` thumbnails have been made. `isForce`
+ * regenerates thumbnails even when they match the current PDF (e.g. after a
+ * rendering fix).
  */
 export async function syncAllProductThumbnails({
   isDryRun = false,
+  isForce = false,
   concurrency = DEFAULT_CONCURRENCY,
   maxGenerated = Number.POSITIVE_INFINITY,
   deadline = Number.POSITIVE_INFINITY,
   onResult,
 }: {
   isDryRun?: boolean;
+  isForce?: boolean;
   concurrency?: number;
   maxGenerated?: number;
   deadline?: number;
@@ -180,6 +184,7 @@ export async function syncAllProductThumbnails({
           product,
           isDryRun,
           isSweep: true,
+          isForce,
         });
         if (result.action === "generated") {
           generatedCount++;
@@ -205,10 +210,12 @@ async function syncThumbnail({
   product,
   isDryRun,
   isSweep,
+  isForce = false,
 }: {
   product: ThumbnailProduct;
   isDryRun: boolean;
   isSweep: boolean;
+  isForce?: boolean;
 }): Promise<ThumbnailSyncResult> {
   const { handle } = product;
 
@@ -246,7 +253,7 @@ async function syncThumbnail({
       return { handle, action: "removed" };
     }
 
-    if (isCurrent({ source, pdfUrl: pdf.url, ownMedia, isSweep })) {
+    if (!isForce && isCurrent({ source, pdfUrl: pdf.url, ownMedia, isSweep })) {
       // Records written before restoring existed lack the file id.
       if (!isDryRun && source && source.pdfFileId !== pdf.id) {
         await setSource({
