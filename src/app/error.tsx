@@ -3,13 +3,12 @@
 import { useEffect } from "react";
 import * as Sentry from "@sentry/nextjs";
 
-export default function Error({
-  error,
-  reset,
-}: {
+interface ErrorPageProps {
   error: Error & { digest?: string };
   reset: () => void;
-}) {
+}
+
+const ErrorPage: React.FC<ErrorPageProps> = ({ error, reset }) => {
   useEffect(() => {
     Sentry.captureException(error);
   }, [error]);
@@ -29,4 +28,6 @@ export default function Error({
       </button>
     </div>
   );
-}
+};
+
+export default ErrorPage;

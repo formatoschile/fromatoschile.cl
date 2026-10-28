@@ -3,7 +3,7 @@ import Link from "next/link";
 
 import { TRUST_BADGES } from "@/components/TrustBadges/constants";
 
-export const SecuritySection = () => {
+export const SecuritySection: React.FC = () => {
   return (
     <section className="section-inset bg-graphite py-20 text-white">
       <div className="mx-auto grid max-w-7xl items-center gap-12 md:grid-cols-2 lg:gap-20">

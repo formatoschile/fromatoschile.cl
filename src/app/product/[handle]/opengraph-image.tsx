@@ -1,4 +1,4 @@
-import { OpengraphImage } from "@/components/OpengraphImage";
+import { createOpengraphImage } from "@/components/createOpengraphImage";
 import { getProduct } from "@/lib/shopify";
 
 export default async function Image({
@@ -10,5 +10,5 @@ export default async function Image({
   const product = await getProduct(handle);
   const title = product?.seo?.title || product?.title;
 
-  return await OpengraphImage({ title });
+  return await createOpengraphImage({ title });
 }

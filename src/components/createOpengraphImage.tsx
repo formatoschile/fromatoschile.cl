@@ -6,7 +6,8 @@ export interface OpengraphImageProps {
   title?: string;
 }
 
-export const OpengraphImage = async (
+/** Renders the shared Open Graph card; called by the `opengraph-image` routes. */
+export const createOpengraphImage = async (
   props?: OpengraphImageProps
 ): Promise<ImageResponse> => {
   const title = props?.title ?? env.SITE_NAME;

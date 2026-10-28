@@ -11,6 +11,7 @@
     "nextjs",
     "promise"
   ],
+  "jsPlugins": ["./tools/oxlint-plugin.mjs"],
   "categories": {
     "correctness": "error",
     "suspicious": "warn"
@@ -21,9 +22,15 @@
     "react/react-in-jsx-scope": "off",
     "import/no-unassigned-import": "off",
     "no-underscore-dangle": "off",
-    "promise/always-return": ["warn", { "ignoreLastCallback": true }],
+    "promise/always-return": [
+      "warn",
+      {
+        "ignoreLastCallback": true
+      }
+    ],
     "typescript/no-explicit-any": "error",
-    "react/no-danger": "error"
+    "react/no-danger": "error",
+    "react/no-multi-comp": "error"
   },
   "overrides": [
     {
@@ -42,6 +49,19 @@
       "files": ["src/instrumentation-client.ts"],
       "rules": {
         "import/namespace": "off"
+      }
+    },
+    {
+      "files": ["src/**/*.tsx"],
+      "rules": {
+        "react/function-component-definition": [
+          "error",
+          {
+            "namedComponents": "arrow-function",
+            "unnamedComponents": "arrow-function"
+          }
+        ],
+        "formatos/component-props-interface": "error"
       }
     }
   ]

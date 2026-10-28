@@ -12,9 +12,11 @@ export const metadata = {
   },
 };
 
-export default function DocumentsPage(props: {
+interface DocumentsPageProps {
   searchParams?: Promise<{ categoria?: string; q?: string }>;
-}) {
+}
+
+const DocumentsPage: React.FC<DocumentsPageProps> = (props) => {
   return (
     <>
       <h1 className="text-ink text-4xl sm:text-5xl">
@@ -29,4 +31,6 @@ export default function DocumentsPage(props: {
       </Suspense>
     </>
   );
-}
+};
+
+export default DocumentsPage;

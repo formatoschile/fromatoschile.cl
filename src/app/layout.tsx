@@ -4,7 +4,8 @@ import { Afacad } from "next/font/google";
 
 import { RouteFocus } from "@/components/a11y/RouteFocus";
 import { Analytics } from "@/components/Analytics/Analytics";
-import { CartHydrator, CartProvider } from "@/components/cart/CartContext";
+import { CartProvider } from "@/components/cart/CartContext";
+import { CartHydrator } from "@/components/cart/CartHydrator";
 import { JsonLd } from "@/components/JsonLd/JsonLd";
 import { Footer } from "@/components/layout/Footer/Footer";
 import { Navbar } from "@/components/layout/Navbar/Navbar";
@@ -38,11 +39,11 @@ export const metadata = {
   },
 };
 
-export default async function RootLayout({
-  children,
-}: {
+interface RootLayoutProps {
   children: ReactNode;
-}) {
+}
+
+const RootLayout: React.FC<RootLayoutProps> = async ({ children }) => {
   // Don't await the fetch — pass the Promise to CartHydrator to resolve.
   const cart = getCart();
 
@@ -88,4 +89,6 @@ export default async function RootLayout({
       </body>
     </html>
   );
-}
+};
+
+export default RootLayout;

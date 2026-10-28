@@ -15,7 +15,7 @@ export const metadata: Metadata = {
   },
 };
 
-export default function FaqPage() {
+const FaqPage: React.FC = () => {
   return (
     <div className="bg-primary text-ink min-h-dvh pt-20">
       <JsonLd data={buildFaqJsonLd(faqs)} />
@@ -31,4 +31,6 @@ export default function FaqPage() {
       </section>
     </div>
   );
-}
+};
+
+export default FaqPage;

@@ -6,7 +6,7 @@ const supportLinks = [
   { label: "Contacto", href: "/contacto" },
 ] as const;
 
-export const Footer = () => {
+export const Footer: React.FC = () => {
   return (
     <footer className="bg-graphite px-6 pt-14 pb-8 text-white lg:px-16">
       <div className="mx-auto flex max-w-7xl flex-col justify-between gap-12 md:flex-row md:gap-8">

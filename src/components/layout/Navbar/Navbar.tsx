@@ -7,7 +7,7 @@ import { OpenCart } from "@/components/cart/OpenCart";
 
 import logoGreen from "../../../../public/logo/logo_green_small.png";
 
-export const Navbar = () => {
+export const Navbar: React.FC = () => {
   return (
     <nav className="bg-primary/80 fixed top-0 right-0 left-0 z-50 backdrop-blur-sm">
       <div className="grid grid-cols-2 items-center px-6 py-5 md:grid-cols-3 md:px-24">

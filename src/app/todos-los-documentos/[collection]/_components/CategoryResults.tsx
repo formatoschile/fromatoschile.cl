@@ -12,10 +12,10 @@ interface CategoryResultsProps {
 }
 
 /** Reads `searchParams` — kept out of the static shell via the caller's `<Suspense>`. */
-export const CategoryResults = async ({
+export const CategoryResults: React.FC<CategoryResultsProps> = async ({
   categoryTitle,
   searchParams,
-}: CategoryResultsProps) => {
+}) => {
   const params = await searchParams;
   const text = params?.q ?? null;
   const { sortKey, reverse } =

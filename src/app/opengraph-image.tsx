@@ -1,5 +1,5 @@
-import { OpengraphImage } from "@/components/OpengraphImage";
+import { createOpengraphImage } from "@/components/createOpengraphImage";
 
 export default async function Image() {
-  return await OpengraphImage();
+  return await createOpengraphImage();
 }

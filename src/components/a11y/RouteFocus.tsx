@@ -8,7 +8,7 @@ import { usePathname } from "next/navigation";
  * reader users by default. Moves focus to `<main>` on every route change
  * (skipping the very first render, so initial page load isn't affected).
  */
-export const RouteFocus = () => {
+export const RouteFocus: React.FC = () => {
   const pathname = usePathname();
   const isFirstRender = useRef(true);
 

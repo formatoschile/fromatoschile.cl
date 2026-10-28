@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 const CONTACT_EMAIL = "contacto@formatos.cl";
 
-export default function ContactPage() {
+const ContactPage: React.FC = () => {
   return (
     <div className="bg-primary text-ink min-h-dvh pt-20">
       <section className="section-inset bg-white py-20">
@@ -49,4 +49,6 @@ export default function ContactPage() {
       </section>
     </div>
   );
-}
+};
+
+export default ContactPage;

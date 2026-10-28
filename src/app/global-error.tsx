@@ -3,13 +3,12 @@
 import { useEffect } from "react";
 import * as Sentry from "@sentry/nextjs";
 
-export default function GlobalError({
-  error,
-  reset,
-}: {
+interface GlobalErrorProps {
   error: Error & { digest?: string };
   reset: () => void;
-}) {
+}
+
+const GlobalError: React.FC<GlobalErrorProps> = ({ error, reset }) => {
   useEffect(() => {
     Sentry.captureException(error);
   }, [error]);
@@ -51,4 +50,6 @@ export default function GlobalError({
       </body>
     </html>
   );
-}
+};
+
+export default GlobalError;

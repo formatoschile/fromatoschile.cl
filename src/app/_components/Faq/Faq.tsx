@@ -6,7 +6,7 @@ import { faqs, HOME_FAQ_COUNT } from "./faqs";
 
 const homeFaqs = faqs.slice(0, HOME_FAQ_COUNT);
 
-export const Faq = () => {
+export const Faq: React.FC = () => {
   return (
     <section className="section-inset bg-white py-20">
       <JsonLd data={buildFaqJsonLd(homeFaqs)} />

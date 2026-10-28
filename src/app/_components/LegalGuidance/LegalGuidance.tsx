@@ -1,6 +1,6 @@
 import Image from "next/image";
 
-export const LegalGuidance = () => {
+export const LegalGuidance: React.FC = () => {
   return (
     <section className="bg-white px-6 py-16 lg:px-16">
       <div className="mx-auto max-w-7xl">

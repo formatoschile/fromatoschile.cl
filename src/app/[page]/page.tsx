@@ -41,9 +41,11 @@ export async function generateMetadata(props: {
   };
 }
 
-export default async function Page(props: {
+interface ContentPageProps {
   params: Promise<{ page: string }>;
-}) {
+}
+
+const ContentPage: React.FC<ContentPageProps> = async (props) => {
   const params = await props.params;
   const page = await getPage(params.page);
 
@@ -60,7 +62,9 @@ export default async function Page(props: {
       </p>
     </>
   );
-}
+};
+
+export default ContentPage;
 
 function formatDate(date: string) {
   return new Intl.DateTimeFormat(undefined, {

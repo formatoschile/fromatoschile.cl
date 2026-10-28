@@ -69,9 +69,11 @@ export async function generateMetadata(props: {
   };
 }
 
-export default async function ProductPage(props: {
+interface ProductPageProps {
   params: Promise<{ handle: string }>;
-}) {
+}
+
+const ProductPage: React.FC<ProductPageProps> = async (props) => {
   const params = await props.params;
   const product = await getProduct(params.handle);
 
@@ -131,4 +133,6 @@ export default async function ProductPage(props: {
       </ProductProvider>
     </Suspense>
   );
-}
+};
+
+export default ProductPage;

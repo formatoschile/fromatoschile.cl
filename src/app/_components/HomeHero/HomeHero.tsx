@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 
-export const HomeHero = () => {
+export const HomeHero: React.FC = () => {
   return (
     <section className="mx-auto flex w-full max-w-[1666px] shrink-0 flex-col items-center justify-center px-4 pt-24 pb-8 lg:h-[615px] lg:px-12 lg:pt-20 lg:pb-0">
       <div className="relative aspect-[16/9] w-full overflow-hidden rounded-lg bg-neutral-300 sm:aspect-[21/9] lg:aspect-auto lg:h-full">

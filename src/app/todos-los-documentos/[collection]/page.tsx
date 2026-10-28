@@ -53,10 +53,12 @@ export async function generateMetadata(props: {
   };
 }
 
-export default async function CategoryPage(props: {
+interface CategoryPageProps {
   params: Promise<{ collection: string }>;
   searchParams?: Promise<{ q?: string; sort?: string }>;
-}) {
+}
+
+const CategoryPage: React.FC<CategoryPageProps> = async (props) => {
   const params = await props.params;
   const collection = await getCollection(params.collection);
 
@@ -92,4 +94,6 @@ export default async function CategoryPage(props: {
       </Suspense>
     </section>
   );
-}
+};
+
+export default CategoryPage;

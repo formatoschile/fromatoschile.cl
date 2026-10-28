@@ -8,7 +8,9 @@ interface CatalogResultsProps {
 }
 
 /** Reads `searchParams` — kept out of the static shell via the caller's `<Suspense>`. */
-export const CatalogResults = async ({ searchParams }: CatalogResultsProps) => {
+export const CatalogResults: React.FC<CatalogResultsProps> = async ({
+  searchParams,
+}) => {
   const params = await searchParams;
   const category = params?.categoria ?? null;
   const text = params?.q ?? null;

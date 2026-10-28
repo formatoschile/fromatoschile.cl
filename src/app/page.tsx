@@ -22,7 +22,7 @@ export const metadata = {
   },
 };
 
-export default function HomePage() {
+const HomePage: React.FC = () => {
   return (
     <div className="bg-primary text-ink min-h-dvh">
       <HomeHero />
@@ -44,4 +44,6 @@ export default function HomePage() {
       <LegalGuidance />
     </div>
   );
-}
+};
+
+export default HomePage;

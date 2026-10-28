@@ -1,4 +1,5 @@
 import { Grid } from "@/components/ui/Grid/Grid";
+import { GridItem } from "@/components/ui/Grid/GridItem";
 
 export const DocumentsCatalogSkeleton: React.FC = () => {
   return (
@@ -9,7 +10,7 @@ export const DocumentsCatalogSkeleton: React.FC = () => {
         {Array(8)
           .fill(0)
           .map((_, index) => (
-            <Grid.Item key={index} className="animate-pulse bg-neutral-100" />
+            <GridItem key={index} className="animate-pulse bg-neutral-100" />
           ))}
       </Grid>
     </>

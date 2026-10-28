@@ -1,17 +1,14 @@
 "use client";
 
-import { useFormStatus } from "react-dom";
 import { ShoppingCartIcon } from "@heroicons/react/24/outline";
 
-import { Button } from "@/components/ui/Button/Button";
 import { Price } from "@/components/ui/Price";
 import type { Cart } from "@/lib/shopify/types";
 
-import { redirectToCheckout } from "../actions";
 import type { UpdateType } from "../cartReducer";
 
 import { CartItem } from "./CartItem";
-import { useCheckoutRedirect } from "./useCheckoutRedirect";
+import { CheckoutForm } from "./CheckoutForm";
 
 interface CartModalContentProps {
   closeCart: () => void;
@@ -76,34 +73,5 @@ export const CartModalContent: React.FC<CartModalContentProps> = ({
 
       <CheckoutForm />
     </div>
-  );
-};
-
-const CheckoutForm = () => {
-  const { isRedirecting, handleCheckoutSubmit } = useCheckoutRedirect();
-
-  return (
-    <form action={redirectToCheckout} onSubmit={handleCheckoutSubmit}>
-      <CheckoutButton isRedirecting={isRedirecting} />
-    </form>
-  );
-};
-
-interface CheckoutButtonProps {
-  isRedirecting: boolean;
-}
-
-const CheckoutButton: React.FC<CheckoutButtonProps> = ({ isRedirecting }) => {
-  const { pending: isPending } = useFormStatus();
-
-  return (
-    <Button
-      className="w-full"
-      type="submit"
-      variant="ink"
-      isPending={isPending || isRedirecting}
-    >
-      Continuar con el pago
-    </Button>
   );
 };

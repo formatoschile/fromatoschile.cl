@@ -8,7 +8,7 @@ import { TemplateCarousel } from "./TemplateCarousel";
 const MAX_TEMPLATES = 6;
 
 /** Best-selling products as the homepage "featured templates" rail. */
-export const FeaturedTemplates = async () => {
+export const FeaturedTemplates: React.FC = async () => {
   const featured = await getProducts({
     sortKey: "BEST_SELLING",
     first: MAX_TEMPLATES,
