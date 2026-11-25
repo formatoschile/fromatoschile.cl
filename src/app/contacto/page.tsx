@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   },
 };
 
-const CONTACT_EMAIL = "contacto@formatos.cl";
+const CONTACT_EMAIL = "contacto@formatoschile.cl";
 
 const ContactPage: React.FC = () => {
   return (

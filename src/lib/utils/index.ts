@@ -1,7 +1,7 @@
 import type { Route } from "next";
 import type { ReadonlyURLSearchParams } from "next/navigation";
 
-const PRODUCTION_URL = "https://formatos.cl";
+const PRODUCTION_URL = "https://www.formatoschile.cl";
 
 export const baseUrl = getBaseUrl();
 
