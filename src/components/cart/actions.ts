@@ -6,6 +6,7 @@ import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 import {
+  CAMPAIGN_ATTRIBUTE_KEYS,
   cartAttributesFromLanding,
   LANDING_COOKIE_NAME,
   parseLanding,
@@ -20,6 +21,7 @@ import {
   getCart,
   removeFromCart,
   updateCart,
+  updateCartAttributes,
 } from "@/lib/shopify";
 import { CartUserError, isCartNotFoundError } from "@/lib/shopify/errors";
 import type { Cart } from "@/lib/shopify/types";
@@ -162,9 +164,8 @@ export async function buyNow(
 
   try {
     // A standalone cart for a direct "buy now" — keeps the user's main cart untouched.
-    const cart = await createCart({
+    const cart = await createCartWithCampaign({
       lines: [{ merchandiseId: selectedVariantId, quantity: 1 }],
-      attributes: await campaignAttributes(),
     });
     checkoutUrl = cart.checkoutUrl;
   } catch (e) {
@@ -192,6 +193,9 @@ export async function redirectToCheckout() {
     if (!cart) {
       throw new Error("Cart not found");
     }
+    // Last line of defence for the consent promise: a refusal whose
+    // forgetCampaign call never landed still leaves no campaign on the order.
+    await forgetCampaignIfRefused();
     checkoutUrl = cart.checkoutUrl;
   } catch (e) {
     Sentry.captureException(e, { tags: { action: "redirectToCheckout" } });
@@ -202,6 +206,20 @@ export async function redirectToCheckout() {
   // Must run outside try/catch — redirect() throws internally.
   // Checkout is an external Shopify URL, outside the typed-routes union.
   redirect(checkoutUrl as Route);
+}
+
+/**
+ * Called by the browser when the visitor withdraws advertising consent
+ * (src/components/Analytics/useCaptureLanding.ts): the campaign attributes
+ * already on their cart are blanked, so the order carries none. The
+ * `fc_landing` cookie itself is deleted in the browser by the refusal. A
+ * no-op without a cart, or if the consent cookie still grants advertising —
+ * the server trusts the cookie, not the caller.
+ */
+export async function forgetCampaign(): Promise<void> {
+  if (await isActionRateLimited("forgetCampaign")) return;
+
+  await forgetCampaignIfRefused();
 }
 
 // Server Actions are POST-callable directly by their action id, bypassing
@@ -249,8 +267,53 @@ async function campaignAttributes(): Promise<{ key: string; value: string }[]> {
   });
 }
 
+/**
+ * A cart carrying the campaign attributes — and, if Shopify rejects them for
+ * any reason, the same cart without: tracking must never block a purchase.
+ */
+async function createCartWithCampaign({
+  lines,
+}: {
+  lines?: { merchandiseId: string; quantity: number }[];
+} = {}): Promise<Cart> {
+  const attributes = await campaignAttributes();
+  if (attributes.length === 0) {
+    return createCart({ lines });
+  }
+
+  try {
+    return await createCart({ lines, attributes });
+  } catch (error) {
+    Sentry.captureException(error, {
+      level: "warning",
+      tags: { action: "createCartWithCampaign" },
+    });
+    return createCart({ lines });
+  }
+}
+
+/** Blanks the campaign attributes on the cart when advertising is refused. */
+async function forgetCampaignIfRefused(): Promise<void> {
+  const jar = await cookies();
+  if (!jar.get("cartId")?.value) return;
+  if (advertisingConsentFromCookie(jar.get(CONSENT_COOKIE_NAME)?.value)) {
+    return;
+  }
+
+  try {
+    await updateCartAttributes(
+      CAMPAIGN_ATTRIBUTE_KEYS.map((key) => ({ key, value: "" }))
+    );
+  } catch (error) {
+    Sentry.captureException(error, {
+      level: "warning",
+      tags: { action: "forgetCampaign" },
+    });
+  }
+}
+
 async function createCartAndSetCookie() {
-  const cart = await createCart({ attributes: await campaignAttributes() });
+  const cart = await createCartWithCampaign();
 
   if (!cart.id) {
     throw new Error("Cart created without an id");

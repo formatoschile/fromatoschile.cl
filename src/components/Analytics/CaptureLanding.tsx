@@ -1,16 +1,14 @@
 "use client";
 
-import { useEffect } from "react";
-
-import { captureLanding } from "@/lib/attribution/captureLanding";
+import { useCaptureLanding } from "./useCaptureLanding";
 
 /**
- * Records the visitor's landing page and campaign parameters once per full
- * page load, for the order's campaign attributes (src/lib/attribution).
+ * Records the visitor's landing page and campaign parameters for the order's
+ * campaign attributes, following advertising consent (useCaptureLanding).
  * Renders nothing. Mounted once, in the root layout.
  */
 export const CaptureLanding: React.FC = () => {
-  useEffect(captureLanding, []);
+  useCaptureLanding();
 
   return null;
 };

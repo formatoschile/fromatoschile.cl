@@ -249,6 +249,19 @@ export type ShopifyUpdateCartOperation = {
   };
 };
 
+export type ShopifyUpdateCartAttributesOperation = {
+  data: {
+    cartAttributesUpdate: {
+      cart: ShopifyCart;
+      userErrors: ShopifyUserError[];
+    };
+  };
+  variables: {
+    cartId: string;
+    attributes: { key: string; value: string }[];
+  };
+};
+
 export type ShopifyCollectionOperation = {
   data: {
     collection: ShopifyCollection;

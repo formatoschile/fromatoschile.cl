@@ -8,6 +8,7 @@ import {
   createCartMutation,
   editCartItemsMutation,
   removeFromCartMutation,
+  updateCartAttributesMutation,
 } from "./mutations/cart";
 import { getCartQuery } from "./queries/cart";
 import { reshapeCart } from "./reshape";
@@ -18,6 +19,7 @@ import type {
   ShopifyCartOperation,
   ShopifyCreateCartOperation,
   ShopifyRemoveFromCartOperation,
+  ShopifyUpdateCartAttributesOperation,
   ShopifyUpdateCartOperation,
   ShopifyUserError,
 } from "./types";
@@ -92,6 +94,27 @@ export async function updateCart(
   });
 
   return unwrapCartPayload(res.body.data.cartLinesUpdate);
+}
+
+/**
+ * Sets cart-level attributes on the current cart. Shopify does not document
+ * whether this replaces the whole list or upserts by key, so to remove a
+ * value pass its key with an empty value — that holds under either reading.
+ */
+export async function updateCartAttributes(
+  attributes: { key: string; value: string }[]
+): Promise<Cart> {
+  const cartId = await getCartId();
+
+  const res = await shopifyFetch<ShopifyUpdateCartAttributesOperation>({
+    query: updateCartAttributesMutation,
+    variables: {
+      cartId,
+      attributes,
+    },
+  });
+
+  return unwrapCartPayload(res.body.data.cartAttributesUpdate);
 }
 
 function unwrapCartPayload({

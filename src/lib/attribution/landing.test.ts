@@ -62,10 +62,30 @@ describe("landingFromLocation", () => {
     "https://www.formatoschile.cl/catalogo",
     "https://checkout.formatoschile.cl/checkouts/cn/abc",
     "https://formatoschile.cl/",
+    "https://shop.app/checkout/123",
+    "https://formatos-chile.myshopify.com/checkouts/abc",
     "",
     "not a url",
-  ])("drops a same-site or unusable referrer: %p", (referrer) => {
+  ])("drops a same-site, checkout or unusable referrer: %p", (referrer) => {
     expect(landingAt({ path: "/", referrer })).not.toHaveProperty("referrer");
+  });
+
+  test("on a preview host, another *.vercel.app is an outside referrer", () => {
+    const landing = landingFromLocation({
+      href: "https://formatos-git-feature.vercel.app/",
+      referrer: "https://unrelated-project.vercel.app/page",
+      now: NOW,
+    });
+
+    expect(landing?.referrer).toBe("https://unrelated-project.vercel.app/page");
+  });
+
+  test("caps each captured value at 255 code points", () => {
+    const landing = landingAt({
+      path: `/?utm_content=${"x".repeat(1000)}`,
+    });
+
+    expect(landing.params.utm_content).toHaveLength(255);
   });
 
   test("returns null for an unparseable URL", () => {
@@ -183,7 +203,55 @@ describe("cartAttributesFromLanding", () => {
     expect(attributes.map(({ key }) => key)).not.toContain("_utm_term");
   });
 
+  test("never splits an emoji when capping", () => {
+    const parsed = parseLanding(
+      JSON.stringify({
+        landing: "/",
+        landedAt: "2026-11-27T15:00:00.000Z",
+        params: { utm_campaign: "😀".repeat(300) },
+      })
+    );
+    const value =
+      cartAttributesFromLanding({ landing: parsed }).find(
+        ({ key }) => key === "_utm_campaign"
+      )?.value ?? "";
+
+    expect(Array.from(value)).toHaveLength(255);
+    expect(value).toBe("😀".repeat(255));
+  });
+
   test("nothing stored, nothing attached", () => {
     expect(cartAttributesFromLanding({ landing: null })).toEqual([]);
+  });
+});
+
+describe("serializeLanding", () => {
+  test("shrinks values until the encoded cookie fits the browser limit", () => {
+    const huge = "ñ😀".repeat(255);
+    const landing: LandingContext = {
+      landing: `/${huge}`,
+      referrer: `https://example.com/${huge}`,
+      landedAt: "2026-11-27T15:00:00.000Z",
+      params: {
+        utm_source: huge,
+        utm_medium: huge,
+        utm_campaign: huge,
+        utm_term: huge,
+        utm_content: huge,
+        gclid: huge,
+        fbclid: huge,
+      },
+    };
+
+    const serialized = serializeLanding(landing);
+
+    expect(encodeURIComponent(serialized).length).toBeLessThanOrEqual(3800);
+    expect(parseLanding(serialized)?.params.utm_source).toBeTruthy();
+  });
+
+  test("leaves a normal landing untouched", () => {
+    const landing = landingAt({ path: "/?utm_source=google&gclid=abc" });
+
+    expect(parseLanding(serializeLanding(landing))).toEqual(landing);
   });
 });

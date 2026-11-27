@@ -20,7 +20,13 @@
  * Kept for LANDING_MAX_AGE_SECONDS, and only with advertising consent: the
  * capture checks it in the browser, the server checks it again before
  * attaching anything, and a refusal deletes the cookie with the other
- * advertising cookies (src/lib/consent/googleCookies.ts).
+ * advertising cookies (src/lib/consent/googleCookies.ts) and blanks the
+ * attributes already on the cart (forgetCampaign, src/components/cart).
+ *
+ * Values are capped at MAX_VALUE_LENGTH code points when captured and again
+ * when attached (never splitting an emoji), and the cookie is shrunk to fit
+ * the browser's ~4 KB limit, so a long URL can never silently fail to write
+ * and leave an older campaign in place.
  */
 
 /** The browser cookie holding the stored landing (JSON). */
@@ -29,8 +35,28 @@ export const LANDING_COOKIE_NAME = "fc_landing";
 /** 30 days: a typical consideration window, and the cart cookie's lifetime. */
 export const LANDING_MAX_AGE_SECONDS = 60 * 60 * 24 * 30;
 
-/** Shopify caps attribute values; ours are short anyway. */
+/** Per-value cap, in code points: short enough for any order attribute. */
 const MAX_VALUE_LENGTH = 255;
+
+/**
+ * Longest URI-encoded cookie value we write: under the browser's 4096-byte
+ * limit for name + value + attributes, with room to spare.
+ */
+const MAX_COOKIE_VALUE_LENGTH = 3800;
+
+/** Caps tried, longest first, until the encoded cookie fits. */
+const COOKIE_VALUE_CAPS = [MAX_VALUE_LENGTH, 100, 40, 20];
+
+/**
+ * Hosts that are part of the purchase journey, not a source: the site and its
+ * checkout subdomain, and Shopify's own checkout and Shop Pay hosts. The
+ * current host (localhost, a preview URL) is added at runtime.
+ */
+const INTERNAL_HOST_SUFFIXES = [
+  "formatoschile.cl",
+  "shop.app",
+  "myshopify.com",
+];
 
 /** URL parameters that mark a campaign landing, in attribute order. */
 const CAMPAIGN_PARAMS = [
@@ -46,6 +72,14 @@ const CAMPAIGN_PARAMS = [
 ] as const;
 
 type CampaignParam = (typeof CAMPAIGN_PARAMS)[number];
+
+/** Every attribute key this module writes, for blanking them on refusal. */
+export const CAMPAIGN_ATTRIBUTE_KEYS = [
+  "_landing",
+  "_referrer",
+  "_landed_at",
+  ...CAMPAIGN_PARAMS.map((name) => `_${name}`),
+];
 
 export interface LandingContext {
   /** Path of the landing page, without query string or hash. */
@@ -78,14 +112,16 @@ export function landingFromLocation({
 
   const params: LandingContext["params"] = {};
   for (const name of CAMPAIGN_PARAMS) {
-    const value = url.searchParams.get(name);
+    const value = cleanValue(url.searchParams.get(name) ?? undefined);
     if (value) params[name] = value;
   }
 
-  const external = externalReferrer({ referrer, host: url.hostname });
+  const external = cleanValue(
+    externalReferrer({ referrer, host: url.hostname })
+  );
 
   return {
-    landing: url.pathname,
+    landing: cleanValue(url.pathname) || "/",
     ...(external ? { referrer: external } : {}),
     landedAt: now.toISOString(),
     params,
@@ -114,8 +150,21 @@ export function mergeLanding({
   return incoming;
 }
 
+/**
+ * The cookie value for a landing: JSON whose URI-encoded form fits
+ * MAX_COOKIE_VALUE_LENGTH. Values are cut to shorter caps until it does —
+ * over the limit the browser would drop the write without a trace, leaving
+ * the previous campaign credited.
+ */
 export function serializeLanding(landing: LandingContext): string {
-  return JSON.stringify(landing);
+  let serialized = JSON.stringify(landing);
+  for (const cap of COOKIE_VALUE_CAPS) {
+    serialized = JSON.stringify(capLanding({ landing, cap }));
+    if (encodeURIComponent(serialized).length <= MAX_COOKIE_VALUE_LENGTH) {
+      return serialized;
+    }
+  }
+  return serialized;
 }
 
 /**
@@ -180,21 +229,51 @@ export function cartAttributesFromLanding({
   });
 }
 
-function cleanValue(value: string | undefined): string {
+/**
+ * Control characters stripped, trimmed, and cut to `cap` code points —
+ * `Array.from` iterates by code point, so an emoji is never split into a
+ * lone surrogate that Shopify could reject.
+ */
+function cleanValue(
+  value: string | undefined,
+  cap: number = MAX_VALUE_LENGTH
+): string {
   if (!value) return "";
-  return (
-    value
-      // oxlint-disable-next-line no-control-regex -- stripping control characters is the point
-      .replace(/[\u0000-\u001f\u007f]/g, "")
-      .trim()
-      .slice(0, MAX_VALUE_LENGTH)
-  );
+  const stripped = value
+    // oxlint-disable-next-line no-control-regex -- stripping control characters is the point
+    .replace(/[\u0000-\u001f\u007f]/g, "")
+    .trim();
+  return Array.from(stripped).slice(0, cap).join("");
+}
+
+/** The landing with every value cut to `cap` code points. */
+function capLanding({
+  landing,
+  cap,
+}: {
+  landing: LandingContext;
+  cap: number;
+}): LandingContext {
+  const params: LandingContext["params"] = {};
+  for (const name of CAMPAIGN_PARAMS) {
+    const value = cleanValue(landing.params[name], cap);
+    if (value) params[name] = value;
+  }
+  const referrer = cleanValue(landing.referrer, cap);
+
+  return {
+    landing: cleanValue(landing.landing, cap) || "/",
+    ...(referrer ? { referrer } : {}),
+    landedAt: landing.landedAt,
+    params,
+  };
 }
 
 /**
  * A referrer from another site, as origin + path (its query string can carry
- * search terms or tokens). Same-site referrers — the site itself, the
- * checkout subdomain — are not a source and return undefined.
+ * search terms or tokens). The current host and INTERNAL_HOST_SUFFIXES — the
+ * site, its checkout, Shopify's checkout hosts — are not a source and return
+ * undefined, so a visitor coming back from checkout is not credited to it.
  */
 function externalReferrer({
   referrer,
@@ -205,20 +284,25 @@ function externalReferrer({
 }): string | undefined {
   const url = parseUrl(referrer);
   if (!url) return undefined;
-
-  const site = registrableDomain(host);
-  const isSameSite =
-    url.hostname === host ||
-    url.hostname === site ||
-    url.hostname.endsWith(`.${site}`);
-  if (isSameSite) return undefined;
+  if (isInternalHost({ hostname: url.hostname, currentHost: host })) {
+    return undefined;
+  }
 
   return url.origin + url.pathname;
 }
 
-/** `www.formatoschile.cl` → `formatoschile.cl`; `localhost` stays. */
-function registrableDomain(host: string): string {
-  return host.split(".").slice(-2).join(".");
+function isInternalHost({
+  hostname,
+  currentHost,
+}: {
+  hostname: string;
+  currentHost: string;
+}): boolean {
+  if (hostname === currentHost) return true;
+
+  return INTERNAL_HOST_SUFFIXES.some(
+    (suffix) => hostname === suffix || hostname.endsWith(`.${suffix}`)
+  );
 }
 
 function parseUrl(value: string): URL | null {
