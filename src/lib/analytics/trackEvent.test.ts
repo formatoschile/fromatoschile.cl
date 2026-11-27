@@ -22,7 +22,11 @@ const ITEM: AnalyticsItem = {
 function setWindow(pathname: string): unknown[] {
   const dataLayer: unknown[] = [];
   Object.assign(globalThis, {
-    window: { dataLayer, location: { pathname }, __fcConsentDefaults: 1 },
+    window: {
+      dataLayer,
+      location: { pathname, href: `https://www.formatoschile.cl${pathname}` },
+      __fcConsentDefaults: 1,
+    },
   });
   return dataLayer;
 }
@@ -48,6 +52,7 @@ describe("trackEvent", () => {
       {
         event: "fc_checkout_click",
         page_type: "product",
+        page_location: "https://www.formatoschile.cl/product/contrato",
         location: "card",
         route: "buy_now",
         preview_page: undefined,

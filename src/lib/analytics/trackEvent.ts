@@ -46,6 +46,13 @@ const LABEL_KEYS = [
  *   requirement), so items from a previous event can't merge into this one;
  *   every other push sets `ecommerce: null`, so it can't inherit them either.
  *
+ * Every push also carries `page_location`, the URL at the moment of the
+ * event. On a client-side navigation the browser URL has already changed
+ * when a product page's events fire, but GA4 only learns of the new page
+ * from its history-change `page_view`, a moment later — so without this,
+ * GA4 credits `view_item` and friends to the page the visitor came from. The
+ * GA4 event tags send it as `page_location`, overriding GA4's stale value.
+ *
  * Safe to call anywhere: a no-op on the server.
  */
 export function trackEvent({
@@ -76,6 +83,7 @@ export function trackEvent({
   window.dataLayer.push({
     event,
     page_type: getPageType(window.location.pathname),
+    page_location: window.location.href,
     ...resetLabels,
     ...labels,
     ecommerce: ecommerce ?? null,

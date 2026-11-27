@@ -27,6 +27,7 @@ if it did, every checkout would count twice (tracking plan, section 2).
 | --- | --- | --- |
 | `event` | see below | Constants in `ANALYTICS_EVENTS` |
 | `page_type` | `home`, `catalog`, `category`, `product`, `faq`, `contact`, `legal`, `other` | From the URL path, `getPageType` |
+| `page_location` | Full URL at the moment of the push | Sent by both GA4 event tags as `page_location`. Needed because on a client-side navigation GA4 learns of the new page only from its history-change `page_view`, which arrives *after* the new page's first events — without it, `view_item` etc. would be credited to the previous page. The order (events before that `page_view`) is expected and harmless |
 | `location` | `card`, `featured_card`, `template_card`, `related_card`, `product_page`, `cart`, `contact_page` | Where the interaction happened |
 | `route` | `cart`, `buy_now` | Checkout events only |
 | `preview_page` | 2, 3, … | `fc_preview_page` only |
