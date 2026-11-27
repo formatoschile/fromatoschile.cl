@@ -19,14 +19,23 @@
  *   - session_id comes from the `_ga_<stream>` cookie, so checkout lands in the
  *     visitor's current session, not a new one. Both IDs are set on the
  *     `config` call, where gtag treats them as fields (`cid`, `sid`), not as
- *     event parameters (`ep.session_id`). Verify `sid=` in the collect request
- *     during the test order;
+ *     event parameters (`ep.session_id`) — verified live in the collect
+ *     request, 27 November 2026;
  *   - a cookie that cannot be read counts as missing: events still go out;
  *   - gtag here stores nothing (client_storage: none) — the sandbox is another
  *     origin and would otherwise mint its own, different client ID.
  *
  * The sandbox reports its own URL to gtag, so every event carries the real
- * top-frame page_location from the event context.
+ * top-frame page_location from the event context, cleaned: no query string
+ * or hash (session tokens `_r`, `_s`, `_y`), and the checkout / order ID in
+ * the path replaced by `(token)`. So no identifier reaches GA4, and every
+ * checkout reports as one page, every thank-you page as another.
+ *
+ * The page at load, cleaned the same way, also goes on the `config` call:
+ * gtag uses it for hits that set no page_location of their own — notably
+ * the page_view GA4's enhanced measurement sends when the sandbox mirrors
+ * the checkout URL — instead of the sandbox's own address. It stays the
+ * page at load; our three events always set their own.
  *
  * Items use the same fields as the site (src/lib/analytics/items.ts):
  * item_id = numeric variant ID, item_name, item_category = product type,
@@ -137,6 +146,9 @@ async function configure() {
     send_page_view: false,
     client_storage: "none",
   };
+  const page = initialPage();
+  if (page.location) config.page_location = page.location;
+  if (page.referrer) config.page_referrer = page.referrer;
   const clientId = clientIdFrom({ cookie: ga });
   if (clientId) config.client_id = clientId;
   const sessionId = sessionIdFrom({ cookie: gaSession });
@@ -165,8 +177,8 @@ async function send({ event, name, onceKey, extra }) {
       items: (checkout.lineItems || []).map(function (line) {
         return toItem({ line });
       }),
-      page_location: event.context.document.location.href,
-      page_referrer: event.context.document.referrer,
+      page_location: cleanUrl({ url: event.context.document.location.href }),
+      page_referrer: cleanUrl({ url: event.context.document.referrer }),
     },
     extra || {}
   );
@@ -237,6 +249,35 @@ async function markSent({ key }) {
   } catch {
     // Best effort: a failed mark risks one duplicate on a later load.
   }
+}
+
+/** The top-frame page at load, from Shopify's `init` context, cleaned. */
+function initialPage() {
+  const doc = init && init.context && init.context.document;
+  if (!doc) return {};
+  return {
+    location: cleanUrl({ url: doc.location && doc.location.href }),
+    referrer: cleanUrl({ url: doc.referrer }),
+  };
+}
+
+/**
+ * Origin and path only — no query string or hash — with checkout and order
+ * IDs in the path masked:
+ * `/checkouts/cn/hWNJ…/thank-you?_r=…` → `/checkouts/cn/(token)/thank-you`.
+ */
+function cleanUrl({ url }) {
+  if (!url) return undefined;
+  let base;
+  try {
+    const parsed = new URL(url);
+    base = parsed.origin + parsed.pathname;
+  } catch {
+    base = String(url).split(/[?#]/)[0];
+  }
+  return base
+    .replace(/\/checkouts\/([a-z]{1,2}\/)?[^/]+/, "/checkouts/$1(token)")
+    .replace(/\/orders\/[^/]+/, "/orders/(token)");
 }
 
 /** `gid://shopify/ProductVariant/123` → "123"; "123" stays "123". */

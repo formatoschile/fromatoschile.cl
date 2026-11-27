@@ -87,7 +87,15 @@ function runPixel({
       },
     },
   };
-  const init = { customerPrivacy: privacy };
+  const init = {
+    customerPrivacy: privacy,
+    context: {
+      document: {
+        location: { href: CHECKOUT_URL + "?_r=secret&_s=abc&_y=def" },
+        referrer: "https://www.formatoschile.cl/",
+      },
+    },
+  };
   const customerPrivacy = {
     subscribe: (_name: string, handler: Handler) => {
       consentHandler = handler;
@@ -133,7 +141,7 @@ function checkoutEvent({
   return {
     context: {
       document: {
-        location: { href: "https://checkout.formatoschile.cl/checkouts/abc" },
+        location: { href: CHECKOUT_URL + "?_r=secret&_s=abc#step" },
         referrer: "https://www.formatoschile.cl/product/contrato",
       },
     },
@@ -169,6 +177,11 @@ function configCall(calls: unknown[][]) {
   return calls.find(([kind]) => kind === "config");
 }
 
+/** A real checkout URL's shape: the ID in the path, tokens in the query. */
+const CHECKOUT_URL = "https://checkout.formatoschile.cl/checkouts/cn/hWNJdPqX/es-cl";
+const CLEAN_CHECKOUT_URL =
+  "https://checkout.formatoschile.cl/checkouts/cn/(token)/es-cl";
+
 const COOKIES = {
   _ga: "GA1.1.123456789.1700000000",
   _ga_JTP6VGESGM: "GS2.1.s1764240000$o3$g1$t1764240100$j60$l0$h0",
@@ -185,6 +198,8 @@ describe("GA4 checkout pixel", () => {
       {
         send_page_view: false,
         client_storage: "none",
+        page_location: CLEAN_CHECKOUT_URL,
+        page_referrer: "https://www.formatoschile.cl/",
         client_id: "123456789.1700000000",
         session_id: "1764240000",
       },
@@ -204,7 +219,7 @@ describe("GA4 checkout pixel", () => {
       send_to: "G-JTP6VGESGM",
       currency: "CLP",
       value: 14990,
-      page_location: "https://checkout.formatoschile.cl/checkouts/abc",
+      page_location: CLEAN_CHECKOUT_URL,
       page_referrer: "https://www.formatoschile.cl/product/contrato",
       items: [
         {
@@ -333,6 +348,25 @@ describe("GA4 checkout pixel", () => {
     expect(
       eventsNamed({ calls: secondLoad.calls, name: "begin_checkout" })
     ).toHaveLength(1);
+  });
+
+  test("thank-you page: no checkout ID or tokens in location or referrer", async () => {
+    const pixel = runPixel({ cookies: COOKIES });
+    const completed = checkoutEvent({ orderId: "gid://shopify/Order/5551" });
+    completed.context.document = {
+      location: {
+        href: "https://checkout.formatoschile.cl/checkouts/cn/hWNJdPqX/thank-you?_r=secret",
+      },
+      referrer: CHECKOUT_URL + "?_r=secret&_s=abc&_y=def",
+    };
+    await pixel.emit("checkout_completed", completed);
+
+    const [[, , params]] = eventsNamed({ calls: pixel.calls, name: "purchase" });
+    expect(params).toMatchObject({
+      page_location:
+        "https://checkout.formatoschile.cl/checkouts/cn/(token)/thank-you",
+      page_referrer: CLEAN_CHECKOUT_URL,
+    });
   });
 
   test("without GA cookies it still sends, with no client or session ID", async () => {

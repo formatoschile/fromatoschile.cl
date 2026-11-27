@@ -39,11 +39,16 @@ Analytics; not data sale). Not through Tag Manager — they go straight to
 
 All three carry `currency`, `value` (total paid, IVA included), `items` in the
 same format as the site's events, the real `page_location` / `page_referrer`
-(the sandbox would report its own URL), and — so checkout stays in the
-visitor's journey — the `client_id` from the site's `_ga` cookie and the
-`session_id` from `_ga_JTP6VGESGM` (both set on gtag's `config`, so they go
-out as `cid` / `sid`). Without those cookies, or if they cannot be read, the
+(the sandbox would report its own URL), and the `client_id` and
+`session_id` from the site's `_ga` and `_ga_JTP6VGESGM` cookies, so checkout
+stays in the visitor's journey. Both IDs are set on gtag's `config` and go out
+as `cid` / `sid` (verified live, 27 November 2026). Without those cookies, or if they cannot be read, the
 events still go out, as a new user.
+
+URLs are sent without query string or hash, and with the checkout or order ID
+in the path replaced by `(token)`: checkout URLs carry session tokens, and
+this way every checkout reports as one page
+(`/checkouts/cn/(token)/es-cl`) and every thank-you page as another.
 
 ## Fields on every push
 
