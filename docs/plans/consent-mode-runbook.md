@@ -173,5 +173,5 @@ flag on in a preview, so the switch is proven before it is needed.
 
 ## Still to decide
 
-- **The date to switch the banner on**, ahead of Ley 21.719 (15 October 2027 if the postponement is published, otherwise 1 December 2026).
+- **The date to switch the banner on**, ahead of Ley 21.719's entry into force on 15 October 2027 (postponed by Ley 21.855, published 23 November 2026).
 - **Policy pages** — the client writes them from `docs/cookie-inventory.md`, which must list the site's cookies, GTM/GA4/Meta, and Shopify checkout's own.
