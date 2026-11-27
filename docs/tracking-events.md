@@ -21,7 +21,27 @@ every page the dataLayer starts with the Consent Mode default
 the Facebook & Instagram and Google & YouTube apps. The site never sends them;
 if it did, every checkout would count twice (tracking plan, section 2).
 
-## Fields on every push
+## Checkout events (Shopify custom pixel)
+
+Sent from Shopify's checkout by `shopify/pixels/ga4-checkout.js`, pasted into
+Shopify admin → Settings → Customer events ("GA4 checkout"; permission:
+Analytics; not data sale). Not through Tag Manager — they go straight to
+`G-JTP6VGESGM` with gtag.
+
+| GA4 event | Shopify event | Sent | Extra fields |
+| --- | --- | --- | --- |
+| `begin_checkout` | `checkout_started` | Once per checkout (Shopify fires it on every entry; deduplicated by checkout token) | — |
+| `add_payment_info` | `payment_info_submitted` | Once per checkout | — |
+| `purchase` | `checkout_completed` | Once per order (deduplicated by order ID) | `transaction_id` (numeric order ID), `tax`, `coupon` |
+
+All three carry `currency`, `value` (total paid, IVA included), `items` in the
+same format as the site's events, the real `page_location` / `page_referrer`
+(the sandbox would report its own URL), and — so checkout stays in the
+visitor's journey — the `client_id` from the site's `_ga` cookie and the
+`session_id` from `_ga_JTP6VGESGM`. Without those cookies the events still go
+out, as a new user.
+
+
 
 | Field | Values | Notes |
 | --- | --- | --- |

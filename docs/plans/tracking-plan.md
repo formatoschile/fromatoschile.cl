@@ -465,6 +465,8 @@ then refunded. Check in order:
 
 - [ ] F&I app on the same Pixel; Purchase deduplicated, value and IDs correct
 - [ ] GA4 route chosen (app or custom pixel), reason recorded here
+- [x] Custom pixel written and tested: `shopify/pixels/ga4-checkout.js` (+ `ga4-checkout.test.ts`), 27 November 2026
+- [ ] Pixel pasted into Shopify admin (Customer events, permission Analytics, not data sale) and connected
 - [ ] Purchase in the same session as the site's events
 - [ ] `item_id` aligned across site, app and pixel
 - [ ] Consent honoured on checkout, both ways
