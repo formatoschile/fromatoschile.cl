@@ -97,7 +97,7 @@ export const DocumentsCatalog: React.FC<DocumentsCatalogProps> = ({
           onClick={handleCategoryClick}
           aria-pressed={!selectedCategory}
           className={classNames(
-            "cursor-pointer text-xs uppercase tracking-widest transition-colors hover:text-ink",
+            "cursor-pointer text-sm uppercase md:text-xs tracking-widest transition-colors hover:text-ink",
             {
               "font-semibold text-ink underline underline-offset-4":
                 !selectedCategory,
@@ -115,7 +115,7 @@ export const DocumentsCatalog: React.FC<DocumentsCatalogProps> = ({
             onClick={handleCategoryClick}
             aria-pressed={selectedCategory === category.title}
             className={classNames(
-              "cursor-pointer text-xs uppercase tracking-widest transition-colors hover:text-ink",
+              "cursor-pointer text-sm uppercase md:text-xs tracking-widest transition-colors hover:text-ink",
               {
                 "font-semibold text-ink underline underline-offset-4":
                   selectedCategory === category.title,

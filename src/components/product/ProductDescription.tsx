@@ -38,7 +38,7 @@ export const ProductDescription: React.FC<ProductDescriptionProps> = ({
         />
 
         {sku ? (
-          <p className="mt-1 text-xs text-neutral-500">SKU {sku}</p>
+          <p className="mt-1 text-sm text-neutral-500 md:text-xs">SKU {sku}</p>
         ) : null}
 
         <VariantSelector
@@ -53,7 +53,7 @@ export const ProductDescription: React.FC<ProductDescriptionProps> = ({
             {product.tags.map((tag) => (
               <li
                 key={tag}
-                className="rounded-full border border-neutral-300 px-3 py-1.5 text-xs text-neutral-600"
+                className="rounded-full border border-neutral-300 px-3 py-1.5 text-sm text-neutral-600 md:text-xs"
               >
                 {tag}
               </li>
