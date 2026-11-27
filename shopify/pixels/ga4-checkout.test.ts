@@ -270,6 +270,19 @@ describe("GA4 checkout pixel", () => {
     expect(purchases[0][2]).toHaveProperty("transaction_id", "tok-9");
   });
 
+  test("a later load with the order ID does not send the purchase again", async () => {
+    const pixel = runPixel({ cookies: COOKIES });
+    await pixel.emit("checkout_completed", checkoutEvent({ orderId: null }));
+    await pixel.emit(
+      "checkout_completed",
+      checkoutEvent({ orderId: "gid://shopify/Order/5551" })
+    );
+
+    expect(eventsNamed({ calls: pixel.calls, name: "purchase" })).toHaveLength(
+      1
+    );
+  });
+
   test("without GA cookies it still sends, with no client or session ID", async () => {
     const pixel = runPixel();
     await pixel.emit("payment_info_submitted", checkoutEvent());

@@ -34,10 +34,10 @@
  *
  * value = total paid, IVA included (prices include IVA since 27 Nov 2026).
  *
- * Each event is sent once: per checkout token for begin_checkout and
- * add_payment_info, per order ID (or the checkout token, when Shopify gives
- * no order ID) for purchase. The key is claimed before any await, so two
- * copies arriving together cannot both go out.
+ * Each event is sent once per checkout token (purchase falls back to the
+ * order ID if there is no token). The key is claimed in memory before any
+ * await, so two copies arriving together cannot both go out, and stored only
+ * after gtag has the event, so an interrupted send is retried on next load.
  *
  * The Google & YouTube app, if installed later for Merchant Center, must
  * have its GA4 measurement off, or every purchase counts twice.
@@ -88,14 +88,19 @@ analytics.subscribe("checkout_completed", function (event) {
   const checkout = event.data.checkout;
   const order = checkout.order;
   const orderId = order && order.id ? numericId(order.id) : null;
-  // Shopify documents an order ID on checkout_completed; if it is ever
-  // missing, the checkout token still identifies this purchase.
-  const purchaseId = orderId || checkout.token || null;
+  // Dedupe on the checkout token: it is the same on every load of the
+  // thank-you page, whether or not that load carries the order ID.
+  const dedupeId = checkout.token || orderId;
   send({
     event,
     name: "purchase",
-    onceKey: purchaseId ? "purchase:" + purchaseId : null,
-    extra: purchaseParams({ checkout, transactionId: purchaseId }),
+    onceKey: dedupeId ? "purchase:" + dedupeId : null,
+    // Shopify documents an order ID on checkout_completed; if it is ever
+    // missing, the token still gives GA4 something to dedupe on.
+    extra: purchaseParams({
+      checkout,
+      transactionId: orderId || checkout.token || null,
+    }),
   });
 });
 
@@ -148,7 +153,6 @@ async function send({ event, name, onceKey, extra }) {
     if (claimedKeys.has(onceKey)) return;
     claimedKeys.add(onceKey);
     if (await wasSent({ key: onceKey })) return;
-    await markSent({ key: onceKey });
   }
 
   await ready;
@@ -168,6 +172,9 @@ async function send({ event, name, onceKey, extra }) {
   );
 
   gtag("event", name, params);
+  // Recorded only once handed to gtag: leaving before this point loses
+  // nothing, and the next load retries.
+  if (onceKey) await markSent({ key: onceKey });
 }
 
 function purchaseParams({ checkout, transactionId }) {
@@ -228,7 +235,7 @@ async function markSent({ key }) {
   try {
     await browser.localStorage.setItem(SENT_KEY_PREFIX + key, "1");
   } catch {
-    // Best effort: a missed mark risks one duplicate, never a lost event.
+    // Best effort: a failed mark risks one duplicate on a later load.
   }
 }
 

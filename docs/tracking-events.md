@@ -35,7 +35,7 @@ Analytics; not data sale). Not through Tag Manager — they go straight to
 | --- | --- | --- | --- |
 | `begin_checkout` | `checkout_started` | Once per checkout (Shopify fires it on every entry; deduplicated by checkout token) | — |
 | `add_payment_info` | `payment_info_submitted` | Once per checkout | — |
-| `purchase` | `checkout_completed` | Once per order (deduplicated by order ID, or checkout token if Shopify gives none) | `transaction_id` (numeric order ID), `tax`, `coupon` |
+| `purchase` | `checkout_completed` | Once per order (deduplicated by checkout token, stable across thank-you page loads) | `transaction_id` (numeric order ID), `tax`, `coupon` |
 
 All three carry `currency`, `value` (total paid, IVA included), `items` in the
 same format as the site's events, the real `page_location` / `page_referrer`
@@ -46,8 +46,6 @@ out as `cid` / `sid`). Without those cookies, or if they cannot be read, the
 events still go out, as a new user.
 
 ## Fields on every push
-
-
 
 | Field | Values | Notes |
 | --- | --- | --- |
