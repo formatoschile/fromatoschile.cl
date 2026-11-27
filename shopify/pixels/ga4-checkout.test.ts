@@ -1,8 +1,8 @@
 /// <reference types="bun" />
 
+import { describe, expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { describe, expect, test } from "bun:test";
 
 /**
  * Runs the pixel source the way Shopify's lax sandbox does — `analytics`,
@@ -18,6 +18,13 @@ interface PixelOptions {
   isCookieReadFailing?: boolean;
   /** Leave `api` undefined, with only a bare `customerPrivacy` global. */
   hasApiGlobal?: boolean;
+  /**
+   * The sandbox's localStorage. Pass the same map to two pixels to simulate
+   * two page loads of one visitor.
+   */
+  storage?: Map<string, string>;
+  /** Make browser.localStorage.setItem reject. */
+  isStorageWriteFailing?: boolean;
 }
 
 interface Harness {
@@ -49,10 +56,11 @@ function runPixel({
   privacy = { analyticsProcessingAllowed: true, marketingAllowed: true },
   isCookieReadFailing = false,
   hasApiGlobal = true,
+  storage = new Map<string, string>(),
+  isStorageWriteFailing = false,
 }: PixelOptions = {}): Harness {
   const handlers: Record<string, Handler> = {};
   let consentHandler: Handler | undefined;
-  const storage = new Map<string, string>();
   const fakeWindow: { dataLayer?: unknown[] } = {};
   const fakeDocument = {
     createElement: () => ({ setAttribute: () => {} }),
@@ -74,6 +82,7 @@ function runPixel({
     localStorage: {
       getItem: async (key: string) => storage.get(key) ?? null,
       setItem: async (key: string, value: string) => {
+        if (isStorageWriteFailing) throw new Error("storage write failed");
         storage.set(key, value);
       },
     },
@@ -271,16 +280,59 @@ describe("GA4 checkout pixel", () => {
   });
 
   test("a later load with the order ID does not send the purchase again", async () => {
-    const pixel = runPixel({ cookies: COOKIES });
-    await pixel.emit("checkout_completed", checkoutEvent({ orderId: null }));
-    await pixel.emit(
+    const storage = new Map<string, string>();
+    const firstLoad = runPixel({ cookies: COOKIES, storage });
+    await firstLoad.emit(
+      "checkout_completed",
+      checkoutEvent({ orderId: null })
+    );
+    const secondLoad = runPixel({ cookies: COOKIES, storage });
+    await secondLoad.emit(
       "checkout_completed",
       checkoutEvent({ orderId: "gid://shopify/Order/5551" })
     );
 
-    expect(eventsNamed({ calls: pixel.calls, name: "purchase" })).toHaveLength(
-      1
-    );
+    expect(
+      eventsNamed({ calls: firstLoad.calls, name: "purchase" })
+    ).toHaveLength(1);
+    expect(
+      eventsNamed({ calls: secondLoad.calls, name: "purchase" })
+    ).toHaveLength(0);
+  });
+
+  test("reloading the thank-you page does not send the purchase again", async () => {
+    const storage = new Map<string, string>();
+    const completed = checkoutEvent({ orderId: "gid://shopify/Order/5551" });
+    const firstLoad = runPixel({ cookies: COOKIES, storage });
+    await firstLoad.emit("checkout_completed", completed);
+    const secondLoad = runPixel({ cookies: COOKIES, storage });
+    await secondLoad.emit("checkout_completed", completed);
+
+    expect(
+      eventsNamed({ calls: firstLoad.calls, name: "purchase" })
+    ).toHaveLength(1);
+    expect(
+      eventsNamed({ calls: secondLoad.calls, name: "purchase" })
+    ).toHaveLength(0);
+  });
+
+  test("an event whose send was never recorded goes out on the next load", async () => {
+    const storage = new Map<string, string>();
+    const firstLoad = runPixel({
+      cookies: COOKIES,
+      storage,
+      isStorageWriteFailing: true,
+    });
+    await firstLoad.emit("checkout_started", checkoutEvent());
+    const secondLoad = runPixel({ cookies: COOKIES, storage });
+    await secondLoad.emit("checkout_started", checkoutEvent());
+
+    expect(
+      eventsNamed({ calls: firstLoad.calls, name: "begin_checkout" })
+    ).toHaveLength(1);
+    expect(
+      eventsNamed({ calls: secondLoad.calls, name: "begin_checkout" })
+    ).toHaveLength(1);
   });
 
   test("without GA cookies it still sends, with no client or session ID", async () => {
