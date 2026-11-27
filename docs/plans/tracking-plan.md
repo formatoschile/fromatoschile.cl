@@ -470,9 +470,9 @@ then refunded. Check in order:
 - [x] GA4 event modification "Shopify pixel sandbox page_view", 27 November 2026 (stream `16428237288` → Modify events): `page_view` whose `page_location` contains `https://checkout.formatoschile.cl/web-pixels@` → renamed `fc_pixel_page_view`, `page_location` set to `https://checkout.formatoschile.cl/checkouts/(pixel)`. Why: GA4's enhanced measurement sends a page_view from inside the pixel sandbox with the sandbox address and checkout tokens; gtag ignores the clean URL on `config` for it. The rule keeps it out of page reports and the tokens out of GA4's stored data (the browser still sends them). Removing it from the source would mean dropping gtag in the pixel — not done
 - [x] Test discounts `TRACKINGQA` / `TRACKINGQA2` (100% off, 1 use each) used for test orders #1002 and #1003, then **deleted** the same day. Both orders are CLP 0, auto-fulfilled by Digital Products and archived; Shopify offers no cancel on fulfilled orders, only permanent delete — left in place pending a decision
 - [x] Purchase in the same session as the site's events, 27 November 2026: test order #1003 (code `TRACKINGQA2`) sent `purchase` with `cid`/`sid` equal to the site's `_ga`/`_ga_JTP6VGESGM` cookies, `transaction_id=19046129926196` (= Shopify's order ID), `coupon=TRACKINGQA2`, item = numeric variant ID, `dl` = `/checkouts/cn/(token)/es-cl/thank-you`. Value was 0 (100% code); the real price path is proven by `begin_checkout` (`value=6990`). `purchase` is a key event (GA4 default)
-- [ ] `item_id` aligned across site, app and pixel
+- [x] `item_id` aligned across site and pixel (numeric variant ID in both, checked live 27 November 2026; no app sends GA4 events)
 - [ ] Consent honoured on checkout, both ways
-- [ ] Test order done and refunded; all four checks above recorded with the date
+- [x] Test order done (CLP 0 via 100% code, nothing to refund), 27 November 2026; checks recorded above. Consent on checkout still open
 - [ ] Google Ads purchase conversion (if Ads), from one source only
 
 ---
