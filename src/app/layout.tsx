@@ -6,12 +6,14 @@ import { RouteFocus } from "@/components/a11y/RouteFocus";
 import { Analytics } from "@/components/Analytics/Analytics";
 import { CartProvider } from "@/components/cart/CartContext";
 import { CartHydrator } from "@/components/cart/CartHydrator";
+import { ConsentProvider } from "@/components/CookieConsent/ConsentContext";
 import { JsonLd } from "@/components/JsonLd/JsonLd";
 import { Footer } from "@/components/layout/Footer/Footer";
 import { Navbar } from "@/components/layout/Navbar/Navbar";
 import { ToastContainer } from "@/components/ui/Toast/ToastContainer";
 import { ToastProvider } from "@/components/ui/Toast/ToastContext";
 import { env } from "@/env";
+import { CONSENT_BOOTSTRAP_SNIPPET } from "@/lib/consent/consent";
 import { buildOrganizationJsonLd, buildWebSiteJsonLd } from "@/lib/seo/jsonLd";
 import { getCart } from "@/lib/shopify";
 import { baseUrl } from "@/lib/utils";
@@ -49,6 +51,16 @@ const RootLayout: React.FC<RootLayoutProps> = async ({ children }) => {
 
   return (
     <html lang="es-CL" className={afacad.variable}>
+      <head>
+        {/* Google Consent Mode default — must be the first dataLayer entry
+            on every page, before hydration and before any event or tag.
+            Source and reasoning: src/lib/consent/consent.ts. */}
+        <script
+          id="consent-default"
+          /* oxlint-disable-next-line react/no-danger -- constant from our own code, no user input; tested in src/lib/consent/consent.test.ts */
+          dangerouslySetInnerHTML={{ __html: CONSENT_BOOTSTRAP_SNIPPET }}
+        />
+      </head>
       <body className="font-main">
         <a
           href="#main-content"
@@ -64,23 +76,25 @@ const RootLayout: React.FC<RootLayoutProps> = async ({ children }) => {
         <JsonLd data={buildWebSiteJsonLd()} />
 
         <ToastProvider>
-          <CartProvider>
-            {/* Resolves the cart fetch in its own isolated boundary — a
+          <ConsentProvider>
+            <CartProvider>
+              {/* Resolves the cart fetch in its own isolated boundary — a
                 slow/cold Shopify response suspends only this (it renders no
                 DOM), never Navbar or `children` below, which always render
                 immediately regardless of how long this takes. */}
-            <Suspense fallback={null}>
-              <CartHydrator cartPromise={cart} />
-            </Suspense>
+              <Suspense fallback={null}>
+                <CartHydrator cartPromise={cart} />
+              </Suspense>
 
-            <Navbar />
+              <Navbar />
 
-            <main id="main-content" tabIndex={-1}>
-              {children}
-            </main>
-          </CartProvider>
+              <main id="main-content" tabIndex={-1}>
+                {children}
+              </main>
+            </CartProvider>
 
-          <Footer />
+            <Footer />
+          </ConsentProvider>
 
           <Analytics />
 

@@ -15,9 +15,15 @@ const ITEM: AnalyticsItem = {
   quantity: 1,
 };
 
+/**
+ * A page where the inline consent snippet has already run (its flag is set),
+ * as on every real page — so these tests see only trackEvent's own pushes.
+ */
 function setWindow(pathname: string): unknown[] {
   const dataLayer: unknown[] = [];
-  Object.assign(globalThis, { window: { dataLayer, location: { pathname } } });
+  Object.assign(globalThis, {
+    window: { dataLayer, location: { pathname }, __fcConsentDefaults: 1 },
+  });
   return dataLayer;
 }
 
@@ -85,7 +91,11 @@ describe("trackEvent", () => {
     expect(dataLayer[0]).toHaveProperty("ecommerce", null);
   });
 
-  test("creates the dataLayer when GTM has not loaded", () => {
+  /**
+   * Without the inline snippet (blocked, or a test page), the first event
+   * still cannot go out ahead of the Consent Mode default.
+   */
+  test("sends the consent default first when the snippet did not", () => {
     Object.assign(globalThis, { window: { location: { pathname: "/" } } });
 
     trackEvent({ event: ANALYTICS_EVENTS.contactClick });
@@ -93,7 +103,11 @@ describe("trackEvent", () => {
     const { window: fakeWindow } = globalThis as unknown as {
       window: { dataLayer: unknown[] };
     };
-    expect(fakeWindow.dataLayer).toHaveLength(1);
+    const [first] = fakeWindow.dataLayer as ArrayLike<unknown>[];
+    expect(Array.from(first).slice(0, 2)).toEqual(["consent", "default"]);
+    expect(fakeWindow.dataLayer.at(-1)).toMatchObject({
+      event: "fc_contact_click",
+    });
   });
 
   test("is a no-op on the server", () => {

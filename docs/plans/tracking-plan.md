@@ -389,11 +389,12 @@ drop in reported conversions is expected, not alarming, and record 15 October
 
 - [x] Banner decision: **off at launch behind `CONSENT_REQUIRED`**, 25 November 2026
 - [x] Postponement of Ley 21.719 confirmed published in the Diario Oficial — Ley 21.855, published 23 November 2026, in force from 15 October 2027 (checked 27 November 2026)
-- [ ] Consent code ported from `rkabogados.cl` with `CONSENT_REQUIRED = false`, tests passing in both positions
+- [x] Consent code ported from `rkabogados.cl` with `CONSENT_REQUIRED = false`, tests passing in both positions (27 November 2026). Logic in `src/lib/consent/`, React UI in `src/components/CookieConsent/` (RK's banner was Astro, so the UI is new; the behaviour is RK's). One deliberate difference from RK: with the flag off the footer's "Configurar cookies" still opens the settings dialog, so opting out is always possible
+- [x] Local preview: in `next dev`, `?consent-preview` shows the banner whatever the flag (ignored in production builds)
 - [ ] Banner-on path verified once on a preview (flip, check, flip back) so the switch is known to work before it is needed
 - [x] Date to switch the banner on agreed: 15 October 2027 (decided 27 November 2026)
 - [ ] `CONSENT_REQUIRED = true` deployed on 14 October 2027, verified live on the 15th, baseline recorded
-- [ ] Customer Privacy API wired: every choice also sets Shopify's tracking consent for checkout
+- [ ] Customer Privacy API wired: every choice also sets Shopify's tracking consent for checkout. **Split out of the consent PR, 27 November 2026:** shopify.dev documents headless consent only for Hydrogen (`window.Shopify.loadFeatures('consent-tracking-api')` with `headlessStorefront`, `checkoutRootDomain`, `storefrontRootDomain`, `storefrontAccessToken`, but no loader URL for a non-Hydrogen site, and newer Hydrogen sets consent through HTTP-only cookies via a same-origin Storefront API proxy). Resolve with Shopify support or by reading `@shopify/hydrogen`'s `core/shopify-scripts` before building. Until then an opt-out from the footer does not reach checkout's pixels — acceptable while the banner is off, must be closed before 15 October 2027
 - [ ] Container work per the runbook, published
 - [ ] Cookie inventory (`docs/cookie-inventory.md`) — site + Shopify checkout cookies
 - [ ] Cookie policy and privacy policy pages (Shopify pages, served by the `[page]` route) updated by the client from the inventory

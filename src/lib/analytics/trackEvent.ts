@@ -1,3 +1,5 @@
+import { ensureConsentDefaults } from "@/lib/consent/consent";
+
 import type {
   AnalyticsEventName,
   AnalyticsLocation,
@@ -57,6 +59,10 @@ export function trackEvent({
 }): void {
   if (typeof window === "undefined") return;
 
+  // Normally a no-op: the inline snippet in the root layout already sent the
+  // consent default. Guards the case where it was blocked, so no event can
+  // ever precede the default (src/lib/consent/consent.ts).
+  ensureConsentDefaults();
   window.dataLayer ??= [];
 
   const resetLabels = Object.fromEntries(

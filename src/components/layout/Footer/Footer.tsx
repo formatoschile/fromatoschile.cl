@@ -1,6 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
 
+import { CookieSettingsButton } from "@/components/CookieConsent/CookieSettingsButton";
+
 const supportLinks = [
   { label: "Preguntas frecuentes", href: "/preguntas-frecuentes" },
   { label: "Contacto", href: "/contacto" },
@@ -41,6 +43,9 @@ export const Footer: React.FC = () => {
                 </Link>
               </li>
             ))}
+            <li>
+              <CookieSettingsButton className="cursor-pointer text-xs tracking-wider text-white uppercase transition-opacity hover:opacity-70" />
+            </li>
           </ul>
         </nav>
       </div>
