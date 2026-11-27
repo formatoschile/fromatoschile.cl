@@ -17,9 +17,12 @@ every page the dataLayer starts with the Consent Mode default
 ## What the site does *not* send
 
 `begin_checkout`, `add_payment_info` and `purchase` (Meta: `InitiateCheckout`,
-`AddPaymentInfo`, `Purchase`) are sent by **Shopify** from its checkout, through
-the Facebook & Instagram and Google & YouTube apps. The site never sends them;
-if it did, every checkout would count twice (tracking plan, section 2).
+`AddPaymentInfo`, `Purchase`) are sent by **Shopify** from its checkout: to GA4
+by our custom pixel (next section), to Meta by the Facebook & Instagram app.
+The site never sends them; if it did, every checkout would count twice
+(tracking plan, section 2). For the same reason, if the Google & YouTube app
+is installed later (for Merchant Center / Google Shopping), its GA4
+measurement must stay **off**: only the pixel sends checkout events to GA4.
 
 ## Checkout events (Shopify custom pixel)
 
@@ -32,14 +35,17 @@ Analytics; not data sale). Not through Tag Manager — they go straight to
 | --- | --- | --- | --- |
 | `begin_checkout` | `checkout_started` | Once per checkout (Shopify fires it on every entry; deduplicated by checkout token) | — |
 | `add_payment_info` | `payment_info_submitted` | Once per checkout | — |
-| `purchase` | `checkout_completed` | Once per order (deduplicated by order ID) | `transaction_id` (numeric order ID), `tax`, `coupon` |
+| `purchase` | `checkout_completed` | Once per order (deduplicated by order ID, or checkout token if Shopify gives none) | `transaction_id` (numeric order ID), `tax`, `coupon` |
 
 All three carry `currency`, `value` (total paid, IVA included), `items` in the
 same format as the site's events, the real `page_location` / `page_referrer`
 (the sandbox would report its own URL), and — so checkout stays in the
 visitor's journey — the `client_id` from the site's `_ga` cookie and the
-`session_id` from `_ga_JTP6VGESGM`. Without those cookies the events still go
-out, as a new user.
+`session_id` from `_ga_JTP6VGESGM` (both set on gtag's `config`, so they go
+out as `cid` / `sid`). Without those cookies, or if they cannot be read, the
+events still go out, as a new user.
+
+## Fields on every push
 
 
 

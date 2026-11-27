@@ -11,19 +11,47 @@ import { describe, expect, test } from "bun:test";
  */
 const SOURCE = readFileSync(join(import.meta.dir, "ga4-checkout.js"), "utf8");
 
+interface PixelOptions {
+  cookies?: Record<string, string>;
+  privacy?: Record<string, boolean>;
+  /** Make browser.cookie.get reject, as a sandbox failure would. */
+  isCookieReadFailing?: boolean;
+  /** Leave `api` undefined, with only a bare `customerPrivacy` global. */
+  hasApiGlobal?: boolean;
+}
+
 interface Harness {
   calls: unknown[][];
   emit: (name: string, event: unknown) => Promise<void>;
+  emitTogether: (name: string, event: unknown) => Promise<void>;
+  emitConsent: (event: unknown) => void;
+}
+
+interface CheckoutEventOptions {
+  token?: string | null;
+  orderId?: string | null;
+}
+
+interface EventsNamedOptions {
+  calls: unknown[][];
+  name: string;
+}
+
+type Handler = (event: unknown) => void;
+
+/** Lets the pixel's async work (cookie reads, storage) settle. */
+function settle() {
+  return new Promise((resolve) => setTimeout(resolve, 0));
 }
 
 function runPixel({
   cookies = {},
   privacy = { analyticsProcessingAllowed: true, marketingAllowed: true },
-}: {
-  cookies?: Record<string, string>;
-  privacy?: Record<string, boolean>;
-} = {}): Harness {
-  const handlers: Record<string, (event: unknown) => void> = {};
+  isCookieReadFailing = false,
+  hasApiGlobal = true,
+}: PixelOptions = {}): Harness {
+  const handlers: Record<string, Handler> = {};
+  let consentHandler: Handler | undefined;
   const storage = new Map<string, string>();
   const fakeWindow: { dataLayer?: unknown[] } = {};
   const fakeDocument = {
@@ -32,12 +60,17 @@ function runPixel({
   };
 
   const analytics = {
-    subscribe: (name: string, handler: (event: unknown) => void) => {
+    subscribe: (name: string, handler: Handler) => {
       handlers[name] = handler;
     },
   };
   const browser = {
-    cookie: { get: async (name: string) => cookies[name] ?? "" },
+    cookie: {
+      get: async (name: string) => {
+        if (isCookieReadFailing) throw new Error("cookie read failed");
+        return cookies[name] ?? "";
+      },
+    },
     localStorage: {
       getItem: async (key: string) => storage.get(key) ?? null,
       setItem: async (key: string, value: string) => {
@@ -46,7 +79,12 @@ function runPixel({
     },
   };
   const init = { customerPrivacy: privacy };
-  const api = { customerPrivacy: { subscribe: () => {} } };
+  const customerPrivacy = {
+    subscribe: (_name: string, handler: Handler) => {
+      consentHandler = handler;
+    },
+  };
+  const api = hasApiGlobal ? { customerPrivacy } : undefined;
 
   // oxlint-disable-next-line no-new-func -- executing the pixel as Shopify does
   new Function(
@@ -54,10 +92,11 @@ function runPixel({
     "browser",
     "init",
     "api",
+    "customerPrivacy",
     "window",
     "document",
     SOURCE
-  )(analytics, browser, init, api, fakeWindow, fakeDocument);
+  )(analytics, browser, init, api, customerPrivacy, fakeWindow, fakeDocument);
 
   return {
     get calls() {
@@ -67,16 +106,21 @@ function runPixel({
     },
     emit: async (name, event) => {
       handlers[name]?.(event);
-      // Let the async send (cookie reads, storage) settle.
-      await new Promise((resolve) => setTimeout(resolve, 0));
+      await settle();
     },
+    emitTogether: async (name, event) => {
+      handlers[name]?.(event);
+      handlers[name]?.(event);
+      await settle();
+    },
+    emitConsent: (event) => consentHandler?.(event),
   };
 }
 
 function checkoutEvent({
   token = "tok-1",
-  orderId = null as string | null,
-}: { token?: string; orderId?: string | null } = {}) {
+  orderId = null,
+}: CheckoutEventOptions = {}) {
   return {
     context: {
       document: {
@@ -91,7 +135,7 @@ function checkoutEvent({
         totalPrice: { amount: 14990, currencyCode: "CLP" },
         totalTax: { amount: 2393, currencyCode: "CLP" },
         discountApplications: [],
-        order: orderId ? { id: orderId } : { id: null },
+        order: { id: orderId },
         lineItems: [
           {
             title: "Contrato de Arriendo",
@@ -108,8 +152,12 @@ function checkoutEvent({
   };
 }
 
-function eventsNamed(calls: unknown[][], name: string) {
+function eventsNamed({ calls, name }: EventsNamedOptions) {
   return calls.filter(([kind, event]) => kind === "event" && event === name);
+}
+
+function configCall(calls: unknown[][]) {
+  return calls.find(([kind]) => kind === "config");
 }
 
 const COOKIES = {
@@ -118,32 +166,35 @@ const COOKIES = {
 };
 
 describe("GA4 checkout pixel", () => {
-  test("configures gtag with the site's client ID and stores nothing", async () => {
+  test("configures gtag with the site's client and session IDs, storing nothing", async () => {
     const pixel = runPixel({ cookies: COOKIES });
     await pixel.emit("checkout_started", checkoutEvent());
 
-    const config = pixel.calls.find(([kind]) => kind === "config");
-    expect(config).toEqual([
+    expect(configCall(pixel.calls)).toEqual([
       "config",
       "G-JTP6VGESGM",
       {
         send_page_view: false,
         client_storage: "none",
         client_id: "123456789.1700000000",
+        session_id: "1764240000",
       },
     ]);
   });
 
-  test("begin_checkout carries the site's session, real URL and items", async () => {
+  test("begin_checkout carries the real URL and items, not session_id as a parameter", async () => {
     const pixel = runPixel({ cookies: COOKIES });
     await pixel.emit("checkout_started", checkoutEvent());
 
-    const [[, , params]] = eventsNamed(pixel.calls, "begin_checkout");
+    const [[, , params]] = eventsNamed({
+      calls: pixel.calls,
+      name: "begin_checkout",
+    });
+    expect(params).not.toHaveProperty("session_id");
     expect(params).toMatchObject({
       send_to: "G-JTP6VGESGM",
       currency: "CLP",
       value: 14990,
-      session_id: "1764240000",
       page_location: "https://checkout.formatoschile.cl/checkouts/abc",
       page_referrer: "https://www.formatoschile.cl/product/contrato",
       items: [
@@ -160,12 +211,17 @@ describe("GA4 checkout pixel", () => {
 
   test("reads the older GS1 session cookie too", async () => {
     const pixel = runPixel({
-      cookies: { ...COOKIES, _ga_JTP6VGESGM: "GS1.1.1764240000.3.1.1764240100.0.0.0" },
+      cookies: {
+        ...COOKIES,
+        _ga_JTP6VGESGM: "GS1.1.1764240000.3.1.1764240100.0.0.0",
+      },
     });
     await pixel.emit("checkout_started", checkoutEvent());
 
-    const [[, , params]] = eventsNamed(pixel.calls, "begin_checkout");
-    expect(params).toHaveProperty("session_id", "1764240000");
+    expect(configCall(pixel.calls)?.[2]).toHaveProperty(
+      "session_id",
+      "1764240000"
+    );
   });
 
   test("re-entering the same checkout sends begin_checkout once", async () => {
@@ -173,7 +229,18 @@ describe("GA4 checkout pixel", () => {
     await pixel.emit("checkout_started", checkoutEvent());
     await pixel.emit("checkout_started", checkoutEvent());
 
-    expect(eventsNamed(pixel.calls, "begin_checkout")).toHaveLength(1);
+    expect(
+      eventsNamed({ calls: pixel.calls, name: "begin_checkout" })
+    ).toHaveLength(1);
+  });
+
+  test("two copies arriving together still send once", async () => {
+    const pixel = runPixel({ cookies: COOKIES });
+    await pixel.emitTogether("checkout_started", checkoutEvent());
+
+    expect(
+      eventsNamed({ calls: pixel.calls, name: "begin_checkout" })
+    ).toHaveLength(1);
   });
 
   test("purchase has transaction ID, IVA-inclusive value and tax, once", async () => {
@@ -182,7 +249,7 @@ describe("GA4 checkout pixel", () => {
     await pixel.emit("checkout_completed", completed);
     await pixel.emit("checkout_completed", completed);
 
-    const purchases = eventsNamed(pixel.calls, "purchase");
+    const purchases = eventsNamed({ calls: pixel.calls, name: "purchase" });
     expect(purchases).toHaveLength(1);
     expect(purchases[0][2]).toMatchObject({
       transaction_id: "5551",
@@ -192,14 +259,46 @@ describe("GA4 checkout pixel", () => {
     });
   });
 
+  test("purchase without an order ID falls back to the checkout token, once", async () => {
+    const pixel = runPixel({ cookies: COOKIES });
+    const completed = checkoutEvent({ token: "tok-9", orderId: null });
+    await pixel.emit("checkout_completed", completed);
+    await pixel.emit("checkout_completed", completed);
+
+    const purchases = eventsNamed({ calls: pixel.calls, name: "purchase" });
+    expect(purchases).toHaveLength(1);
+    expect(purchases[0][2]).toHaveProperty("transaction_id", "tok-9");
+  });
+
   test("without GA cookies it still sends, with no client or session ID", async () => {
     const pixel = runPixel();
     await pixel.emit("payment_info_submitted", checkoutEvent());
 
-    const config = pixel.calls.find(([kind]) => kind === "config");
-    expect(config?.[2]).not.toHaveProperty("client_id");
-    const [[, , params]] = eventsNamed(pixel.calls, "add_payment_info");
-    expect(params).not.toHaveProperty("session_id");
+    const config = configCall(pixel.calls)?.[2];
+    expect(config).not.toHaveProperty("client_id");
+    expect(config).not.toHaveProperty("session_id");
+    expect(
+      eventsNamed({ calls: pixel.calls, name: "add_payment_info" })
+    ).toHaveLength(1);
+  });
+
+  test("a failing cookie read does not stop the events", async () => {
+    const pixel = runPixel({ isCookieReadFailing: true });
+    await pixel.emit("checkout_started", checkoutEvent());
+
+    expect(configCall(pixel.calls)?.[2]).not.toHaveProperty("client_id");
+    expect(
+      eventsNamed({ calls: pixel.calls, name: "begin_checkout" })
+    ).toHaveLength(1);
+  });
+
+  test("works when the sandbox has no `api` global", async () => {
+    const pixel = runPixel({ cookies: COOKIES, hasApiGlobal: false });
+    await pixel.emit("checkout_started", checkoutEvent());
+
+    expect(
+      eventsNamed({ calls: pixel.calls, name: "begin_checkout" })
+    ).toHaveLength(1);
   });
 
   test("consent default follows Shopify's customer privacy state", () => {
@@ -207,8 +306,7 @@ describe("GA4 checkout pixel", () => {
       privacy: { analyticsProcessingAllowed: true, marketingAllowed: false },
     });
 
-    const consent = pixel.calls.find(([kind]) => kind === "consent");
-    expect(consent).toEqual([
+    expect(pixel.calls.find(([kind]) => kind === "consent")).toEqual([
       "consent",
       "default",
       {
@@ -218,5 +316,22 @@ describe("GA4 checkout pixel", () => {
         ad_personalization: "denied",
       },
     ]);
+  });
+
+  test("a consent event without privacy data changes nothing", () => {
+    const pixel = runPixel();
+    pixel.emitConsent({});
+    pixel.emitConsent({
+      customerPrivacy: {
+        analyticsProcessingAllowed: false,
+        marketingAllowed: false,
+      },
+    });
+
+    const updates = pixel.calls.filter(
+      ([kind, action]) => kind === "consent" && action === "update"
+    );
+    expect(updates).toHaveLength(1);
+    expect(updates[0][2]).toHaveProperty("analytics_storage", "denied");
   });
 });

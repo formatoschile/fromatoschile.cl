@@ -467,7 +467,7 @@ then refunded. Check in order:
 - [ ] GA4 route chosen (app or custom pixel), reason recorded here
 - [x] Custom pixel written and tested: `shopify/pixels/ga4-checkout.js` (+ `ga4-checkout.test.ts`), 27 November 2026
 - [ ] Pixel pasted into Shopify admin (Customer events, permission Analytics, not data sale) and connected
-- [ ] Purchase in the same session as the site's events
+- [ ] Purchase in the same session as the site's events — in the test order, check the checkout `collect` requests carry `sid=` equal to the site's session (not only `ep.session_id`); if gtag ignores the config field, fall back to the Measurement Protocol
 - [ ] `item_id` aligned across site, app and pixel
 - [ ] Consent honoured on checkout, both ways
 - [ ] Test order done and refunded; all four checks above recorded with the date
