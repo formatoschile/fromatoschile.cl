@@ -186,7 +186,7 @@ leave.
 - [ ] Google Ads billing: **not set up, by decision** (27 November 2026). Until it is, Google redirects every visit to the billing page, so the account cannot be opened, linked to GA4 or given auto-tagging. Payments profile to use: FORMATOS CHILE SpA (9661-5763-6082, shared with Workspace). New-advertiser offer shown: spend USD 350, get USD 350 credit, before 26 January 2027
 - [ ] Google Ads linked to GA4, auto-tagging on (after billing)
 - [ ] F&I app installed and on the same Pixel (after approval)
-- [ ] Google & YouTube app installed and on the same property (after approval)
+- [ ] Google & YouTube app: **only if the client wants Google Shopping** (Merchant Center), with its GA4 measurement **off** — the custom pixel sends checkout events (decision 27 November 2026, phase 4)
 - [ ] Shopify customer privacy settings recorded
 
 ---
@@ -317,7 +317,7 @@ that catches tracking quietly dying after an unrelated refactor.
 
 - [x] `src/lib/analytics/` with `trackEvent`, event constants, label reset, ecommerce clear (27 November 2026)
 - [x] `toAnalyticsItem` mapper, numeric variant ID
-- [ ] `item_id` format confirmed against the phase 4 test order
+- [x] `item_id` format confirmed against the phase 4 test order (numeric variant ID on site and checkout, 27 November 2026)
 - [x] `view_item_list`, `select_item`, `view_item`, `add_to_cart`, `remove_from_cart`, `view_cart`
 - [x] `fc_preview_open`, `fc_preview_page`, `fc_checkout_click` (both routes), `fc_checkout_error`, `fc_contact_click`, `fc_search`
 - [ ] Attribution cart attributes on `cartCreate`, gated on consent
@@ -518,9 +518,9 @@ threshold). Proportions between steps hold; totals are an undercount.
 - [x] Developer traffic data filter **active** (27 November 2026): excludes `debug_mode` hits (Tag Assistant, DebugView sessions) from reports; DebugView still shows them
 - [x] Internal traffic rules on the Google tag (`GTM-WS55WT3Q`, which governs `G-JTP6VGESGM`), same two rules as RK's property (27 November 2026). The IP addresses are kept only in GA4 (Admin → Data streams → Configure tag settings → Define internal traffic), not in this repository
 - [ ] Internal Traffic data filter: still **Testing**. Switch to Active after checking a few days of data (Explore, dimension "Test data filter name") — activation is irreversible and not retroactive. A browser marker like RK's `?rk_internal=1` (`../rkabogados.cl/docs/internal-traffic-plan.md`) would cover mobile/home IPs; not built
-- [ ] `purchase` marked key event (after it has arrived once)
-- [ ] Audiences built
-- [ ] Three funnels/reports built, shared, published in the menu
+- [x] `purchase` is a key event — GA4 marks it by default; confirmed 27 November 2026 after the test purchase arrived
+- [x] Audiences built, 27 November 2026: `FC · Vio documento sin compra · 30d`, `FC · Carrito sin compra · 7d`, purchasers excluded permanently — definitions in `docs/ga4-reports.md`
+- [x] Funnels built and shared read-only, 27 November 2026: `FC · Embudo tienda`, `FC · Embudo vista previa`; the document report is the built-in Ecommerce purchases report — all defined in `docs/ga4-reports.md`. Not published in a Reports collection (optional, not done)
 - [ ] Verified in DebugView on production
 
 ---

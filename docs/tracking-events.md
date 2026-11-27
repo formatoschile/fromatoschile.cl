@@ -77,10 +77,10 @@ Each item, built only by `toAnalyticsItem` / `cartItemToAnalyticsItem`:
 
 | Field | From |
 | --- | --- |
-| `item_id` | Numeric Shopify **variant** ID (`gid://shopify/ProductVariant/123` → `123`). Must equal what Shopify's apps send on checkout and purchase — to confirm with the phase 4 test order |
+| `item_id` | Numeric Shopify **variant** ID (`gid://shopify/ProductVariant/123` → `123`). The checkout pixel sends the same ID — confirmed on the test order, 27 November 2026 |
 | `item_name` | Product title |
 | `item_category` | `productType` (`laboral`, `civil`, `societario`), `General` if empty |
-| `price` | Variant list price, number, CLP, as Shopify returns it (IVA: open decision). Cart lines use the same variant price, not the line cost after discounts |
+| `price` | Variant list price, number, CLP, as Shopify returns it, IVA included (prices include IVA, settled 27 November 2026). Cart lines use the same variant price, not the line cost after discounts |
 | `quantity` | 1, or the cart line's quantity |
 | `item_list_name` | `catalog`, `category`, `featured_home`, `related` — list events only |
 | `index` | Position in that list, from 0 |
