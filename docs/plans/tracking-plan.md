@@ -187,7 +187,13 @@ leave.
 - [ ] Google Ads linked to GA4, auto-tagging on (after billing)
 - [ ] F&I app installed and on the same Pixel (after approval)
 - [ ] Google & YouTube app: **only if the client wants Google Shopping** (Merchant Center), with its GA4 measurement **off** — the custom pixel sends checkout events (decision 27 November 2026, phase 4)
-- [ ] Shopify customer privacy settings recorded
+- [x] Shopify customer privacy settings recorded, 27 November 2026 (Settings → Customer privacy; read only, nothing changed):
+  - **Cookie banner:** automated, "Not required for regions you're selling in" — Shopify shows its own banner only once a market that requires one is added. **Show cookie banner in checkout: off.** So nothing in Shopify withholds consent today, and the GA4 checkout pixel (permission: Analytics) runs for every visitor — consistent with `gcs=G111` on the test order's requests
+  - **Data sharing opt-out page:** automated, not required for the regions sold in
+  - **Privacy policy:** published on the online store, automated
+  - **Shopify Network Intelligence: enabled** (customer data used across Shopify for ad targeting and personalisation, per the Additional Services Terms) — the client's call, not a tracking setting; to mention to them
+  - **Marketing in checkout:** e-mail/SMS marketing preferences and double opt-in sections present; not reviewed in detail (not tracking)
+  - **For 15 October 2027:** "Show cookie banner in checkout" is a possible fallback for the Customer Privacy API item (phase 3) — checkout would ask for consent itself, at a cost to conversion (Shopify warns so). Shopify's automated banner will not appear for Chile unless Shopify starts flagging it as requiring one
 
 ---
 
