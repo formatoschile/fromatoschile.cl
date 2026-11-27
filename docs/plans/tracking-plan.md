@@ -324,7 +324,7 @@ that catches tracking quietly dying after an unrelated refactor.
 - [ ] `sendShopifyAnalytics` (if decided)
 - [x] CSP widened per vendor, commented: GTM + GA4 + Google signals hosts (27 November 2026, `next.config.ts`). Zero tracking-related violations on a local production build with the container loaded. Meta and Google Ads hosts to add when they are used. Unrelated, pre-existing: a `blob:` worker is refused (`worker-src` falls back to `script-src`) — likely Sentry's; to look at separately
 - [x] `NEXT_PUBLIC_GTM_ID` in `src/env.ts`; loader inlined in the root layout right after the consent default (`src/lib/analytics/gtm.ts`). Set in Vercel as `GTM-WQN2XMW4`, Production environment only (27 November 2026)
-- [ ] Tested with Tag Assistant (production, or a local production build with the ID), desktop and phone
+- [x] Tested with Tag Assistant on production before publishing, desktop (27 November 2026): consent default first, Google tag on Initialization, ecommerce and `fc_` tags on their events, `items` present on `add_to_cart` in GA4 DebugView, 0 console errors. Phone still to do
 - [ ] Smoke test
 - [x] `docs/tracking-events.md`: every event, its fields and what it means
 
@@ -507,8 +507,8 @@ threshold). Proportions between steps hold; totals are an undercount.
 
 ### Checklist
 
-- [ ] Container: Google tag, ecommerce tag, `fc_` forwarder, Meta tags, non-production exception
-- [ ] Consent settings per the runbook; container published, date recorded
+- [x] Container: Google tag, ecommerce tag, `fc_` forwarder, non-production exception — imported from `docs/gtm/container-v1.json` (27 November 2026). Meta tags still to come (waiting on the client's Meta accounts). No Custom JavaScript variables, by design: the CSP has no 'unsafe-eval'
+- [x] Consent settings per the runbook (consent overview on; all three Google tags built-in consent only, none unconfigured); **published 27 November 2026, 13:57 Santiago — GTM version 2 "v1 - GA4 + Consent Mode v2 (banner off)". Reporting baseline**
 - [ ] Custom dimensions registered
 - [ ] `purchase` marked key event (after it has arrived once)
 - [ ] Audiences built

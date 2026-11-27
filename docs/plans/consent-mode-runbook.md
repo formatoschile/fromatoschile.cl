@@ -10,7 +10,7 @@ are **three** places that have to agree on the visitor's choice, not one:
 3. **Shopify checkout** (`checkout.formatoschile.cl`) — the F&I app, the Google app or custom pixel, all governed by Shopify's consent cookie.
 
 Adapted from RK's runbook (`../rkabogados.cl/docs/consent-mode-runbook.md`),
-which is live and verified. Status: **draft — nothing here is built yet.**
+which is live and verified. Status (27 November 2026): **site code live (steps 0), Google tags configured and published (steps 1–3, 5, 8). Meta tags (2b), Shopify (4, 7) still to do.**
 Dates in Santiago time.
 
 **Order matters.** Do not publish the container with consent settings before
