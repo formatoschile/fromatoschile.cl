@@ -54,7 +54,7 @@ export const CategoryPill: React.FC<CategoryPillProps> = ({
   return (
     <span
       className={classNames(
-        "inline-block rounded px-2 py-1 text-[11px] font-normal uppercase tracking-[4px]",
+        "inline-block rounded px-2 py-1 text-xs font-normal md:text-[11px] uppercase tracking-[4px]",
         getCategoryStyle(category).pill,
         className
       )}

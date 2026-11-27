@@ -28,7 +28,7 @@ export const Footer: React.FC = () => {
 
         {/* Support links */}
         <nav aria-label="Ayuda y soporte">
-          <h2 className="text-graphite-muted text-xs tracking-wider uppercase">
+          <h2 className="text-graphite-muted text-sm tracking-wider uppercase md:text-xs">
             Ayuda y soporte
           </h2>
 
@@ -37,14 +37,14 @@ export const Footer: React.FC = () => {
               <li key={link.href}>
                 <Link
                   href={link.href}
-                  className="text-xs tracking-wider text-white uppercase transition-opacity hover:opacity-70"
+                  className="text-sm tracking-wider text-white uppercase transition-opacity hover:opacity-70 md:text-xs"
                 >
                   {link.label}
                 </Link>
               </li>
             ))}
             <li>
-              <CookieSettingsButton className="cursor-pointer text-xs tracking-wider text-white uppercase transition-opacity hover:opacity-70" />
+              <CookieSettingsButton className="cursor-pointer text-sm tracking-wider text-white uppercase transition-opacity hover:opacity-70 md:text-xs" />
             </li>
           </ul>
         </nav>
@@ -52,7 +52,7 @@ export const Footer: React.FC = () => {
 
       {/* Legal text */}
       <div className="mx-auto mt-14 max-w-7xl">
-        <p className="text-primary text-xs">
+        <p className="text-primary text-sm md:text-xs">
           © 2026 Formatos Chile. Todos los derechos reservados.
         </p>
       </div>

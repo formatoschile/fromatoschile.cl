@@ -25,7 +25,7 @@ export const TrustBadges: React.FC<TrustBadgesProps> = ({ className }) => {
             <span className="text-ink text-sm leading-tight font-medium">
               {label}
             </span>
-            <span className="text-xs leading-tight text-neutral-500">
+            <span className="text-sm leading-tight text-neutral-500 md:text-xs">
               {description}
             </span>
           </span>

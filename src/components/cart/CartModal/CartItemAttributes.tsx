@@ -15,7 +15,7 @@ export const CartItemAttributes: React.FC<CartItemAttributesProps> = ({
   return (
     <div className="mt-1 space-y-0.5">
       {displayAttributes.map((attr) => (
-        <p key={attr.key} className="text-brand-ink/60 text-xs">
+        <p key={attr.key} className="text-brand-ink/60 text-sm md:text-xs">
           <span className="font-medium">{attr.key}:</span> {attr.value}
         </p>
       ))}
