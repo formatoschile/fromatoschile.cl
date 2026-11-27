@@ -89,7 +89,7 @@ Each is the client's call (Seba / Cami) and blocks the phase it sits in.
 | Install the Google & YouTube app (or let us use a custom pixel instead) | Seba | Phase 1, 4 |
 | Prices with or without IVA, and therefore what `value` means | The client (product audit) | Phase 4 |
 | ~~Banner on or off at launch~~ | **Settled 25 November 2026: off at launch, behind a flag** — as RK. See phase 3 | Phase 3 |
-| When to switch the banner on (Ley 21.719, in force 15 October 2027 per Ley 21.855) | Davide and the client, ahead of that date | Phase 3 |
+| ~~When to switch the banner on~~ | **Settled 27 November 2026: on from 15 October 2027**, the day Ley 21.719 takes effect (Ley 21.855). See phase 3 | Phase 3 |
 | Banner copy, cookie policy and privacy policy wording | The client writes it; we supply the inventory | Phase 3 |
 | Google Ads at all, or Meta only to start | The client | Phase 1, 6 |
 | Whether the dashboard is wanted | The client, after reading the funnels for 2–3 weeks | Phase 6 |
@@ -373,8 +373,12 @@ remembered:
 | Shopify checkout | Customer Privacy API called with **granted** for unanswered visitors, the stored choice otherwise | Same call, the visitor's choice |
 | Cost of switching later | One constant, one deploy — but Meta and Google will see a step down in conversions the day it flips, and campaigns relearn. **Record that date as a reporting baseline.** | — |
 
-**Switch it on before 15 October 2027** — plan the date with the client so the drop in
-reported conversions is expected, not alarming.
+**Banner on from 15 October 2027 — decided 27 November 2026**, the day Ley
+21.719 takes effect. The deploy that sets `CONSENT_REQUIRED = true` goes out on
+14 October so the banner is live from the first minute of the 15th (Santiago
+time), not whenever a deploy lands that day. Tell the client in advance so the
+drop in reported conversions is expected, not alarming, and record 15 October
+2027 as the reporting baseline.
 
 ### Checklist
 
@@ -382,7 +386,8 @@ reported conversions is expected, not alarming.
 - [x] Postponement of Ley 21.719 confirmed published in the Diario Oficial — Ley 21.855, published 23 November 2026, in force from 15 October 2027 (checked 27 November 2026)
 - [ ] Consent code ported from `rkabogados.cl` with `CONSENT_REQUIRED = false`, tests passing in both positions
 - [ ] Banner-on path verified once on a preview (flip, check, flip back) so the switch is known to work before it is needed
-- [ ] Date to switch the banner on agreed with the client, ahead of the law's entry into force
+- [x] Date to switch the banner on agreed: 15 October 2027 (decided 27 November 2026)
+- [ ] `CONSENT_REQUIRED = true` deployed on 14 October 2027, verified live on the 15th, baseline recorded
 - [ ] Customer Privacy API wired: every choice also sets Shopify's tracking consent for checkout
 - [ ] Container work per the runbook, published
 - [ ] Cookie inventory (`docs/cookie-inventory.md`) — site + Shopify checkout cookies

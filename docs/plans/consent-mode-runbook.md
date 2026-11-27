@@ -171,7 +171,11 @@ off, run steps 5–7 with the **reject** cases through the footer's "Configurar
 cookies", which is then the only way to decline, and run them once more with the
 flag on in a preview, so the switch is proven before it is needed.
 
+**Banner on from 15 October 2027** (decided 27 November 2026), the day Ley
+21.719 takes effect after Ley 21.855's postponement. Deploy the flag on 14
+October; on the 15th re-run steps 5–7 with the **banner on** readings and add a
+version note to the container recording the switch as a reporting baseline.
+
 ## Still to decide
 
-- **The date to switch the banner on**, ahead of Ley 21.719's entry into force on 15 October 2027 (postponed by Ley 21.855, published 23 November 2026).
 - **Policy pages** — the client writes them from `docs/cookie-inventory.md`, which must list the site's cookies, GTM/GA4/Meta, and Shopify checkout's own.
