@@ -10,7 +10,7 @@
     "format:check": "oxfmt --check src",
     "format": "oxfmt src",
     "typecheck": "tsc --project tsconfig.json --noEmit",
-    "test": "bun test src",
+    "test": "bun test src shopify",
     "verify": "bun run lint && bun run format:check && bun run typecheck && bun run test",
     "update-packages": "bun scripts/update-packages.ts",
     "backfill-thumbnails": "bun scripts/backfill-preview-thumbnails.ts"

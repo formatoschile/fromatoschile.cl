@@ -465,7 +465,9 @@ then refunded. Check in order:
 
 - [ ] F&I app on the same Pixel; Purchase deduplicated, value and IDs correct
 - [x] GA4 route chosen (27 November 2026): **custom pixel** for `begin_checkout`, `add_payment_info`, `purchase` — full control of `item_id` (numeric variant ID), `value` and session stitching via the `_ga` client ID. The Google & YouTube app comes later, only if/when the client wants Google Shopping (Merchant Center feed), with its GA4 measurement **off** so purchases are not counted twice
-- [ ] Purchase in the same session as the site's events
+- [x] Custom pixel written and tested: `shopify/pixels/ga4-checkout.js` (+ `ga4-checkout.test.ts`), 27 November 2026
+- [x] Pixel in Shopify admin and connected, 27 November 2026: Customer events → **"GA4 checkout"** (custom pixel ID `189268020`), code identical to `main` (SHA-256 `45e7000f…`), permission **Required → Analytics only** (Shopify's default also ticked Marketing; unticked), data sale **does not qualify**. Smoke test the same day: a checkout started from the site wrote the pixel's `fc_ga4_sent:begin:<token>` key, i.e. `begin_checkout` reached gtag. The sandboxed frame's own requests are invisible to page scripts and the browser extension, so `cid` / `sid` must be checked in DevTools (Network, filter `collect`, which includes the sandbox frame) or DebugView
+- [ ] Purchase in the same session as the site's events — in the test order, check the checkout `collect` requests carry `sid=` equal to the site's session (not only `ep.session_id`); if gtag ignores the config field, fall back to the Measurement Protocol
 - [ ] `item_id` aligned across site, app and pixel
 - [ ] Consent honoured on checkout, both ways
 - [ ] Test order done and refunded; all four checks above recorded with the date
