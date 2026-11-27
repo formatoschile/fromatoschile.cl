@@ -521,7 +521,7 @@ threshold). Proportions between steps hold; totals are an undercount.
 - [x] `purchase` is a key event — GA4 marks it by default; confirmed 27 November 2026 after the test purchase arrived
 - [x] Audiences built, 27 November 2026: `FC · Vio documento sin compra · 30d`, `FC · Carrito sin compra · 7d`, purchasers excluded permanently — definitions in `docs/ga4-reports.md`
 - [x] Funnels built and shared read-only, 27 November 2026: `FC · Embudo tienda`, `FC · Embudo vista previa`; the document report is the built-in Ecommerce purchases report — all defined in `docs/ga4-reports.md`. Not published in a Reports collection (optional, not done)
-- [ ] Verified in DebugView on production
+- [x] Verified on production, 27 November 2026: site events in Tag Assistant and DebugView (`add_to_cart` with `items`; `view_item` after a client-side navigation carries the product URL); checkout events (`begin_checkout`, `purchase`) checked in the live `collect` requests — the pixel's sandbox does not show in Tag Assistant. Phone check still open (phase 2)
 
 ---
 
