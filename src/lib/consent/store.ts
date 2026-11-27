@@ -117,7 +117,10 @@ export function subscribeToConsent(onChange: () => void): () => void {
 /**
  * Re-reads the stored choice. If it differs from what this tab last told
  * Google — another tab chose, or the record lapsed — tells Google now, so
- * this tab's tags stop (or start) writing cookies without a reload. Always
+ * this tab's tags stop (or start) writing cookies without a reload. It also
+ * clears again what the choice no longer allows: until now this tab's tags
+ * ran with the old consent and may have rewritten cookies the other tab had
+ * already removed. Always
  * announces CONSENT_CHANGE_EVENT, so the UI re-reads; React skips the render
  * when the cookie is unchanged.
  */
@@ -128,6 +131,7 @@ export function syncWithStoredChoice(): void {
     appliedChoices = choices;
   } else if (!isSameChoice(appliedChoices, choices)) {
     appliedChoices = choices;
+    clearGoogleCookies(choices);
     updateConsent(choices);
   }
 

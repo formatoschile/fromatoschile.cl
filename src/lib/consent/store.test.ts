@@ -3,6 +3,7 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 
 import { UNANSWERED_CHOICES } from "./consent";
+import { cookieNames } from "./cookies";
 import { syncWithStoredChoice } from "./store";
 
 /**
@@ -92,4 +93,57 @@ describe("syncWithStoredChoice", () => {
     // The UI is told to re-read every time, so the banner and dialog follow.
     expect(dispatched).toBe(4);
   });
+
+  test("clears the cookies this tab's tags rewrote after another tab refused", () => {
+    installCookieJar();
+
+    // Another tab accepts; this tab catches up.
+    storeInOtherTab({ analytics: true, advertising: true });
+    syncWithStoredChoice();
+
+    // This tab's tags, still granted, write their cookies…
+    document.cookie = "_ga=GA1.1.1";
+    document.cookie = "_gcl_au=1.1.1";
+    document.cookie = "cart=abc";
+
+    // …and then the other tab's refusal arrives.
+    storeInOtherTab({ analytics: false, advertising: false });
+    syncWithStoredChoice();
+
+    const names = cookieNames();
+    expect(names).not.toContain("_ga");
+    expect(names).not.toContain("_gcl_au");
+    expect(names).toContain("cart");
+    expect(names).toContain("cookie-consent");
+  });
 });
+
+/**
+ * A minimal cookie jar on the mock document: reading returns
+ * "name=value; …", writing sets one cookie, and Max-Age=0 deletes it.
+ * Attributes other than Max-Age are ignored.
+ */
+function installCookieJar(): void {
+  const jar = new Map<string, string>();
+  Object.assign(window, {
+    location: { protocol: "https:", hostname: "www.formatoschile.cl" },
+  });
+  Object.defineProperty(document, "cookie", {
+    configurable: true,
+    get: () =>
+      Array.from(jar, ([name, value]) => `${name}=${value}`).join("; "),
+    set: (raw: string) => {
+      const [pair, ...attributes] = raw.split("; ");
+      const separator = pair.indexOf("=");
+      const name = pair.slice(0, separator);
+      const isExpired = attributes.some((attribute) =>
+        /^max-age=0$/i.test(attribute)
+      );
+      if (isExpired) {
+        jar.delete(name);
+        return;
+      }
+      jar.set(name, pair.slice(separator + 1));
+    },
+  });
+}
