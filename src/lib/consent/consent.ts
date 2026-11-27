@@ -55,10 +55,12 @@ export interface ConsentChoices {
 }
 
 /** The subset a visitor's choice can move. The other three never change. */
-type MutableConsentState = Pick<
-  ConsentModeState,
-  "ad_storage" | "ad_user_data" | "ad_personalization" | "analytics_storage"
->;
+interface MutableConsentState {
+  ad_storage: ConsentValue;
+  ad_user_data: ConsentValue;
+  ad_personalization: ConsentValue;
+  analytics_storage: ConsentValue;
+}
 
 type GtagCommand =
   | ["consent", "default", ConsentModeState]
@@ -137,10 +139,13 @@ export const REFUSAL_MAX_AGE = CONSENT_REQUIRED
  * `refusalMaxAge` is a parameter only so tests can exercise both flag
  * positions; callers never pass it.
  */
-export function consentMaxAge(
-  choices: ConsentChoices,
-  refusalMaxAge: number = REFUSAL_MAX_AGE
-): number {
+export function consentMaxAge({
+  choices,
+  refusalMaxAge = REFUSAL_MAX_AGE,
+}: {
+  choices: ConsentChoices;
+  refusalMaxAge?: number;
+}): number {
   return choices.analytics || choices.advertising
     ? CONSENT_MAX_AGE
     : refusalMaxAge;
@@ -199,19 +204,27 @@ export function readConsentRecord(): StoredConsent | null {
  * records written before refusals got their shorter lifetime.
  *
  * The one rule every reader applies. The snippet mirrors it in ES5.
+ * Everything but `record` is a parameter only for tests.
  */
-export function isStandingRecord(
-  record: StoredConsent | null,
-  repromptBelow: number = REPROMPT_BELOW_VERSION,
-  now: number = Date.now(),
-  refusalMaxAge: number = REFUSAL_MAX_AGE
-): record is StoredConsent {
+export function isStandingRecord({
+  record,
+  repromptBelow = REPROMPT_BELOW_VERSION,
+  now = Date.now(),
+  refusalMaxAge = REFUSAL_MAX_AGE,
+}: {
+  record: StoredConsent | null;
+  repromptBelow?: number;
+  now?: number;
+  refusalMaxAge?: number;
+}): boolean {
   if (!record || record.version < repromptBelow) return false;
 
   const written = Date.parse(record.timestamp);
   if (Number.isNaN(written)) return false;
 
-  return (now - written) / 1000 < consentMaxAge(record, refusalMaxAge);
+  return (
+    (now - written) / 1000 < consentMaxAge({ choices: record, refusalMaxAge })
+  );
 }
 
 /**
@@ -223,7 +236,7 @@ export function isStandingRecord(
 export function advertisingConsentFromCookie(raw: string | undefined): boolean {
   const record = parseConsentRecord(raw ?? "");
 
-  return isStandingRecord(record)
+  return record && isStandingRecord({ record })
     ? record.advertising
     : UNANSWERED_CHOICES.advertising;
 }
@@ -233,10 +246,6 @@ export function advertisingConsentFromCookie(raw: string | undefined): boolean {
  * both run without double-pushing. Whichever gets there first wins.
  */
 const CONSENT_READY_FLAG = "__fcConsentDefaults";
-
-function grant(allowed: boolean): ConsentValue {
-  return allowed ? "granted" : "denied";
-}
 
 /**
  * The category-to-storage-type mapping, in one place.
@@ -263,13 +272,6 @@ export function consentStateFrom(choices: ConsentChoices): ConsentModeState {
   };
 }
 
-const gtag: (...command: GtagCommand) => void = function () {
-  window.dataLayer = window.dataLayer || [];
-  // oxlint-disable-next-line prefer-rest-params -- GTM reads the arguments
-  // object itself; an array is not a command. See the file header.
-  window.dataLayer.push(arguments);
-};
-
 /**
  * What the visitor has effectively chosen: their stored answer if it still
  * stands, otherwise the unanswered fallback — the same thing the snippet told
@@ -279,13 +281,16 @@ const gtag: (...command: GtagCommand) => void = function () {
  * and the banner-less mode can be tested without editing the constants;
  * callers never pass either.
  */
-export function readStoredChoices(
-  repromptBelow: number = REPROMPT_BELOW_VERSION,
-  unanswered: ConsentChoices = UNANSWERED_CHOICES
-): ConsentChoices {
+export function readStoredChoices({
+  repromptBelow = REPROMPT_BELOW_VERSION,
+  unanswered = UNANSWERED_CHOICES,
+}: {
+  repromptBelow?: number;
+  unanswered?: ConsentChoices;
+} = {}): ConsentChoices {
   const record = readConsentRecord();
 
-  return isStandingRecord(record, repromptBelow)
+  return record && isStandingRecord({ record, repromptBelow })
     ? { analytics: record.analytics, advertising: record.advertising }
     : unanswered;
 }
@@ -381,22 +386,19 @@ export function updateConsent(choices: ConsentChoices): void {
  * Upgrading from the fallback was correct only while the fallback was denied;
  * with CONSENT_REQUIRED off it would have left someone who rejected through
  * the footer panel granted anyway, which is the one thing the opt-out has to
- * survive.
- */
-function compact(source: string): string {
-  return source.replace(/\s+/g, " ").trim();
-}
-
-/**
+ * survive. *
  * Exported as a builder so the version gate and the unanswered fallback can be
  * tested at values other than the live ones — which is what keeps `bun test`
  * green whichever way CONSENT_REQUIRED is set, so that flipping it back stays
  * a one-line change. Production uses CONSENT_BOOTSTRAP_SNIPPET.
  */
-export function buildConsentBootstrapSnippet(
-  repromptBelow: number,
-  unanswered: ConsentChoices = UNANSWERED_CHOICES
-): string {
+export function buildConsentBootstrapSnippet({
+  repromptBelow = REPROMPT_BELOW_VERSION,
+  unanswered = UNANSWERED_CHOICES,
+}: {
+  repromptBelow?: number;
+  unanswered?: ConsentChoices;
+} = {}): string {
   return compact(`
 (function () {
   var w = window;
@@ -434,6 +436,20 @@ export function buildConsentBootstrapSnippet(
 `);
 }
 
-export const CONSENT_BOOTSTRAP_SNIPPET = buildConsentBootstrapSnippet(
-  REPROMPT_BELOW_VERSION
-);
+export const CONSENT_BOOTSTRAP_SNIPPET = buildConsentBootstrapSnippet();
+
+function grant(allowed: boolean): ConsentValue {
+  return allowed ? "granted" : "denied";
+}
+
+const gtag: (...command: GtagCommand) => void = function () {
+  window.dataLayer = window.dataLayer || [];
+  // oxlint-disable-next-line prefer-rest-params -- GTM reads the arguments
+  // object itself; an array is not a command. See the file header.
+  window.dataLayer.push(arguments);
+};
+
+/** Collapses the snippet's whitespace; every statement ends in a semicolon. */
+function compact(source: string): string {
+  return source.replace(/\s+/g, " ").trim();
+}

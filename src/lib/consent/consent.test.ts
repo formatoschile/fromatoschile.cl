@@ -153,7 +153,10 @@ describe("CONSENT_BOOTSTRAP_SNIPPET", () => {
   test("denies everything for an unanswered visitor, when consent is required", () => {
     const [command] = runSnippet(
       "",
-      buildConsentBootstrapSnippet(REPROMPT_BELOW_VERSION, DENIED)
+      buildConsentBootstrapSnippet({
+        repromptBelow: REPROMPT_BELOW_VERSION,
+        unanswered: DENIED,
+      })
     ) as Array<[string, string, Record<string, string>]>;
 
     expect({ ...command[2] }).toEqual({ ...consentStateFrom(DENIED) });
@@ -178,7 +181,7 @@ describe("CONSENT_BOOTSTRAP_SNIPPET", () => {
 
     const [command] = runSnippet(
       legacy,
-      buildConsentBootstrapSnippet(0)
+      buildConsentBootstrapSnippet({ repromptBelow: 0 })
     ) as Array<[string, string, Record<string, string>]>;
 
     expect(command[2].analytics_storage).toBe("granted");
@@ -266,7 +269,7 @@ describe("CONSENT_BOOTSTRAP_SNIPPET", () => {
 
     const [command] = runSnippet(
       legacy,
-      buildConsentBootstrapSnippet(2, DENIED)
+      buildConsentBootstrapSnippet({ repromptBelow: 2, unanswered: DENIED })
     ) as Array<[string, string, Record<string, string>]>;
 
     expect({ ...command[2] }).toEqual({ ...consentStateFrom(DENIED) });
@@ -275,7 +278,7 @@ describe("CONSENT_BOOTSTRAP_SNIPPET", () => {
   test("a record at the re-prompt version still counts", () => {
     const [command] = runSnippet(
       cookieFor({ analytics: true, advertising: true }),
-      buildConsentBootstrapSnippet(2, DENIED)
+      buildConsentBootstrapSnippet({ repromptBelow: 2, unanswered: DENIED })
     ) as Array<[string, string, Record<string, string>]>;
 
     expect(command[2].analytics_storage).toBe("granted");
@@ -307,7 +310,12 @@ describe("readStoredChoices", () => {
 
   test("no cookie is denied, when consent is required", () => {
     withDocumentCookie("", () => {
-      expect(readStoredChoices(REPROMPT_BELOW_VERSION, DENIED)).toEqual(DENIED);
+      expect(
+        readStoredChoices({
+          repromptBelow: REPROMPT_BELOW_VERSION,
+          unanswered: DENIED,
+        })
+      ).toEqual(DENIED);
     });
   });
 
@@ -326,8 +334,12 @@ describe("readStoredChoices", () => {
     )}`;
 
     withDocumentCookie(legacy, () => {
-      expect(readStoredChoices(2, DENIED)).toEqual(DENIED);
-      expect(readStoredChoices(0, DENIED).analytics).toBe(true);
+      expect(
+        readStoredChoices({ repromptBelow: 2, unanswered: DENIED })
+      ).toEqual(DENIED);
+      expect(
+        readStoredChoices({ repromptBelow: 0, unanswered: DENIED }).analytics
+      ).toBe(true);
     });
   });
 
@@ -352,10 +364,10 @@ describe("readStoredChoices", () => {
  * change with no test to edit alongside it.
  */
 describe("CONSENT_REQUIRED", () => {
-  const grantedSnippet = buildConsentBootstrapSnippet(
-    REPROMPT_BELOW_VERSION,
-    GRANTED
-  );
+  const grantedSnippet = buildConsentBootstrapSnippet({
+    repromptBelow: REPROMPT_BELOW_VERSION,
+    unanswered: GRANTED,
+  });
 
   test("off: a visitor who has not answered is granted both", () => {
     const [command] = runSnippet("", grantedSnippet) as Array<
@@ -365,9 +377,12 @@ describe("CONSENT_REQUIRED", () => {
     expect({ ...command[2] }).toEqual({ ...consentStateFrom(GRANTED) });
 
     withDocumentCookie("", () => {
-      expect(readStoredChoices(REPROMPT_BELOW_VERSION, GRANTED)).toEqual(
-        GRANTED
-      );
+      expect(
+        readStoredChoices({
+          repromptBelow: REPROMPT_BELOW_VERSION,
+          unanswered: GRANTED,
+        })
+      ).toEqual(GRANTED);
     });
   });
 
@@ -391,9 +406,12 @@ describe("CONSENT_REQUIRED", () => {
     expect({ ...command[2] }).toEqual({ ...consentStateFrom(DENIED) });
 
     withDocumentCookie(rejection, () => {
-      expect(readStoredChoices(REPROMPT_BELOW_VERSION, GRANTED)).toEqual(
-        DENIED
-      );
+      expect(
+        readStoredChoices({
+          repromptBelow: REPROMPT_BELOW_VERSION,
+          unanswered: GRANTED,
+        })
+      ).toEqual(DENIED);
     });
   });
 
@@ -410,7 +428,10 @@ describe("CONSENT_REQUIRED", () => {
   test("on: the banner's mode is unchanged", () => {
     const [command] = runSnippet(
       "",
-      buildConsentBootstrapSnippet(REPROMPT_BELOW_VERSION, DENIED)
+      buildConsentBootstrapSnippet({
+        repromptBelow: REPROMPT_BELOW_VERSION,
+        unanswered: DENIED,
+      })
     ) as Array<[string, string, Record<string, string>]>;
 
     expect({ ...command[2] }).toEqual({ ...consentStateFrom(DENIED) });
@@ -489,20 +510,22 @@ const record = (choices: ConsentChoices, timestamp: string) => ({
 
 /** The standing-record rule with the banner ON: refusals kept 30 days. */
 function bannerOn(stored: ReturnType<typeof record>): boolean {
-  return isStandingRecord(
-    stored,
-    REPROMPT_BELOW_VERSION,
-    Date.now(),
-    REJECTION_MAX_AGE
-  );
+  return isStandingRecord({
+    record: stored,
+    refusalMaxAge: REJECTION_MAX_AGE,
+  });
 }
 
 describe("isStandingRecord", () => {
   test("banner on: a refusal lapses after thirty days, an acceptance does not", () => {
     expect(bannerOn(record(DENIED, daysAgo(31)))).toBe(false);
     expect(bannerOn(record(DENIED, daysAgo(20)))).toBe(true);
-    expect(isStandingRecord(record(GRANTED, daysAgo(200)))).toBe(true);
-    expect(isStandingRecord(record(GRANTED, daysAgo(400)))).toBe(false);
+    expect(isStandingRecord({ record: record(GRANTED, daysAgo(200)) })).toBe(
+      true
+    );
+    expect(isStandingRecord({ record: record(GRANTED, daysAgo(400)) })).toBe(
+      false
+    );
   });
 
   test("the live refusal lifetime follows CONSENT_REQUIRED", () => {
@@ -512,7 +535,9 @@ describe("isStandingRecord", () => {
   });
 
   test("an unparsable timestamp does not count", () => {
-    expect(isStandingRecord(record(GRANTED, "yesterday-ish"))).toBe(false);
+    expect(isStandingRecord({ record: record(GRANTED, "yesterday-ish") })).toBe(
+      false
+    );
   });
 
   const CASES: Array<[string, string]> = [
@@ -531,12 +556,18 @@ describe("isStandingRecord", () => {
         withDocumentCookie(cookie, () => {
           const [command] = runSnippet(
             cookie,
-            buildConsentBootstrapSnippet(REPROMPT_BELOW_VERSION, unanswered)
+            buildConsentBootstrapSnippet({
+              repromptBelow: REPROMPT_BELOW_VERSION,
+              unanswered,
+            })
           ) as Array<[string, string, Record<string, string>]>;
 
           expect({ ...command[2] }).toEqual({
             ...consentStateFrom(
-              readStoredChoices(REPROMPT_BELOW_VERSION, unanswered)
+              readStoredChoices({
+                repromptBelow: REPROMPT_BELOW_VERSION,
+                unanswered,
+              })
             ),
           });
         });

@@ -30,11 +30,11 @@ export function getCookieConsent(): CookieConsentPreferences | null {
 export function setCookieConsent(preferences: CookieConsentPreferences): void {
   if (typeof window === "undefined") return;
 
-  writeCookie(
-    CONSENT_COOKIE_NAME,
-    JSON.stringify(preferences),
-    consentMaxAge(preferences)
-  );
+  writeCookie({
+    name: CONSENT_COOKIE_NAME,
+    value: JSON.stringify(preferences),
+    maxAgeSeconds: consentMaxAge({ choices: preferences }),
+  });
 }
 
 /**

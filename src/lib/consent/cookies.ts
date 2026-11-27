@@ -46,11 +46,15 @@ export function cookieNames(): string[] {
  * reads these on the server. SameSite=Lax so a click arriving from an ad
  * still carries them.
  */
-export function writeCookie(
-  name: string,
-  value: string,
-  maxAgeSeconds: number
-): void {
+export function writeCookie({
+  name,
+  value,
+  maxAgeSeconds,
+}: {
+  name: string;
+  value: string;
+  maxAgeSeconds: number;
+}): void {
   try {
     document.cookie = `${name}=${encodeURIComponent(value)}; Max-Age=${maxAgeSeconds}; Path=/; SameSite=Lax${secureAttribute()}`;
   } catch {

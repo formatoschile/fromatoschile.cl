@@ -7,10 +7,10 @@ import { CONSENT_COOKIE_NAME } from "@/lib/consent/consent";
 import { readCookie } from "@/lib/consent/cookies";
 import {
   acceptAll,
-  CONSENT_CHANGE_EVENT,
   consentStateFromCookie,
   rejectAll,
   savePreferences,
+  subscribeToConsent,
 } from "@/lib/consent/store";
 
 export interface ConsentController {
@@ -31,8 +31,9 @@ const PREVIEW_PARAM = "consent-preview";
 /**
  * The consent UI's state, wired to the store in src/lib/consent. The source
  * of truth is the `cookie-consent` cookie, read through useSyncExternalStore
- * and re-read on every CONSENT_CHANGE_EVENT; the server renders no banner, so
- * a returning visitor never sees one flash.
+ * and re-read whenever subscribeToConsent reports a change — in this tab or
+ * another; the server renders no banner, so a returning visitor never sees
+ * one flash.
  *
  * State is derived from the snapshot value (consentStateFromCookie), never by
  * reading the cookie again during render: the React Compiler memoises calls
@@ -44,7 +45,7 @@ const PREVIEW_PARAM = "consent-preview";
  */
 export function useConsentController(): ConsentController {
   const snapshot = useSyncExternalStore(
-    subscribe,
+    subscribeToConsent,
     getSnapshot,
     getServerSnapshot
   );
@@ -82,7 +83,7 @@ export function useConsentController(): ConsentController {
   );
 
   return {
-    isBannerVisible: Boolean(state?.showBanner) || isPreview,
+    isBannerVisible: Boolean(state?.shouldShowBanner) || isPreview,
     isSettingsOpen,
     choices: {
       analytics: state?.hasAnalyticsConsent ?? false,
@@ -94,11 +95,6 @@ export function useConsentController(): ConsentController {
     rejectAll: handleRejectAll,
     savePreferences: handleSave,
   };
-}
-
-function subscribe(onChange: () => void): () => void {
-  document.addEventListener(CONSENT_CHANGE_EVENT, onChange);
-  return () => document.removeEventListener(CONSENT_CHANGE_EVENT, onChange);
 }
 
 // The raw cookie value: a string, so React compares snapshots by value.

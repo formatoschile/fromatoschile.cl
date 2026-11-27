@@ -22,7 +22,10 @@ const NAMES = [
 describe("googleCookiesToClear", () => {
   test("refusing everything clears Analytics and Ads cookies only", () => {
     expect(
-      googleCookiesToClear(NAMES, { analytics: false, advertising: false })
+      googleCookiesToClear({
+        names: NAMES,
+        choices: { analytics: false, advertising: false },
+      })
     ).toEqual([
       "_ga",
       "_ga_HE87DHS09F",
@@ -36,16 +39,25 @@ describe("googleCookiesToClear", () => {
 
   test("each category clears only its own cookies", () => {
     expect(
-      googleCookiesToClear(NAMES, { analytics: false, advertising: true })
+      googleCookiesToClear({
+        names: NAMES,
+        choices: { analytics: false, advertising: true },
+      })
     ).toEqual(["_ga", "_ga_HE87DHS09F"]);
     expect(
-      googleCookiesToClear(NAMES, { analytics: true, advertising: false })
+      googleCookiesToClear({
+        names: NAMES,
+        choices: { analytics: true, advertising: false },
+      })
     ).toEqual(["_gcl_au", "_gcl_aw", "_gcl_dc", "_fbp", "_fbc"]);
   });
 
   test("granting both clears nothing", () => {
     expect(
-      googleCookiesToClear(NAMES, { analytics: true, advertising: true })
+      googleCookiesToClear({
+        names: NAMES,
+        choices: { analytics: true, advertising: true },
+      })
     ).toEqual([]);
   });
 });

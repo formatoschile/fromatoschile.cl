@@ -6,19 +6,13 @@ import {
   CONSENT_MAX_AGE,
   isStandingRecord,
   REJECTION_MAX_AGE,
-  REPROMPT_BELOW_VERSION,
 } from "./consent";
 import type { StoredConsent } from "./consent";
 import { createDefaultPreferences, getCookieConsent } from "./preferences";
 
 /** The standing-record rule with the banner ON: refusals kept 30 days. */
 function isValidBannerOn(record: StoredConsent | null): boolean {
-  return isStandingRecord(
-    record,
-    REPROMPT_BELOW_VERSION,
-    Date.now(),
-    REJECTION_MAX_AGE
-  );
+  return isStandingRecord({ record, refusalMaxAge: REJECTION_MAX_AGE });
 }
 
 /**
@@ -201,12 +195,7 @@ describe("isStandingRecord, banner on", () => {
     refusal.timestamp = new Date(Date.now() - 200 * 86_400_000).toISOString();
 
     expect(
-      isStandingRecord(
-        refusal,
-        REPROMPT_BELOW_VERSION,
-        Date.now(),
-        CONSENT_MAX_AGE
-      )
+      isStandingRecord({ record: refusal, refusalMaxAge: CONSENT_MAX_AGE })
     ).toBe(true);
   });
 

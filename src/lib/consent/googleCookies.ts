@@ -12,10 +12,13 @@ const ANALYTICS_COOKIE = /^_ga(_.+)?$/;
 const ADVERTISING_COOKIE = /^(_gcl_.+|_fbp|_fbc)$/;
 
 /** The Google cookies on this page that `choices` no longer allows. */
-export function googleCookiesToClear(
-  names: readonly string[],
-  choices: ConsentChoices
-): string[] {
+export function googleCookiesToClear({
+  names,
+  choices,
+}: {
+  names: readonly string[];
+  choices: ConsentChoices;
+}): string[] {
   return names.filter(
     (name) =>
       (!choices.analytics && ANALYTICS_COOKIE.test(name)) ||
@@ -36,7 +39,7 @@ export function googleCookiesToClear(
  * host, so expireCookie tries every parent domain as well as host-only.
  */
 export function clearGoogleCookies(choices: ConsentChoices): void {
-  for (const name of googleCookiesToClear(cookieNames(), choices)) {
+  for (const name of googleCookiesToClear({ names: cookieNames(), choices })) {
     expireCookie(name);
   }
 }
