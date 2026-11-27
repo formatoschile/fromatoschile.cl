@@ -39,7 +39,8 @@ Analytics; not data sale). Not through Tag Manager — they go straight to
 
 All three carry `currency`, `value` (total paid, IVA included), `items` in the
 same format as the site's events, the real `page_location` / `page_referrer`
-(the sandbox would report its own URL), and — so checkout stays in the
+(the sandbox would report its own URL), without query string — checkout URLs carry
+session tokens, and — so checkout stays in the
 visitor's journey — the `client_id` from the site's `_ga` cookie and the
 `session_id` from `_ga_JTP6VGESGM` (both set on gtag's `config`, so they go
 out as `cid` / `sid`). Without those cookies, or if they cannot be read, the

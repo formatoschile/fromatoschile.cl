@@ -87,7 +87,15 @@ function runPixel({
       },
     },
   };
-  const init = { customerPrivacy: privacy };
+  const init = {
+    customerPrivacy: privacy,
+    context: {
+      document: {
+        location: { href: CHECKOUT_URL + "?_r=secret&_s=abc&_y=def" },
+        referrer: "https://www.formatoschile.cl/",
+      },
+    },
+  };
   const customerPrivacy = {
     subscribe: (_name: string, handler: Handler) => {
       consentHandler = handler;
@@ -133,7 +141,7 @@ function checkoutEvent({
   return {
     context: {
       document: {
-        location: { href: "https://checkout.formatoschile.cl/checkouts/abc" },
+        location: { href: CHECKOUT_URL + "?_r=secret&_s=abc#step" },
         referrer: "https://www.formatoschile.cl/product/contrato",
       },
     },
@@ -169,6 +177,8 @@ function configCall(calls: unknown[][]) {
   return calls.find(([kind]) => kind === "config");
 }
 
+const CHECKOUT_URL = "https://checkout.formatoschile.cl/checkouts/cn/abc/es-cl";
+
 const COOKIES = {
   _ga: "GA1.1.123456789.1700000000",
   _ga_JTP6VGESGM: "GS2.1.s1764240000$o3$g1$t1764240100$j60$l0$h0",
@@ -185,6 +195,8 @@ describe("GA4 checkout pixel", () => {
       {
         send_page_view: false,
         client_storage: "none",
+        page_location: CHECKOUT_URL,
+        page_referrer: "https://www.formatoschile.cl/",
         client_id: "123456789.1700000000",
         session_id: "1764240000",
       },
@@ -204,7 +216,7 @@ describe("GA4 checkout pixel", () => {
       send_to: "G-JTP6VGESGM",
       currency: "CLP",
       value: 14990,
-      page_location: "https://checkout.formatoschile.cl/checkouts/abc",
+      page_location: CHECKOUT_URL,
       page_referrer: "https://www.formatoschile.cl/product/contrato",
       items: [
         {

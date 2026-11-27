@@ -26,7 +26,11 @@
  *     origin and would otherwise mint its own, different client ID.
  *
  * The sandbox reports its own URL to gtag, so every event carries the real
- * top-frame page_location from the event context.
+ * top-frame page_location from the event context — without its query string,
+ * which on checkout holds session tokens (`_r`, `_s`, `_y`). The same clean
+ * URL goes on the `config` call, so the page_view GA4's enhanced measurement
+ * sends when the sandbox mirrors the checkout URL shows the checkout page,
+ * not the sandbox address.
  *
  * Items use the same fields as the site (src/lib/analytics/items.ts):
  * item_id = numeric variant ID, item_name, item_category = product type,
@@ -137,6 +141,9 @@ async function configure() {
     send_page_view: false,
     client_storage: "none",
   };
+  const page = initialPage();
+  if (page.location) config.page_location = page.location;
+  if (page.referrer) config.page_referrer = page.referrer;
   const clientId = clientIdFrom({ cookie: ga });
   if (clientId) config.client_id = clientId;
   const sessionId = sessionIdFrom({ cookie: gaSession });
@@ -165,8 +172,8 @@ async function send({ event, name, onceKey, extra }) {
       items: (checkout.lineItems || []).map(function (line) {
         return toItem({ line });
       }),
-      page_location: event.context.document.location.href,
-      page_referrer: event.context.document.referrer,
+      page_location: cleanUrl({ url: event.context.document.location.href }),
+      page_referrer: cleanUrl({ url: event.context.document.referrer }),
     },
     extra || {}
   );
@@ -236,6 +243,27 @@ async function markSent({ key }) {
     await browser.localStorage.setItem(SENT_KEY_PREFIX + key, "1");
   } catch {
     // Best effort: a failed mark risks one duplicate on a later load.
+  }
+}
+
+/** The top-frame page at load, from Shopify's `init` context, cleaned. */
+function initialPage() {
+  const doc = init && init.context && init.context.document;
+  if (!doc) return {};
+  return {
+    location: cleanUrl({ url: doc.location && doc.location.href }),
+    referrer: cleanUrl({ url: doc.referrer }),
+  };
+}
+
+/** Origin and path only: no query string or hash (checkout tokens). */
+function cleanUrl({ url }) {
+  if (!url) return undefined;
+  try {
+    const parsed = new URL(url);
+    return parsed.origin + parsed.pathname;
+  } catch {
+    return String(url).split(/[?#]/)[0];
   }
 }
 
