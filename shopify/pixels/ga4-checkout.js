@@ -26,11 +26,16 @@
  *     origin and would otherwise mint its own, different client ID.
  *
  * The sandbox reports its own URL to gtag, so every event carries the real
- * top-frame page_location from the event context — without its query string,
- * which on checkout holds session tokens (`_r`, `_s`, `_y`). The same clean
- * URL goes on the `config` call, so the page_view GA4's enhanced measurement
- * sends when the sandbox mirrors the checkout URL shows the checkout page,
- * not the sandbox address.
+ * top-frame page_location from the event context, cleaned: no query string
+ * or hash (session tokens `_r`, `_s`, `_y`), and the checkout / order ID in
+ * the path replaced by `(token)`. So no identifier reaches GA4, and every
+ * checkout reports as one page, every thank-you page as another.
+ *
+ * The page at load, cleaned the same way, also goes on the `config` call:
+ * gtag uses it for hits that set no page_location of their own — notably
+ * the page_view GA4's enhanced measurement sends when the sandbox mirrors
+ * the checkout URL — instead of the sandbox's own address. It stays the
+ * page at load; our three events always set their own.
  *
  * Items use the same fields as the site (src/lib/analytics/items.ts):
  * item_id = numeric variant ID, item_name, item_category = product type,
@@ -256,15 +261,23 @@ function initialPage() {
   };
 }
 
-/** Origin and path only: no query string or hash (checkout tokens). */
+/**
+ * Origin and path only — no query string or hash — with checkout and order
+ * IDs in the path masked:
+ * `/checkouts/cn/hWNJ…/thank-you?_r=…` → `/checkouts/cn/(token)/thank-you`.
+ */
 function cleanUrl({ url }) {
   if (!url) return undefined;
+  let base;
   try {
     const parsed = new URL(url);
-    return parsed.origin + parsed.pathname;
+    base = parsed.origin + parsed.pathname;
   } catch {
-    return String(url).split(/[?#]/)[0];
+    base = String(url).split(/[?#]/)[0];
   }
+  return base
+    .replace(/\/checkouts\/([a-z]{1,2}\/)?[^/]+/, "/checkouts/$1(token)")
+    .replace(/\/orders\/[^/]+/, "/orders/(token)");
 }
 
 /** `gid://shopify/ProductVariant/123` → "123"; "123" stays "123". */
