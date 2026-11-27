@@ -464,7 +464,7 @@ then refunded. Check in order:
 ### Checklist
 
 - [ ] F&I app on the same Pixel; Purchase deduplicated, value and IDs correct
-- [ ] GA4 route chosen (app or custom pixel), reason recorded here
+- [x] GA4 route chosen (27 November 2026): **custom pixel** for `begin_checkout`, `add_payment_info`, `purchase` — full control of `item_id` (numeric variant ID), `value` and session stitching via the `_ga` client ID. The Google & YouTube app comes later, only if/when the client wants Google Shopping (Merchant Center feed), with its GA4 measurement **off** so purchases are not counted twice
 - [ ] Purchase in the same session as the site's events
 - [ ] `item_id` aligned across site, app and pixel
 - [ ] Consent honoured on checkout, both ways
