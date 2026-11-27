@@ -60,7 +60,7 @@ Checked 25 November 2026.
 - **Shopify Analytics sees orders but not the storefront.** On a headless store Shopify only knows what happens on its own pages, so its sessions, conversion rate and "online store" reports are empty or wrong unless the site sends Shopify's analytics events. See phase 2.
 - **Taxes:** "prices include tax" is **off** and every product is taxable. Under review by the client (product audit, 25 November 2026). It matters here because purchase `value` is sent with or without IVA depending on the answer — decide before phase 4, and say in the docs which one it is.
 
-**Accounts:** none exists yet — no Tag Manager container, GA4 property, Google Ads account, Search Console property, or Meta Business / ad account / Pixel (confirmed 27 November 2026). We create the Google ones under the client's Google identity; the client creates the Meta ones and adds us.
+**Accounts:** none existed (confirmed 27 November 2026). The Google ones were created that day under contacto@formatoschile.cl — IDs in the phase 1 checklist. The client creates the Meta ones and adds us.
 
 ### How a visitor buys
 
@@ -176,11 +176,15 @@ leave.
 ### Checklist
 
 - [x] Inventory of existing Google / Meta accounts: none exist (27 November 2026)
-- [ ] GTM container created, IDs recorded here
-- [ ] GA4 property and stream, settings as above
+- [x] GTM container created, 27 November 2026: account **Formatos Chile** (6408506697), web container **`www.formatoschile.cl`**, ID **`GTM-WQN2XMW4`**, under contacto@formatoschile.cl; anonymous data sharing off
+- [x] GA4 property and stream, 27 November 2026: account **Formatos Chile**, property **`www.formatoschile.cl`** (Chile/Santiago, CLP), web stream ID `16428237288`, measurement ID **`G-JTP6VGESGM`**. Enhanced measurement: page views, outbound clicks, video, file downloads on; scroll, site search, form interactions off. Account data sharing: model contributions and technical support on; Google products and business recommendations off. (GA4 also auto-created a Google tag `GTM-WS55WT3Q` — not used; the site loads our GTM container)
+- [x] GA4 data retention 14 months, event and user data (27 November 2026). Property ID `566010437`, account ID `417563539`
+- [x] GA4 Google signals on, all territories (27 November 2026; Google's advertising-features policy accepted on the client's account with Davide's approval)
 - [ ] Meta Business, ad account, Pixel; domain verified
-- [ ] Search Console property and sitemap; linked to GA4
-- [ ] Google Ads linked (if used)
+- [x] Search Console property and sitemap; linked to GA4 (27 November 2026). Domain property `sc-domain:formatoschile.cl` under contacto@formatoschile.cl, verified automatically by the existing `google-site-verification` TXT in Vercel DNS — **do not remove that record**. Sitemap `https://www.formatoschile.cl/sitemap.xml` submitted, 149 pages discovered. Linked to GA4 stream `www.formatoschile.cl`
+- [x] Google Ads account created, 27 November 2026: customer ID **`280-690-9452`** "Formatos Chile", under contacto@formatoschile.cl, no campaign. Permanent settings: billing country **Chile**, time zone **Chile (Santiago)**, currency **CLP**
+- [ ] Google Ads billing: **not set up, by decision** (27 November 2026). Until it is, Google redirects every visit to the billing page, so the account cannot be opened, linked to GA4 or given auto-tagging. Payments profile to use: FORMATOS CHILE SpA (9661-5763-6082, shared with Workspace). New-advertiser offer shown: spend USD 350, get USD 350 credit, before 26 January 2027
+- [ ] Google Ads linked to GA4, auto-tagging on (after billing)
 - [ ] F&I app installed and on the same Pixel (after approval)
 - [ ] Google & YouTube app installed and on the same property (after approval)
 - [ ] Shopify customer privacy settings recorded
