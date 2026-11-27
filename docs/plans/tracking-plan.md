@@ -299,7 +299,14 @@ like a tag that fired. Do **not** loosen to `*` or `https:`.
 
 ### Testing
 
-Preview deployment (with a temporary GTM ID) + Tag Assistant: walk catalogue →
+GTM loads only where `NEXT_PUBLIC_GTM_ID` is set, which is Vercel Production —
+so a preview deployment cannot be tested with Tag Assistant as first planned.
+Test instead with Tag Assistant against either production itself (preview
+mode only affects the browser that connected it, and the container's
+non-production exception does not apply to `www.formatoschile.cl`), or a local
+production build started with the ID for that command only
+(`NEXT_PUBLIC_GTM_ID=GTM-WQN2XMW4 bun run build && bunx next start`) — whose
+hits the non-production exception then blocks. Walk catalogue →
 product → preview → add to cart → cart → checkout click, and "Compra" from a
 card. Every event arrives once, with the right `items`, and no label carries
 over. A smoke test like RK's `test:tracking` (agent-browser walking the funnel
@@ -317,7 +324,7 @@ that catches tracking quietly dying after an unrelated refactor.
 - [ ] `sendShopifyAnalytics` (if decided)
 - [x] CSP widened per vendor, commented: GTM + GA4 + Google signals hosts (27 November 2026, `next.config.ts`). Zero tracking-related violations on a local production build with the container loaded. Meta and Google Ads hosts to add when they are used. Unrelated, pre-existing: a `blob:` worker is refused (`worker-src` falls back to `script-src`) — likely Sentry's; to look at separately
 - [x] `NEXT_PUBLIC_GTM_ID` in `src/env.ts`; loader inlined in the root layout right after the consent default (`src/lib/analytics/gtm.ts`). **To set in Vercel: `GTM-WQN2XMW4`, Production environment only**
-- [ ] Tested on a preview with Tag Assistant, desktop and phone
+- [ ] Tested with Tag Assistant (production, or a local production build with the ID), desktop and phone
 - [ ] Smoke test
 - [x] `docs/tracking-events.md`: every event, its fields and what it means
 

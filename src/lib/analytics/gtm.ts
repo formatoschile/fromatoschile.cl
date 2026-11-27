@@ -15,21 +15,26 @@
  * it would fire before consent could exist (RK, phase 3).
  */
 
-/** A GTM web container ID, e.g. GTM-WQN2XMW4. */
-const GTM_ID_PATTERN = /^GTM-[A-Z0-9]+$/;
+/**
+ * A GTM web container ID, e.g. GTM-WQN2XMW4. The one definition: src/env.ts
+ * validates NEXT_PUBLIC_GTM_ID with it too, so the two checks cannot drift.
+ */
+export const GTM_ID_PATTERN = /^GTM-[A-Z0-9]+$/;
 
 /**
  * Google's standard loader, minus the `l` parameter (we use the default
- * `dataLayer`). Throws on anything that is not a container ID, because the
- * value is interpolated into a script.
+ * `dataLayer`). Returns null for anything that is not a container ID — the
+ * value is interpolated into a script, and the root layout calls this on
+ * every page, so a bad ID must mean "no GTM", never a 500. (Env validation
+ * normally rejects it at startup; SKIP_ENV_VALIDATION turns that off.)
  */
 export function buildGtmSnippet({
   containerId,
 }: {
   containerId: string;
-}): string {
+}): string | null {
   if (!GTM_ID_PATTERN.test(containerId)) {
-    throw new Error(`Not a Tag Manager container ID: ${containerId}`);
+    return null;
   }
 
   return [

@@ -49,6 +49,10 @@ interface RootLayoutProps {
 const RootLayout: React.FC<RootLayoutProps> = async ({ children }) => {
   // Don't await the fetch — pass the Promise to CartHydrator to resolve.
   const cart = getCart();
+  // null when unset (everywhere but Production) or not a valid ID.
+  const gtmSnippet = env.NEXT_PUBLIC_GTM_ID
+    ? buildGtmSnippet({ containerId: env.NEXT_PUBLIC_GTM_ID })
+    : null;
 
   return (
     <html lang="es-CL" className={afacad.variable}>
@@ -64,13 +68,11 @@ const RootLayout: React.FC<RootLayoutProps> = async ({ children }) => {
         {/* Tag Manager, strictly after the consent default. Production only:
             NEXT_PUBLIC_GTM_ID is unset everywhere else. See
             src/lib/analytics/gtm.ts. */}
-        {env.NEXT_PUBLIC_GTM_ID ? (
+        {gtmSnippet ? (
           <script
             id="gtm-loader"
             /* oxlint-disable-next-line react/no-danger -- Google's loader built from a validated container ID; tested in src/lib/analytics/gtm.test.ts */
-            dangerouslySetInnerHTML={{
-              __html: buildGtmSnippet({ containerId: env.NEXT_PUBLIC_GTM_ID }),
-            }}
+            dangerouslySetInnerHTML={{ __html: gtmSnippet }}
           />
         ) : null}
       </head>

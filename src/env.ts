@@ -1,6 +1,8 @@
 import { createEnv } from "@t3-oss/env-nextjs";
 import { z } from "zod";
 
+import { GTM_ID_PATTERN } from "@/lib/analytics/gtm";
+
 export const env = createEnv({
   server: {
     SHOPIFY_STORE_DOMAIN: z
@@ -26,10 +28,7 @@ export const env = createEnv({
     // Google Tag Manager web container. Set in Vercel's Production
     // environment ONLY, so previews and localhost never send data
     // (docs/plans/tracking-plan.md, phase 2). Unset = no GTM on the page.
-    NEXT_PUBLIC_GTM_ID: z
-      .string()
-      .regex(/^GTM-[A-Z0-9]+$/)
-      .optional(),
+    NEXT_PUBLIC_GTM_ID: z.string().regex(GTM_ID_PATTERN).optional(),
   },
   runtimeEnv: {
     SHOPIFY_STORE_DOMAIN: process.env.SHOPIFY_STORE_DOMAIN,
@@ -45,4 +44,7 @@ export const env = createEnv({
     NEXT_PUBLIC_GTM_ID: process.env.NEXT_PUBLIC_GTM_ID,
   },
   skipValidation: !!process.env.SKIP_ENV_VALIDATION,
+  // A variable set to "" (as in .env.example, or blank in Vercel) counts as
+  // unset, so optional ones like NEXT_PUBLIC_GTM_ID don't fail validation.
+  emptyStringAsUndefined: true,
 });

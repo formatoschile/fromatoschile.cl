@@ -16,47 +16,80 @@ import { withSentryConfig } from '@sentry/nextjs/config';
 // scanned PDFs.
 //
 // Tracking vendors (docs/plans/tracking-plan.md, phase 2, "CSP"): hosts from
-// Google's CSP guide for Tag Manager + GA4, including the Google signals
-// hosts (signals is on). A refused script looks, from GTM, exactly like a
-// fired one — check the browser console for violations after any change.
-// Never widen to `*` or `https:`. Meta and Google Ads join when they are
-// used.
+// Google's CSP guide for Tag Manager + GA4, its Tag Assistant preview mode,
+// and the Google signals hosts (signals is on). A refused script looks, from
+// GTM, exactly like a fired one — check the browser console for violations
+// after any change. Never widen to `*` or `https:`. Meta and Google Ads join
+// when they are used.
+//
+// No 'unsafe-eval', deliberately: GTM evaluates Custom JavaScript variables
+// with eval, so the container must not use any — they would silently come
+// out undefined while the tags still show as fired. Use built-in variables or
+// read values the site pushes to the dataLayer instead.
+//
+// Google signals sends to the visitor's own country Google domain, and a CSP
+// cannot wildcard a TLD. Chile plus the nearby markets and google.com are
+// listed; signals hits from elsewhere are dropped — accepted, since signals
+// only feeds demographics and remarketing reach, never orders or funnels.
+const GOOGLE_SIGNALS_HOSTS = [
+  'https://*.g.doubleclick.net',
+  'https://www.google.com',
+  'https://www.google.cl',
+  'https://www.google.com.ar',
+  'https://www.google.com.pe',
+  'https://www.google.com.co',
+  'https://www.google.com.mx',
+  'https://www.google.es',
+];
+
 const CSP_DIRECTIVES: Record<string, string[]> = {
   'default-src': ["'self'"],
   'script-src': [
     "'self'",
     "'unsafe-inline'",
     "'wasm-unsafe-eval'",
-    'https://www.googletagmanager.com', // GTM container + Google tag (gtag.js)
+    'https://*.googletagmanager.com', // GTM container + Google tag (gtag.js)
+    'https://tagmanager.google.com', // Tag Assistant preview
   ],
-  'style-src': ["'self'", "'unsafe-inline'"],
+  // Workers from blob: URLs — Sentry Replay's compression worker. Without
+  // this directive workers fall back to script-src, which refuses blob:.
+  'worker-src': ["'self'", 'blob:'],
+  'style-src': [
+    "'self'",
+    "'unsafe-inline'",
+    'https://*.googletagmanager.com', // Tag Assistant preview
+    'https://tagmanager.google.com', // Tag Assistant preview
+    'https://fonts.googleapis.com', // Tag Assistant preview
+  ],
   'img-src': [
     "'self'",
     'data:',
     'https://cdn.shopify.com', // product images
     'https://*.google-analytics.com', // GA4 hits sent as images
-    'https://www.googletagmanager.com', // GTM / Google tag pixels
-    'https://*.g.doubleclick.net', // Google signals
-    'https://www.google.com', // Google signals
-    'https://www.google.cl', // Google signals (country domain)
+    'https://*.googletagmanager.com', // GTM / Google tag pixels
+    'https://ssl.gstatic.com', // Tag Assistant preview
+    'https://www.gstatic.com', // Tag Assistant preview
+    ...GOOGLE_SIGNALS_HOSTS, // Google signals
   ],
-  'font-src': ["'self'", 'data:'],
+  'font-src': [
+    "'self'",
+    'data:',
+    'https://fonts.gstatic.com', // Tag Assistant preview
+  ],
   'connect-src': [
     "'self'",
     'https://cdn.shopify.com', // pdf.js preview fetches
     'https://*.google-analytics.com', // GA4 collect
     'https://*.analytics.google.com', // GA4 collect (regional endpoints)
-    'https://www.googletagmanager.com', // Google tag
-    'https://*.g.doubleclick.net', // Google signals
-    'https://www.google.com', // Google signals
-    'https://www.google.cl', // Google signals (country domain)
+    'https://*.googletagmanager.com', // Google tag
+    ...GOOGLE_SIGNALS_HOSTS, // Google signals
   ],
   'object-src': ["'none'"],
   'base-uri': ["'self'"],
   'form-action': ["'self'"],
   'frame-ancestors': ["'none'"],
   'frame-src': [
-    'https://www.googletagmanager.com', // Tag Assistant preview / debug mode
+    'https://*.googletagmanager.com', // Tag Assistant preview / debug mode
   ],
 };
 

@@ -35,7 +35,7 @@ function runLayoutScripts(containerId: string) {
   // oxlint-disable-next-line no-new-func -- executing our own snippets, as the browser does
   new Function(CONSENT_BOOTSTRAP_SNIPPET)();
   // oxlint-disable-next-line no-new-func -- ditto
-  new Function(buildGtmSnippet({ containerId }))();
+  new Function(buildGtmSnippet({ containerId }) ?? "")();
 
   const { window: fakeWindow } = globalThis as unknown as {
     window: { dataLayer: unknown[] };
@@ -64,9 +64,9 @@ describe("buildGtmSnippet", () => {
   });
 
   test.each(["", "G-JTP6VGESGM", "GTM-abc", "GTM-1'); alert(1); ('"])(
-    "refuses %p",
+    "refuses %p without throwing — no GTM rather than a broken page",
     (containerId) => {
-      expect(() => buildGtmSnippet({ containerId })).toThrow();
+      expect(buildGtmSnippet({ containerId })).toBeNull();
     }
   );
 });
