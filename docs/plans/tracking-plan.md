@@ -58,7 +58,7 @@ Checked 25 November 2026.
 - Delivery is the **Digital Products** app: download block on the Thank you and Order status pages, Spanish email.
 - **Apps installed:** Digital Products, Messaging, `formatos-thumbnails` (ours). **No Facebook & Instagram app, no Google & YouTube app. Customer events: nothing configured** (to confirm in phase 1).
 - **Shopify Analytics sees orders but not the storefront.** On a headless store Shopify only knows what happens on its own pages, so its sessions, conversion rate and "online store" reports are empty or wrong unless the site sends Shopify's analytics events. See phase 2.
-- **Taxes:** "prices include tax" is **off** and every product is taxable. Under review by the client (product audit, 25 November 2026). It matters here because purchase `value` is sent with or without IVA depending on the answer — decide before phase 4, and say in the docs which one it is.
+- **Taxes:** Chile is collecting IVA. Until 27 November 2026 "Include sales tax in product price" was **off**, so checkout added 19% on top of prices that already include IVA ($14.990 became $17.838). The client confirmed prices include IVA; the setting was switched **on** that day and checkout now shows $14.990 "Incluye $2.393 de impuestos". No orders had been placed before the fix. Purchase `value` is therefore the total paid, IVA included; net = value ÷ 1.19 or Shopify's tax breakdown.
 
 **Accounts:** none existed (confirmed 27 November 2026). The Google ones were created that day under contacto@formatoschile.cl — IDs in the phase 1 checklist. The client creates the Meta ones and adds us.
 
@@ -87,7 +87,7 @@ Each is the client's call (Seba / Cami) and blocks the phase it sits in.
 | --- | --- | --- |
 | ~~Install the Facebook & Instagram app~~ | **Approved by Seba, 27 November 2026.** Connecting it waits for the client's Meta Business account | Phase 1, 4 |
 | ~~Install the Google & YouTube app~~ | **Approved by Seba, 27 November 2026** (phase 4 may still replace its GA4 side with a custom pixel) | Phase 1, 4 |
-| Prices with or without IVA, and therefore what `value` means | The client (product audit) | Phase 4 |
+| ~~Prices with or without IVA~~ | **Settled 27 November 2026: listed prices include IVA.** Shopify's "Include sales tax in product price" switched on the same day (it was off, so checkout added 19% on top — no orders had been placed). `value` = what the customer pays, IVA included | Phase 4 |
 | ~~Banner on or off at launch~~ | **Settled 25 November 2026: off at launch, behind a flag** — as RK. See phase 3 | Phase 3 |
 | ~~When to switch the banner on~~ | **Settled 27 November 2026: on from 15 October 2027**, the day Ley 21.719 takes effect (Ley 21.855). See phase 3 | Phase 3 |
 | Banner copy, cookie policy and privacy policy wording | The client writes it; we supply the inventory | Phase 3 |
