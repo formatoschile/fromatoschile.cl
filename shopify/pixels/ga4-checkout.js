@@ -19,8 +19,8 @@
  *   - session_id comes from the `_ga_<stream>` cookie, so checkout lands in the
  *     visitor's current session, not a new one. Both IDs are set on the
  *     `config` call, where gtag treats them as fields (`cid`, `sid`), not as
- *     event parameters (`ep.session_id`). Verify `sid=` in the collect request
- *     during the test order;
+ *     event parameters (`ep.session_id`) — verified live in the collect
+ *     request, 27 November 2026;
  *   - a cookie that cannot be read counts as missing: events still go out;
  *   - gtag here stores nothing (client_storage: none) — the sandbox is another
  *     origin and would otherwise mint its own, different client ID.
