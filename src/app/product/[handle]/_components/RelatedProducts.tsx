@@ -3,6 +3,7 @@ import { ITEM_LISTS, toAnalyticsItem } from "@/lib/analytics";
 import { getProducts } from "@/lib/shopify";
 import { buildProductSearchQuery } from "@/lib/shopify/search";
 
+import { RELATED_ITEM_CLASS, RELATED_LIST_CLASS } from "./relatedLayout";
 import { RelatedProductCard } from "./RelatedProductCard";
 
 const RELATED_PRODUCTS_LIMIT = 4;
@@ -38,9 +39,9 @@ export const RelatedProducts: React.FC<RelatedProductsProps> = async ({
       <h2 className="text-ink mb-6 text-2xl font-normal">
         Documentos similares
       </h2>
-      <ul className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <ul className={RELATED_LIST_CLASS}>
         {relatedProducts.map((product, index) => (
-          <li key={product.handle}>
+          <li key={product.handle} className={RELATED_ITEM_CLASS}>
             <RelatedProductCard
               product={product}
               analyticsItem={analyticsItems[index]}
