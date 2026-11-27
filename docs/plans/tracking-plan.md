@@ -509,7 +509,7 @@ threshold). Proportions between steps hold; totals are an undercount.
 
 - [x] Container: Google tag, ecommerce tag, `fc_` forwarder, non-production exception — imported from `docs/gtm/container-v1.json` (27 November 2026). Meta tags still to come (waiting on the client's Meta accounts). No Custom JavaScript variables, by design: the CSP has no 'unsafe-eval'
 - [x] Consent settings per the runbook (consent overview on; all three Google tags built-in consent only, none unconfigured); **published 27 November 2026, 13:57 Santiago — GTM version 2 "v1 - GA4 + Consent Mode v2 (banner off)". Reporting baseline**
-- [ ] Container v2 (`docs/gtm/container-v2.json`): both GA4 event tags send `page_location` from the dataLayer, so events on a client-side navigation are credited to the new page, not the previous one (found in review, 27 November 2026). Import over the workspace and publish after the code that pushes `page_location` is deployed — either order is safe, an empty value falls back to GA4's own
+- [x] Container v2 (`docs/gtm/container-v2.json`): both GA4 event tags send `page_location` from the dataLayer, so events on a client-side navigation are credited to the new page, not the previous one (found in review, 27 November 2026). **Published 27 November 2026, 14:26 Santiago — GTM version 3 "v2 - page_location on GA4 events"**, after the code was live. Verified in Tag Assistant and DebugView: `view_item` after a client-side navigation carries the product URL
 - [ ] Custom dimensions registered
 - [ ] `purchase` marked key event (after it has arrived once)
 - [ ] Audiences built
