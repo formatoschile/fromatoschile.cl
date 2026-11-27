@@ -5,10 +5,14 @@ means. The plan behind it is `docs/plans/tracking-plan.md` (phase 2); this file
 describes what the code actually does. **Change both together**: if an event is
 added, renamed or changes meaning, update this file in the same commit.
 
-Code: `src/lib/analytics/` (helper, constants, item mapper) and
+Code: `src/lib/analytics/` (helper, constants, item mapper, GTM loader) and
 `src/components/Analytics/` (React wrappers). Events are pushed whether or not
-Tag Manager has loaded; GTM replays the queue when it does. Until a GTM ID is
-configured, nothing leaves the browser.
+Tag Manager has loaded; GTM replays the queue when it does.
+
+Tag Manager (`GTM-WQN2XMW4`) loads only where `NEXT_PUBLIC_GTM_ID` is set —
+Vercel Production. Locally and on previews nothing leaves the browser. On
+every page the dataLayer starts with the Consent Mode default
+(`src/lib/consent/consent.ts`), then GTM's `gtm.js`, then the site's events.
 
 ## What the site does *not* send
 

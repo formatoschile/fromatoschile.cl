@@ -23,6 +23,13 @@ export const env = createEnv({
   },
   client: {
     NEXT_PUBLIC_SENTRY_DSN: z.string().min(1).optional(),
+    // Google Tag Manager web container. Set in Vercel's Production
+    // environment ONLY, so previews and localhost never send data
+    // (docs/plans/tracking-plan.md, phase 2). Unset = no GTM on the page.
+    NEXT_PUBLIC_GTM_ID: z
+      .string()
+      .regex(/^GTM-[A-Z0-9]+$/)
+      .optional(),
   },
   runtimeEnv: {
     SHOPIFY_STORE_DOMAIN: process.env.SHOPIFY_STORE_DOMAIN,
@@ -35,6 +42,7 @@ export const env = createEnv({
     SITE_NAME: process.env.SITE_NAME,
     SENTRY_DSN: process.env.SENTRY_DSN,
     NEXT_PUBLIC_SENTRY_DSN: process.env.NEXT_PUBLIC_SENTRY_DSN,
+    NEXT_PUBLIC_GTM_ID: process.env.NEXT_PUBLIC_GTM_ID,
   },
   skipValidation: !!process.env.SKIP_ENV_VALIDATION,
 });

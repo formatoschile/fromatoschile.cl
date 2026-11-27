@@ -13,6 +13,7 @@ import { Navbar } from "@/components/layout/Navbar/Navbar";
 import { ToastContainer } from "@/components/ui/Toast/ToastContainer";
 import { ToastProvider } from "@/components/ui/Toast/ToastContext";
 import { env } from "@/env";
+import { buildGtmSnippet } from "@/lib/analytics/gtm";
 import { CONSENT_BOOTSTRAP_SNIPPET } from "@/lib/consent/consent";
 import { buildOrganizationJsonLd, buildWebSiteJsonLd } from "@/lib/seo/jsonLd";
 import { getCart } from "@/lib/shopify";
@@ -60,6 +61,18 @@ const RootLayout: React.FC<RootLayoutProps> = async ({ children }) => {
           /* oxlint-disable-next-line react/no-danger -- constant from our own code, no user input; tested in src/lib/consent/consent.test.ts */
           dangerouslySetInnerHTML={{ __html: CONSENT_BOOTSTRAP_SNIPPET }}
         />
+        {/* Tag Manager, strictly after the consent default. Production only:
+            NEXT_PUBLIC_GTM_ID is unset everywhere else. See
+            src/lib/analytics/gtm.ts. */}
+        {env.NEXT_PUBLIC_GTM_ID ? (
+          <script
+            id="gtm-loader"
+            /* oxlint-disable-next-line react/no-danger -- Google's loader built from a validated container ID; tested in src/lib/analytics/gtm.test.ts */
+            dangerouslySetInnerHTML={{
+              __html: buildGtmSnippet({ containerId: env.NEXT_PUBLIC_GTM_ID }),
+            }}
+          />
+        ) : null}
       </head>
       <body className="font-main">
         <a

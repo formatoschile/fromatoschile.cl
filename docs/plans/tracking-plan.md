@@ -315,8 +315,8 @@ that catches tracking quietly dying after an unrelated refactor.
 - [x] `fc_preview_open`, `fc_preview_page`, `fc_checkout_click` (both routes), `fc_checkout_error`, `fc_contact_click`, `fc_search`
 - [ ] Attribution cart attributes on `cartCreate`, gated on consent
 - [ ] `sendShopifyAnalytics` (if decided)
-- [ ] CSP widened per vendor, commented; zero violations on a preview
-- [ ] `NEXT_PUBLIC_GTM_ID` in `src/env.ts`, Production only
+- [x] CSP widened per vendor, commented: GTM + GA4 + Google signals hosts (27 November 2026, `next.config.ts`). Zero tracking-related violations on a local production build with the container loaded. Meta and Google Ads hosts to add when they are used. Unrelated, pre-existing: a `blob:` worker is refused (`worker-src` falls back to `script-src`) — likely Sentry's; to look at separately
+- [x] `NEXT_PUBLIC_GTM_ID` in `src/env.ts`; loader inlined in the root layout right after the consent default (`src/lib/analytics/gtm.ts`). **To set in Vercel: `GTM-WQN2XMW4`, Production environment only**
 - [ ] Tested on a preview with Tag Assistant, desktop and phone
 - [ ] Smoke test
 - [x] `docs/tracking-events.md`: every event, its fields and what it means
