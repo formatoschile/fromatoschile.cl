@@ -50,6 +50,59 @@ in the path replaced by `(token)`: checkout URLs carry session tokens, and
 this way every checkout reports as one page
 (`/checkouts/cn/(token)/es-cl`) and every thank-you page as another.
 
+## Campaign attributes on orders
+
+Not a dataLayer event: the campaign that brought the visitor travels to the
+Shopify order as **cart attributes**, so every order names its source in
+Shopify admin (order page → *Additional details*) and in the Admin API,
+whatever GA4 sees. Code: `src/lib/attribution/` and `src/components/cart/actions.ts`.
+
+| Attribute | Value |
+| --- | --- |
+| `_landing` | Path of the landing page (no query string) |
+| `_referrer` | External referrer, origin + path only; absent for direct and same-site |
+| `_landed_at` | ISO timestamp of that landing |
+| `_utm_source`, `_utm_medium`, `_utm_campaign`, `_utm_term`, `_utm_content` | From the landing URL |
+| `_gclid`, `_gbraid`, `_wbraid`, `_fbclid` | Ad click IDs from the landing URL |
+
+Only attributes with a value are sent. The underscore hides them from the
+buyer at checkout.
+
+- **Captured** in the browser on every full page load into the `fc_landing`
+  cookie (30 days, first-party, `SameSite=Lax`). Rule — *last campaign touch*:
+  a landing with any `utm_*` or click ID replaces what is stored; a bare
+  landing is stored only when nothing is, so an organic first visit is
+  recorded but never overwrites an earlier campaign. A **reload or
+  back/forward** visit is not a landing (it would let an old campaign URL
+  overwrite a newer one).
+- **Size-safe**: values are capped at 255 code points (an emoji is never
+  split), and the cookie is shrunk to fit ~3.8 KB encoded, so a long URL can
+  never make the browser silently drop the write.
+- **Referrer**: the current host, `*.formatoschile.cl` (site and checkout),
+  `shop.app` and `*.myshopify.com` are never a source — a visitor coming back
+  from checkout is not credited to checkout.
+- **Attached** server-side when the cart is created (`cartCreate`): the first
+  add to cart and every "Comprar ahora" (its own cart). Keys are fixed, values
+  cleaned and capped again; the cookie is client-written and treated as
+  untrusted. If Shopify rejects the attributes, the cart is created again
+  without them — tracking never blocks a purchase. A cart that already
+  existed before a new campaign landing keeps the attributes it was created
+  with.
+- **Advertising consent only**:
+  - nothing is captured without it; a visitor who lands before answering the
+    banner is captured **when they accept**, from the URL they arrived with;
+  - the server re-checks the `cookie-consent` cookie before attaching anything;
+  - a **refusal** deletes `fc_landing` with the other advertising cookies *and*
+    blanks the attributes already on the cart (`forgetCampaign` →
+    `cartAttributesUpdate` with every key set to an empty value — Shopify does
+    not document whether that mutation replaces or merges, and empty values
+    remove the data either way). `redirectToCheckout` repeats the blanking for
+    refusers, in case that call never landed;
+  - while the banner is off (`CONSENT_REQUIRED = false`) the default is granted.
+- **To verify on the first real order after deploy**: the attributes appear
+  under *Additional details*; and once, that a refusal before checkout leaves
+  them empty.
+
 ## Fields on every push
 
 | Field | Values | Notes |

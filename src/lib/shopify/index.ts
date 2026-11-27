@@ -18,6 +18,7 @@ export {
   getCart,
   removeFromCart,
   updateCart,
+  updateCartAttributes,
 } from "./cart";
 export type { ProductsPage } from "./products";
 export { getCollections, getPages, getProducts, getProductsPage };

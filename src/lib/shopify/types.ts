@@ -193,6 +193,7 @@ export type ShopifyCreateCartOperation = {
   data: { cartCreate: { cart: ShopifyCart; userErrors: ShopifyUserError[] } };
   variables: {
     lineItems?: { merchandiseId: string; quantity: number }[];
+    attributes?: { key: string; value: string }[];
   };
 };
 
@@ -245,6 +246,19 @@ export type ShopifyUpdateCartOperation = {
       merchandiseId: string;
       quantity: number;
     }[];
+  };
+};
+
+export type ShopifyUpdateCartAttributesOperation = {
+  data: {
+    cartAttributesUpdate: {
+      cart: ShopifyCart;
+      userErrors: ShopifyUserError[];
+    };
+  };
+  variables: {
+    cartId: string;
+    attributes: { key: string; value: string }[];
   };
 };
 

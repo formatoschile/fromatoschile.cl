@@ -6,10 +6,12 @@ import { cookieNames, expireCookie } from "./cookies";
  * and its per-property `_ga_<id>`, and the Ads click and conversion-linker
  * cookies `_gcl_*` (`_gcl_au`, `_gcl_aw`, `_gcl_dc`, …). The Meta Pixel's
  * `_fbp` and `_fbc` ride along with the advertising ones: the Pixel has no
- * Consent Mode of its own, and leaves them behind just the same.
+ * Consent Mode of its own, and leaves them behind just the same. So does the
+ * site's own `fc_landing` (src/lib/attribution): the campaign that brought
+ * the visitor, kept for their order only with advertising consent.
  */
 const ANALYTICS_COOKIE = /^_ga(_.+)?$/;
-const ADVERTISING_COOKIE = /^(_gcl_.+|_fbp|_fbc)$/;
+const ADVERTISING_COOKIE = /^(_gcl_.+|_fbp|_fbc|fc_landing)$/;
 
 /** The Google cookies on this page that `choices` no longer allows. */
 export function googleCookiesToClear({
