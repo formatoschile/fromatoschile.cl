@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import { TrackViewItemList } from "@/components/Analytics/TrackViewItemList";
+import { ITEM_LISTS, toAnalyticsItem } from "@/lib/analytics";
 import { getProducts } from "@/lib/shopify";
 
 import { TemplateCard } from "./TemplateCard";
@@ -18,8 +20,16 @@ export const FeaturedTemplates: React.FC = async () => {
     return null;
   }
 
+  const analyticsItems = featured.map((product, index) =>
+    toAnalyticsItem({ product, listName: ITEM_LISTS.featuredHome, index })
+  );
+
   return (
     <section className="bg-mist py-16">
+      <TrackViewItemList
+        listName={ITEM_LISTS.featuredHome}
+        items={analyticsItems}
+      />
       <TemplateCarousel
         heading={
           <h2 className="text-ink text-4xl font-normal sm:text-5xl">
@@ -27,8 +37,12 @@ export const FeaturedTemplates: React.FC = async () => {
           </h2>
         }
       >
-        {featured.map((product) => (
-          <TemplateCard key={product.id} product={product} />
+        {featured.map((product, index) => (
+          <TemplateCard
+            key={product.id}
+            product={product}
+            analyticsItem={analyticsItems[index]}
+          />
         ))}
       </TemplateCarousel>
 

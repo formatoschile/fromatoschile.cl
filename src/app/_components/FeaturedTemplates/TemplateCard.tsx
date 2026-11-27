@@ -1,7 +1,8 @@
-import Link from "next/link";
-
+import { ProductLink } from "@/components/Analytics/ProductLink";
 import { BuyButton } from "@/components/cart/BuyButton";
 import { CategoryPill } from "@/components/ui/CategoryPill/CategoryPill";
+import { LOCATIONS } from "@/lib/analytics";
+import type { AnalyticsItem } from "@/lib/analytics";
 import type { ProductCard } from "@/lib/shopify/types";
 import { getProductCardDisplay } from "@/lib/utils/product";
 
@@ -9,20 +10,28 @@ const MAX_FEATURES = 3;
 
 interface TemplateCardProps {
   product: ProductCard;
+  analyticsItem: AnalyticsItem;
 }
 
-export const TemplateCard: React.FC<TemplateCardProps> = ({ product }) => {
+export const TemplateCard: React.FC<TemplateCardProps> = ({
+  product,
+  analyticsItem,
+}) => {
   const { category, price } = getProductCardDisplay(product);
   const variantId = product.variants[0]?.id ?? "";
   const features = product.tags.slice(0, MAX_FEATURES);
 
   return (
     <div className="flex min-h-72 w-72 shrink-0 flex-col rounded-xl bg-white p-6 shadow-sm first:ml-(--inset-x) last:mr-(--inset-x)">
-      <Link href={`/product/${product.handle}`}>
+      <ProductLink
+        handle={product.handle}
+        item={analyticsItem}
+        location={LOCATIONS.templateCard}
+      >
         <h3 className="text-ink text-xl leading-tight font-normal hover:underline">
           {product.title}
         </h3>
-      </Link>
+      </ProductLink>
 
       <CategoryPill category={category} className="mt-3 self-start" />
 
@@ -39,6 +48,7 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({ product }) => {
 
         <BuyButton
           variantId={variantId}
+          location={LOCATIONS.templateCard}
           className="bg-charcoal hover:bg-charcoal/80 rounded-md px-5 py-2 text-lg font-normal text-white"
         />
       </div>

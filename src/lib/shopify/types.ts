@@ -22,6 +22,7 @@ export type CartProduct = {
   id: string;
   handle: string;
   title: string;
+  productType: string;
   featuredImage: Image | null;
 };
 
@@ -35,6 +36,7 @@ export type CartItem = {
   merchandise: {
     id: string;
     title: string;
+    price: Money;
     selectedOptions: {
       name: string;
       value: string;

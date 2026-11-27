@@ -1,15 +1,18 @@
 "use client";
 
+import { useTrackItemList } from "@/components/Analytics/useTrackItemList";
+import { ITEM_LISTS, toAnalyticsItem } from "@/lib/analytics";
 import type { Collection, ProductCard } from "@/lib/shopify/types";
 import { classNames } from "@/lib/utils/classNames";
 
 import { loadMoreDocuments } from "./actions";
 import { DocumentCard } from "./DocumentCard";
 import { FeaturedCard } from "./FeaturedCard";
+import { useDebouncedSearch } from "./hooks/useDebouncedSearch";
+import { useLoadMore } from "./hooks/useLoadMore";
+import { useTrackSearch } from "./hooks/useTrackSearch";
 import { LoadMoreButton } from "./LoadMoreButton";
 import { SearchInput } from "./SearchInput";
-import { useDebouncedSearch } from "./useDebouncedSearch";
-import { useLoadMore } from "./useLoadMore";
 
 interface DocumentsCatalogProps {
   categories: Collection[];
@@ -37,8 +40,9 @@ export const DocumentsCatalog: React.FC<DocumentsCatalogProps> = ({
       }),
     });
 
+  const resultsKey = `${selectedCategory ?? ""}:${query}`;
   const { products, hasNextPage, isLoadingMore, handleLoadMore } = useLoadMore({
-    resultsKey: `${selectedCategory ?? ""}:${query}`,
+    resultsKey,
     initialProducts,
     initialHasNextPage,
     initialEndCursor,
@@ -49,6 +53,16 @@ export const DocumentsCatalog: React.FC<DocumentsCatalogProps> = ({
         after,
       }),
   });
+
+  const analyticsItems = products.map((product, index) =>
+    toAnalyticsItem({ product, listName: ITEM_LISTS.catalog, index })
+  );
+  useTrackItemList({
+    listName: ITEM_LISTS.catalog,
+    listKey: resultsKey,
+    items: analyticsItems,
+  });
+  useTrackSearch({ query, resultCount: initialProducts.length });
 
   const handleToggleCategory = (category: string) => {
     navigateTo({
@@ -66,6 +80,7 @@ export const DocumentsCatalog: React.FC<DocumentsCatalogProps> = ({
   };
 
   const [featured, ...rest] = products;
+  const [featuredItem, ...restItems] = analyticsItems;
 
   return (
     <div>
@@ -122,10 +137,14 @@ export const DocumentsCatalog: React.FC<DocumentsCatalogProps> = ({
         {featured ? (
           <>
             <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-              <FeaturedCard product={featured} />
+              <FeaturedCard product={featured} analyticsItem={featuredItem} />
 
-              {rest.map((product) => (
-                <DocumentCard key={product.handle} product={product} />
+              {rest.map((product, index) => (
+                <DocumentCard
+                  key={product.handle}
+                  product={product}
+                  analyticsItem={restItems[index]}
+                />
               ))}
             </div>
 

@@ -3,10 +3,12 @@ import * as Sentry from "@sentry/nextjs";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
+import { TrackViewItem } from "@/components/Analytics/TrackViewItem";
 import { JsonLd } from "@/components/JsonLd/JsonLd";
 import { PdfViewer } from "@/components/product/PdfViewer/PdfViewer";
 import { ProductProvider } from "@/components/product/ProductContext";
 import { ProductDescription } from "@/components/product/ProductDescription";
+import { toAnalyticsItem } from "@/lib/analytics";
 import { buildBreadcrumbJsonLd, buildProductJsonLd } from "@/lib/seo/jsonLd";
 import { getProduct, getProducts } from "@/lib/shopify";
 import { HIDDEN_PRODUCT_TAG } from "@/lib/utils/constants";
@@ -105,6 +107,7 @@ const ProductPage: React.FC<ProductPageProps> = async (props) => {
       <ProductProvider>
         <JsonLd data={productJsonLd} />
         <JsonLd data={breadcrumbJsonLd} />
+        <TrackViewItem item={toAnalyticsItem({ product })} />
         <div className="section-inset pt-28 pb-24">
           <Breadcrumb
             category={category}

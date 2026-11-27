@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 
+import { ContactEmailLink } from "./_components/ContactEmailLink";
+
 export const metadata: Metadata = {
   title: "Contacto",
   description:
@@ -25,12 +27,10 @@ const ContactPage: React.FC = () => {
             Escríbenos y te responderemos lo antes posible.
           </p>
 
-          <a
-            href={`mailto:${CONTACT_EMAIL}`}
+          <ContactEmailLink
+            email={CONTACT_EMAIL}
             className="bg-graphite mt-8 inline-block rounded-md px-6 py-3 text-sm font-normal tracking-wide text-white transition-opacity hover:opacity-90"
-          >
-            {CONTACT_EMAIL}
-          </a>
+          />
 
           <p className="mt-12 text-base text-neutral-600">
             Si necesitas asesoría legal personalizada, puedes contactar

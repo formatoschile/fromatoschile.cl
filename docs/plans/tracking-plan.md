@@ -60,7 +60,7 @@ Checked 25 November 2026.
 - **Shopify Analytics sees orders but not the storefront.** On a headless store Shopify only knows what happens on its own pages, so its sessions, conversion rate and "online store" reports are empty or wrong unless the site sends Shopify's analytics events. See phase 2.
 - **Taxes:** "prices include tax" is **off** and every product is taxable. Under review by the client (product audit, 25 November 2026). It matters here because purchase `value` is sent with or without IVA depending on the answer — decide before phase 4, and say in the docs which one it is.
 
-**Accounts that do not exist yet or are unknown:** Tag Manager container, GA4 property, Meta Business / ad account / Pixel, Google Ads account, Search Console property (a `google-site-verification` TXT already exists in DNS, so a property may exist). Phase 1 finds out.
+**Accounts:** none exists yet — no Tag Manager container, GA4 property, Google Ads account, Search Console property, or Meta Business / ad account / Pixel (confirmed 27 November 2026). We create the Google ones under the client's Google identity; the client creates the Meta ones and adds us.
 
 ### How a visitor buys
 
@@ -85,13 +85,13 @@ Each is the client's call (Seba / Cami) and blocks the phase it sits in.
 
 | Decision | Whose call | Where it lands |
 | --- | --- | --- |
-| Install the Facebook & Instagram app and connect the Meta Business account | Seba | Phase 1, 4 |
-| Install the Google & YouTube app (or let us use a custom pixel instead) | Seba | Phase 1, 4 |
+| ~~Install the Facebook & Instagram app~~ | **Approved by Seba, 27 November 2026.** Connecting it waits for the client's Meta Business account | Phase 1, 4 |
+| ~~Install the Google & YouTube app~~ | **Approved by Seba, 27 November 2026** (phase 4 may still replace its GA4 side with a custom pixel) | Phase 1, 4 |
 | Prices with or without IVA, and therefore what `value` means | The client (product audit) | Phase 4 |
 | ~~Banner on or off at launch~~ | **Settled 25 November 2026: off at launch, behind a flag** — as RK. See phase 3 | Phase 3 |
 | ~~When to switch the banner on~~ | **Settled 27 November 2026: on from 15 October 2027**, the day Ley 21.719 takes effect (Ley 21.855). See phase 3 | Phase 3 |
 | Banner copy, cookie policy and privacy policy wording | The client writes it; we supply the inventory | Phase 3 |
-| Google Ads at all, or Meta only to start | The client | Phase 1, 6 |
+| ~~Google Ads at all, or Meta only to start~~ | **Settled 27 November 2026: set Google Ads up now** (account, GA4 link, conversion), campaigns later | Phase 1, 6 |
 | Whether the dashboard is wanted | The client, after reading the funnels for 2–3 weeks | Phase 6 |
 | Monthly follow-up | The client | Phase 8 |
 
@@ -162,7 +162,7 @@ leave.
    | Data retention | 14 months |
    | Google signals | On, reporting identity Blended |
    | Unwanted referrals | `checkout.formatoschile.cl` is the same root domain and needs nothing; add payment providers if they show up as referrers after the first test order (e.g. `webpay`, `mercadopago`, `transbank`, `paypal`) |
-   | Enhanced measurement | Page views on browser history change **on** (client-side navigation); form interactions **off**; scroll **off** (we send our own); site search on if `/todos-los-documentos?q=` is used |
+   | Enhanced measurement | Page views on browser history change **on** (client-side navigation); form interactions **off**; scroll **off** (we send our own); site search **off** — the site sends `fc_search` with the result count, and two search signals would disagree |
    | Cross-domain | **Off** — not needed, the checkout is a subdomain |
 
 4. **Meta:** Business portfolio, ad account, one Pixel (dataset). Verify the domain `formatoschile.cl` in Business settings (DNS TXT or meta tag) — needed for Aggregated Event Measurement and for ads to optimise on Purchase.
@@ -175,7 +175,7 @@ leave.
 
 ### Checklist
 
-- [ ] Inventory of existing Google / Meta accounts, asked of the client
+- [x] Inventory of existing Google / Meta accounts: none exist (27 November 2026)
 - [ ] GTM container created, IDs recorded here
 - [ ] GA4 property and stream, settings as above
 - [ ] Meta Business, ad account, Pixel; domain verified
@@ -205,15 +205,15 @@ phase 2, which were learned the hard way:
 - **Ecommerce pushes clear `ecommerce` first** (`dataLayer.push({ ecommerce: null })`), Google's own requirement for GA4 ecommerce.
 - **The site decides what an event means; GTM only forwards.** No click-on-CSS-selector triggers in the container.
 - **Event names are constants**, so nobody invents a new inconsistent one later.
-- **Product fields come from one mapper**, `toAnalyticsItem(product, variant)`, so every event describes a document the same way:
+- **Product fields come from one mapper**, `toAnalyticsItem` (and `cartItemToAnalyticsItem` for cart lines), so every event describes a document the same way:
 
 | GA4 item field | From |
 | --- | --- |
-| `item_id` | Shopify variant SKU if set, otherwise the numeric product ID (no product has a SKU today — product audit) |
+| `item_id` | Numeric Shopify **variant** ID (`gid://shopify/ProductVariant/123` → `123`) — decided 27 November 2026; what Shopify's checkout apps usually send. No product has a SKU today (product audit) |
 | `item_name` | product title |
 | `item_category` | `productType` (`laboral`, `civil`, `societario`) |
 | `item_list_name` | the list it was shown in, when relevant |
-| `price` | variant price, number, CLP |
+| `price` | variant list price, number, CLP — also for cart lines (not the discounted line cost) |
 | `quantity` | 1 unless the cart says otherwise |
 
 The **same `item_id`** must be what Shopify's apps send on checkout and
@@ -304,17 +304,18 @@ that catches tracking quietly dying after an unrelated refactor.
 
 ### Checklist
 
-- [ ] `src/lib/analytics/` with `trackEvent`, event constants, label reset, ecommerce clear
-- [ ] `toAnalyticsItem` mapper; `item_id` format agreed with phase 4
-- [ ] `view_item_list`, `select_item`, `view_item`, `add_to_cart`, `remove_from_cart`, `view_cart`
-- [ ] `fc_preview_open`, `fc_preview_page`, `fc_checkout_click` (both routes), `fc_checkout_error`, `fc_contact_click` (`fc_search` if search exists)
+- [x] `src/lib/analytics/` with `trackEvent`, event constants, label reset, ecommerce clear (27 November 2026)
+- [x] `toAnalyticsItem` mapper, numeric variant ID
+- [ ] `item_id` format confirmed against the phase 4 test order
+- [x] `view_item_list`, `select_item`, `view_item`, `add_to_cart`, `remove_from_cart`, `view_cart`
+- [x] `fc_preview_open`, `fc_preview_page`, `fc_checkout_click` (both routes), `fc_checkout_error`, `fc_contact_click`, `fc_search`
 - [ ] Attribution cart attributes on `cartCreate`, gated on consent
 - [ ] `sendShopifyAnalytics` (if decided)
 - [ ] CSP widened per vendor, commented; zero violations on a preview
 - [ ] `NEXT_PUBLIC_GTM_ID` in `src/env.ts`, Production only
 - [ ] Tested on a preview with Tag Assistant, desktop and phone
 - [ ] Smoke test
-- [ ] `docs/tracking-events.md`: every event, its fields and what it means
+- [x] `docs/tracking-events.md`: every event, its fields and what it means
 
 ---
 

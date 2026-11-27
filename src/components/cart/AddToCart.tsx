@@ -3,7 +3,14 @@
 import React from "react";
 
 import { useProduct } from "@/components/product/ProductContext";
-import type { Product } from "@/lib/shopify/types";
+import {
+  ANALYTICS_EVENTS,
+  LOCATIONS,
+  toAnalyticsItem,
+  toEcommerce,
+  trackEvent,
+} from "@/lib/analytics";
+import type { Product, ProductVariant } from "@/lib/shopify/types";
 import { getSelectedVariant } from "@/lib/utils/product";
 
 import { addItem } from "./actions";
@@ -30,10 +37,11 @@ export const AddToCart: React.FC<AddToCartProps> = ({ product }) => {
       return;
     }
 
-    runMutation(
-      () => addCartItem(finalVariant, product),
-      () => addItem(null, selectedVariantId)
-    );
+    runMutation({
+      applyOptimisticUpdate: () => addCartItem(finalVariant, product),
+      performAction: () => addItem(null, selectedVariantId),
+      onSuccess: () => trackAddToCart({ product, variant: finalVariant }),
+    });
   };
 
   return (
@@ -45,3 +53,20 @@ export const AddToCart: React.FC<AddToCartProps> = ({ product }) => {
     />
   );
 };
+
+function trackAddToCart({
+  product,
+  variant,
+}: {
+  product: Product;
+  variant: ProductVariant;
+}): void {
+  trackEvent({
+    event: ANALYTICS_EVENTS.addToCart,
+    labels: { location: LOCATIONS.productPage },
+    ecommerce: toEcommerce({
+      items: [toAnalyticsItem({ product, variant })],
+      currency: variant.price.currencyCode,
+    }),
+  });
+}

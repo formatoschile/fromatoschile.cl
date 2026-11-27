@@ -7,12 +7,15 @@ import type { Cart } from "@/lib/shopify/types";
 
 import { useCart } from "./CartContext";
 
+interface CartMutation {
+  applyOptimisticUpdate: () => void;
+  performAction: () => Promise<Cart | string | undefined>;
+  onSuccess?: (cart: Cart) => void;
+}
+
 interface UseCartMutationResult {
   isPending: boolean;
-  runMutation: (
-    applyOptimisticUpdate: () => void,
-    performAction: () => Promise<Cart | string | undefined>
-  ) => void;
+  runMutation: (mutation: CartMutation) => void;
 }
 
 /**
@@ -21,16 +24,19 @@ interface UseCartMutationResult {
  * same transition, then sync the confirmed cart once it settles. If the
  * action fails, `syncCart` is skipped so `useOptimistic` reverts to the last
  * confirmed cart on its own, and the error is surfaced as a toast.
+ * `onSuccess` runs only once the server confirmed the change — the place to
+ * report analytics, so a failed add or remove is never counted.
  */
 export function useCartMutation(): UseCartMutationResult {
   const { syncCart } = useCart();
   const { showToast } = useToast();
   const [isPending, startTransition] = useTransition();
 
-  const runMutation: UseCartMutationResult["runMutation"] = (
+  const runMutation: UseCartMutationResult["runMutation"] = ({
     applyOptimisticUpdate,
-    performAction
-  ) => {
+    performAction,
+    onSuccess,
+  }) => {
     startTransition(async () => {
       applyOptimisticUpdate();
       const result = await performAction();
@@ -42,6 +48,7 @@ export function useCartMutation(): UseCartMutationResult {
         return;
       }
       syncCart(result);
+      onSuccess?.(result);
     });
   };
 

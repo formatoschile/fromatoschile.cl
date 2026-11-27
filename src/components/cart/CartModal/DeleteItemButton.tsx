@@ -3,6 +3,13 @@
 import React from "react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 
+import {
+  ANALYTICS_EVENTS,
+  cartItemToAnalyticsItem,
+  LOCATIONS,
+  toEcommerce,
+  trackEvent,
+} from "@/lib/analytics";
 import type { CartItem } from "@/lib/shopify/types";
 
 import { removeItem } from "../actions";
@@ -22,10 +29,11 @@ export const DeleteItemButton: React.FC<DeleteItemButtonProps> = ({
   const merchandiseId = item.merchandise.id;
 
   const handleClick = () => {
-    runMutation(
-      () => optimisticUpdate(merchandiseId, "delete"),
-      () => removeItem(null, { lineId: item.id, merchandiseId })
-    );
+    runMutation({
+      applyOptimisticUpdate: () => optimisticUpdate(merchandiseId, "delete"),
+      performAction: () => removeItem(null, { lineId: item.id, merchandiseId }),
+      onSuccess: () => trackRemoveFromCart({ item }),
+    });
   };
 
   return (
@@ -40,3 +48,14 @@ export const DeleteItemButton: React.FC<DeleteItemButtonProps> = ({
     </button>
   );
 };
+
+function trackRemoveFromCart({ item }: { item: CartItem }): void {
+  trackEvent({
+    event: ANALYTICS_EVENTS.removeFromCart,
+    labels: { location: LOCATIONS.cart },
+    ecommerce: toEcommerce({
+      items: [cartItemToAnalyticsItem({ item })],
+      currency: item.cost.totalAmount.currencyCode,
+    }),
+  });
+}

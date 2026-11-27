@@ -5,6 +5,7 @@ import { ArrowDownIcon, ArrowUpIcon } from "@heroicons/react/24/outline";
 import { IconButton } from "@/components/ui/IconButton/IconButton";
 
 import { usePdfViewer } from "./usePdfViewer";
+import { useTrackPreview } from "./useTrackPreview";
 
 interface PdfViewerProps {
   url: string;
@@ -21,6 +22,7 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({ url }) => {
     goToPreviousPage,
     goToNextPage,
   } = usePdfViewer(url);
+  useTrackPreview({ url, numPages, currentPage });
 
   if (hasError) {
     return (

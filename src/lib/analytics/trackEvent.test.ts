@@ -1,0 +1,106 @@
+/// <reference types="bun" />
+
+import { afterEach, beforeEach, describe, expect, test } from "bun:test";
+
+import { ANALYTICS_EVENTS, CHECKOUT_ROUTES, LOCATIONS } from "./events";
+import { toEcommerce } from "./items";
+import type { AnalyticsItem } from "./items";
+import { trackEvent } from "./trackEvent";
+
+const ITEM: AnalyticsItem = {
+  item_id: "123",
+  item_name: "Contrato de trabajo",
+  item_category: "laboral",
+  price: 9990,
+  quantity: 1,
+};
+
+function setWindow(pathname: string): unknown[] {
+  const dataLayer: unknown[] = [];
+  Object.assign(globalThis, { window: { dataLayer, location: { pathname } } });
+  return dataLayer;
+}
+
+describe("trackEvent", () => {
+  let dataLayer: unknown[];
+
+  beforeEach(() => {
+    dataLayer = setWindow("/product/contrato");
+  });
+
+  afterEach(() => {
+    Reflect.deleteProperty(globalThis, "window");
+  });
+
+  test("pushes the event with page_type and every label reset", () => {
+    trackEvent({
+      event: ANALYTICS_EVENTS.checkoutClick,
+      labels: { route: CHECKOUT_ROUTES.buyNow, location: LOCATIONS.card },
+    });
+
+    expect(dataLayer).toEqual([
+      {
+        event: "fc_checkout_click",
+        page_type: "product",
+        location: "card",
+        route: "buy_now",
+        preview_page: undefined,
+        error_reason: undefined,
+        search_term: undefined,
+        search_results: undefined,
+        ecommerce: null,
+      },
+    ]);
+  });
+
+  test("a later event clears labels set by an earlier one", () => {
+    trackEvent({
+      event: ANALYTICS_EVENTS.checkoutClick,
+      labels: { route: CHECKOUT_ROUTES.cart },
+    });
+    trackEvent({ event: ANALYTICS_EVENTS.previewOpen });
+
+    const second = dataLayer[1] as Record<string, unknown>;
+    expect(second).toHaveProperty("route", undefined);
+    expect(second.event).toBe("fc_preview_open");
+  });
+
+  test("ecommerce events clear the previous ecommerce object first", () => {
+    trackEvent({
+      event: ANALYTICS_EVENTS.addToCart,
+      ecommerce: toEcommerce({ items: [ITEM] }),
+    });
+
+    expect(dataLayer[0]).toEqual({ ecommerce: null });
+    expect(dataLayer[1]).toMatchObject({
+      event: "add_to_cart",
+      ecommerce: { currency: "CLP", value: 9990, items: [ITEM] },
+    });
+  });
+
+  test("non-ecommerce events push once and clear ecommerce", () => {
+    trackEvent({ event: ANALYTICS_EVENTS.contactClick });
+
+    expect(dataLayer).toHaveLength(1);
+    expect(dataLayer[0]).toHaveProperty("ecommerce", null);
+  });
+
+  test("creates the dataLayer when GTM has not loaded", () => {
+    Object.assign(globalThis, { window: { location: { pathname: "/" } } });
+
+    trackEvent({ event: ANALYTICS_EVENTS.contactClick });
+
+    const { window: fakeWindow } = globalThis as unknown as {
+      window: { dataLayer: unknown[] };
+    };
+    expect(fakeWindow.dataLayer).toHaveLength(1);
+  });
+
+  test("is a no-op on the server", () => {
+    Reflect.deleteProperty(globalThis, "window");
+
+    expect(() =>
+      trackEvent({ event: ANALYTICS_EVENTS.contactClick })
+    ).not.toThrow();
+  });
+});

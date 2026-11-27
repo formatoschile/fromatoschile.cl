@@ -1,9 +1,10 @@
-import Link from "next/link";
-
+import { ProductLink } from "@/components/Analytics/ProductLink";
 import {
   CategoryPill,
   getCategoryStyle,
 } from "@/components/ui/CategoryPill/CategoryPill";
+import { LOCATIONS } from "@/lib/analytics";
+import type { AnalyticsItem } from "@/lib/analytics";
 import type { ProductCard } from "@/lib/shopify/types";
 import { classNames } from "@/lib/utils/classNames";
 import { getProductCardDisplay } from "@/lib/utils/product";
@@ -12,14 +13,20 @@ import { DocumentThumbnail } from "./DocumentThumbnail";
 
 interface DocumentCardProps {
   product: ProductCard;
+  analyticsItem: AnalyticsItem;
 }
 
-export const DocumentCard: React.FC<DocumentCardProps> = ({ product }) => {
+export const DocumentCard: React.FC<DocumentCardProps> = ({
+  product,
+  analyticsItem,
+}) => {
   const { category, price } = getProductCardDisplay(product);
 
   return (
-    <Link
-      href={`/product/${product.handle}`}
+    <ProductLink
+      handle={product.handle}
+      item={analyticsItem}
+      location={LOCATIONS.card}
       className="block overflow-hidden rounded-2xl bg-white text-left shadow-sm ring-1 ring-neutral-100 transition-shadow hover:shadow-md"
     >
       <div
@@ -39,6 +46,6 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({ product }) => {
 
         <p className="text-ink mt-2 text-xl">{price}</p>
       </div>
-    </Link>
+    </ProductLink>
   );
 };

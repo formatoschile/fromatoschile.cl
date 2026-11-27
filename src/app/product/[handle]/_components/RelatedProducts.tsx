@@ -1,3 +1,5 @@
+import { TrackViewItemList } from "@/components/Analytics/TrackViewItemList";
+import { ITEM_LISTS, toAnalyticsItem } from "@/lib/analytics";
 import { getProducts } from "@/lib/shopify";
 import { buildProductSearchQuery } from "@/lib/shopify/search";
 
@@ -26,15 +28,23 @@ export const RelatedProducts: React.FC<RelatedProductsProps> = async ({
 
   if (!relatedProducts.length) return null;
 
+  const analyticsItems = relatedProducts.map((product, index) =>
+    toAnalyticsItem({ product, listName: ITEM_LISTS.related, index })
+  );
+
   return (
     <div className="mt-24">
+      <TrackViewItemList listName={ITEM_LISTS.related} items={analyticsItems} />
       <h2 className="text-ink mb-6 text-2xl font-normal">
         Documentos similares
       </h2>
       <ul className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        {relatedProducts.map((product) => (
+        {relatedProducts.map((product, index) => (
           <li key={product.handle}>
-            <RelatedProductCard product={product} />
+            <RelatedProductCard
+              product={product}
+              analyticsItem={analyticsItems[index]}
+            />
           </li>
         ))}
       </ul>

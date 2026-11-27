@@ -4,6 +4,7 @@ import React from "react";
 
 import { BuyButton } from "@/components/cart/BuyButton";
 import { useProduct } from "@/components/product/ProductContext";
+import { LOCATIONS } from "@/lib/analytics";
 import type { Product } from "@/lib/shopify/types";
 import { getSelectedVariant } from "@/lib/utils/product";
 
@@ -33,7 +34,11 @@ export const BuyNowButton: React.FC<BuyNowButtonProps> = ({
       : "";
 
   return (
-    <BuyButton variantId={variantId} className={className}>
+    <BuyButton
+      variantId={variantId}
+      location={LOCATIONS.productPage}
+      className={className}
+    >
       {children}
     </BuyButton>
   );

@@ -14,6 +14,7 @@ import { OpenCart } from "../OpenCart";
 
 import { CartModalContent } from "./CartModalContent";
 import { CloseCartButton } from "./CloseCartButton";
+import { useTrackViewCart } from "./useTrackViewCart";
 
 interface CartModalProps {
   iconClassName?: string;
@@ -21,6 +22,7 @@ interface CartModalProps {
 
 export const CartModal: React.FC<CartModalProps> = ({ iconClassName }) => {
   const { cart, isCartOpen, openCart, closeCart, updateCartItem } = useCart();
+  useTrackViewCart({ isCartOpen, cart });
 
   return (
     <>

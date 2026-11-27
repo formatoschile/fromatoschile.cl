@@ -5,6 +5,13 @@ import React from "react";
 import { updateItemQuantity } from "@/components/cart/actions";
 import type { UpdateType } from "@/components/cart/CartContext";
 import { useCartMutation } from "@/components/cart/useCartMutation";
+import {
+  ANALYTICS_EVENTS,
+  cartItemToAnalyticsItem,
+  LOCATIONS,
+  toEcommerce,
+  trackEvent,
+} from "@/lib/analytics";
 import type { CartItem } from "@/lib/shopify/types";
 
 import { QuantityButton } from "./QuantityButton";
@@ -28,13 +35,36 @@ export const EditItemQuantityButton: React.FC<EditItemQuantityButtonProps> = ({
   };
 
   const handleClick = () => {
-    runMutation(
-      () => optimisticUpdate(payload.merchandiseId, type),
-      () => updateItemQuantity(null, payload)
-    );
+    runMutation({
+      applyOptimisticUpdate: () =>
+        optimisticUpdate(payload.merchandiseId, type),
+      performAction: () => updateItemQuantity(null, payload),
+      onSuccess: () => trackQuantityChange({ item, type }),
+    });
   };
 
   return (
     <QuantityButton type={type} isPending={isPending} onClick={handleClick} />
   );
 };
+
+// One unit added or removed, reported as GA4's add/remove of quantity 1.
+function trackQuantityChange({
+  item,
+  type,
+}: {
+  item: CartItem;
+  type: "plus" | "minus";
+}): void {
+  trackEvent({
+    event:
+      type === "plus"
+        ? ANALYTICS_EVENTS.addToCart
+        : ANALYTICS_EVENTS.removeFromCart,
+    labels: { location: LOCATIONS.cart },
+    ecommerce: toEcommerce({
+      items: [cartItemToAnalyticsItem({ item, quantity: 1 })],
+      currency: item.cost.totalAmount.currencyCode,
+    }),
+  });
+}
