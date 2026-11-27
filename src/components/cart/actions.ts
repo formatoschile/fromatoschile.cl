@@ -6,6 +6,15 @@ import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 import {
+  cartAttributesFromLanding,
+  LANDING_COOKIE_NAME,
+  parseLanding,
+} from "@/lib/attribution/landing";
+import {
+  advertisingConsentFromCookie,
+  CONSENT_COOKIE_NAME,
+} from "@/lib/consent/consent";
+import {
   addToCart,
   createCart,
   getCart,
@@ -155,6 +164,7 @@ export async function buyNow(
     // A standalone cart for a direct "buy now" — keeps the user's main cart untouched.
     const cart = await createCart({
       lines: [{ merchandiseId: selectedVariantId, quantity: 1 }],
+      attributes: await campaignAttributes(),
     });
     checkoutUrl = cart.checkoutUrl;
   } catch (e) {
@@ -221,8 +231,26 @@ function sanitizeAttributes(
     }));
 }
 
+/**
+ * The campaign that brought this visitor, as order attributes — read from the
+ * `fc_landing` cookie the browser wrote (src/lib/attribution), and only with
+ * advertising consent, checked again here from the consent cookie: the
+ * landing cookie is client-written, so nothing about it is trusted.
+ * cartAttributesFromLanding fixes the keys and cleans and caps every value.
+ */
+async function campaignAttributes(): Promise<{ key: string; value: string }[]> {
+  const jar = await cookies();
+  if (!advertisingConsentFromCookie(jar.get(CONSENT_COOKIE_NAME)?.value)) {
+    return [];
+  }
+
+  return cartAttributesFromLanding({
+    landing: parseLanding(jar.get(LANDING_COOKIE_NAME)?.value),
+  });
+}
+
 async function createCartAndSetCookie() {
-  const cart = await createCart();
+  const cart = await createCart({ attributes: await campaignAttributes() });
 
   if (!cart.id) {
     throw new Error("Cart created without an id");

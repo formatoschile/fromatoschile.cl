@@ -22,14 +22,23 @@ import type {
   ShopifyUserError,
 } from "./types";
 
+/**
+ * `attributes` are cart-level (they end up on the order); callers pass them
+ * already sanitised.
+ */
 export async function createCart({
   lines,
+  attributes,
 }: {
   lines?: { merchandiseId: string; quantity: number }[];
+  attributes?: { key: string; value: string }[];
 } = {}): Promise<Cart> {
   const res = await shopifyFetch<ShopifyCreateCartOperation>({
     query: createCartMutation,
-    variables: { lineItems: lines },
+    variables: {
+      lineItems: lines,
+      ...(attributes && attributes.length > 0 ? { attributes } : {}),
+    },
   });
 
   return unwrapCartPayload(res.body.data.cartCreate);

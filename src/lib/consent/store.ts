@@ -145,8 +145,8 @@ export function syncWithStoredChoice(): void {
  *
  * A withdrawal removes the cookies already written by Google's and Meta's
  * tags (`_ga*`, `_gcl_*`, `_fbp`, `_fbc`), which Consent Mode stops using but
- * does not delete. The site's own attribution cookies join this list when
- * they are added (tracking plan, phase 2, "Attribution").
+ * does not delete, and the site's own attribution cookie `fc_landing`
+ * (tracking plan, phase 2, "Attribution").
  *
  * No reload: Consent Mode takes the choice as a dataLayer update.
  */

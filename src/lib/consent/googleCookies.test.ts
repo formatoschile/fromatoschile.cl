@@ -13,6 +13,7 @@ const NAMES = [
   "_gcl_dc",
   "_fbp",
   "_fbc",
+  "fc_landing",
   "cookie-consent",
   "cartId",
   "gclid",
@@ -34,6 +35,7 @@ describe("googleCookiesToClear", () => {
       "_gcl_dc",
       "_fbp",
       "_fbc",
+      "fc_landing",
     ]);
   });
 
@@ -49,7 +51,7 @@ describe("googleCookiesToClear", () => {
         names: NAMES,
         choices: { analytics: true, advertising: false },
       })
-    ).toEqual(["_gcl_au", "_gcl_aw", "_gcl_dc", "_fbp", "_fbc"]);
+    ).toEqual(["_gcl_au", "_gcl_aw", "_gcl_dc", "_fbp", "_fbc", "fc_landing"]);
   });
 
   test("granting both clears nothing", () => {

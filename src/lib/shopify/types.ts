@@ -193,6 +193,7 @@ export type ShopifyCreateCartOperation = {
   data: { cartCreate: { cart: ShopifyCart; userErrors: ShopifyUserError[] } };
   variables: {
     lineItems?: { merchandiseId: string; quantity: number }[];
+    attributes?: { key: string; value: string }[];
   };
 };
 

@@ -320,7 +320,7 @@ that catches tracking quietly dying after an unrelated refactor.
 - [ ] `item_id` format confirmed against the phase 4 test order
 - [x] `view_item_list`, `select_item`, `view_item`, `add_to_cart`, `remove_from_cart`, `view_cart`
 - [x] `fc_preview_open`, `fc_preview_page`, `fc_checkout_click` (both routes), `fc_checkout_error`, `fc_contact_click`, `fc_search`
-- [ ] Attribution cart attributes on `cartCreate`, gated on consent
+- [x] Attribution cart attributes on `cartCreate`, gated on consent (27 November 2026): `_landing`, `_referrer`, `_landed_at`, `_utm_*`, `_gclid`/`_gbraid`/`_wbraid`/`_fbclid` from the `fc_landing` cookie (last campaign touch, 30 days), advertising consent checked in the browser and again on the server; on every `cartCreate` (first add to cart, buy now). Not yet seen on a real order
 - [ ] `sendShopifyAnalytics` (if decided)
 - [x] CSP widened per vendor, commented: GTM + GA4 + Google signals hosts (27 November 2026, `next.config.ts`). Zero tracking-related violations on a local production build with the container loaded. Meta and Google Ads hosts to add when they are used. Unrelated, pre-existing: a `blob:` worker is refused (`worker-src` falls back to `script-src`) — likely Sentry's; to look at separately
 - [x] `NEXT_PUBLIC_GTM_ID` in `src/env.ts`; loader inlined in the root layout right after the consent default (`src/lib/analytics/gtm.ts`). Set in Vercel as `GTM-WQN2XMW4`, Production environment only (27 November 2026)

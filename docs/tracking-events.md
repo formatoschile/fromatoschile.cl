@@ -50,6 +50,40 @@ in the path replaced by `(token)`: checkout URLs carry session tokens, and
 this way every checkout reports as one page
 (`/checkouts/cn/(token)/es-cl`) and every thank-you page as another.
 
+## Campaign attributes on orders
+
+Not a dataLayer event: the campaign that brought the visitor travels to the
+Shopify order as **cart attributes**, so every order names its source in
+Shopify admin (order page → *Additional details*) and in the Admin API,
+whatever GA4 sees. Code: `src/lib/attribution/` and `src/components/cart/actions.ts`.
+
+| Attribute | Value |
+| --- | --- |
+| `_landing` | Path of the landing page (no query string) |
+| `_referrer` | External referrer, origin + path only; absent for direct and same-site |
+| `_landed_at` | ISO timestamp of that landing |
+| `_utm_source`, `_utm_medium`, `_utm_campaign`, `_utm_term`, `_utm_content` | From the landing URL |
+| `_gclid`, `_gbraid`, `_wbraid`, `_fbclid` | Ad click IDs from the landing URL |
+
+Only attributes with a value are sent. The underscore hides them from the
+buyer at checkout.
+
+- **Captured** in the browser on every full page load into the `fc_landing`
+  cookie (30 days, first-party, `SameSite=Lax`). Rule — *last campaign touch*:
+  a landing with any `utm_*` or click ID replaces what is stored; a bare
+  landing is stored only when nothing is, so an organic first visit is
+  recorded but never overwrites an earlier campaign.
+- **Attached** server-side when the cart is created (`cartCreate`): the first
+  add to cart and every "Comprar ahora" (its own cart). Keys are fixed, values
+  stripped of control characters and capped at 255 characters; the cookie is
+  client-written and treated as untrusted. A cart that already existed before
+  the landing keeps the attributes it was created with (no
+  `cartAttributesUpdate`).
+- **Advertising consent only**: nothing is captured without it, the server
+  re-checks the `cookie-consent` cookie before attaching anything, and a
+  refusal deletes `fc_landing` with the other advertising cookies. While the
+  banner is off (`CONSENT_REQUIRED = false`) the default is granted.
+
 ## Fields on every push
 
 | Field | Values | Notes |
